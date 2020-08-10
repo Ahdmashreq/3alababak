@@ -28,7 +28,7 @@ SECRET_KEY = 'udi2s+pa_3xphtm-9upkzn7c0omv*my_e-up_d$ph++-z)g3kv'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['127.0.0.1']
 
 
 # Application definition
