@@ -3,6 +3,8 @@ from django.conf import settings
 from djmoney.models.fields import MoneyField
 from account.models import Company
 from location.models import Location
+from mptt.models import MPTTModel
+from mptt.fields import TreeForeignKey
 
 
 class Brand(models.Model):
@@ -10,7 +12,7 @@ class Brand(models.Model):
     description = models.CharField(max_length=150, blank=True, null=True)
     company = models.ForeignKey(Company, on_delete=models.CASCADE, )
     created_at = models.DateField(auto_now_add=True, null=True)
-    last_updated_at = models.DateField(null=True,auto_now=True, auto_now_add=False)
+    last_updated_at = models.DateField(null=True, auto_now=True, auto_now_add=False)
     created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, null=True,
                                    related_name="brand_created_by")
     last_updated_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, null=True)
@@ -19,13 +21,14 @@ class Brand(models.Model):
         return self.name
 
 
-class Category(models.Model):
+class Category(MPTTModel):
     name = models.CharField(max_length=30)
     description = models.CharField(max_length=150, blank=True, null=True)
     company = models.ForeignKey(Company, on_delete=models.CASCADE, )
-    parent_category = models.ForeignKey('Category', on_delete=models.CASCADE, blank=True, null=True)
+    parent = TreeForeignKey('self', on_delete=models.CASCADE, null=True, blank=True,
+                            related_name='sub_category')
     created_at = models.DateField(auto_now_add=True, null=True)
-    last_updated_at = models.DateField(null=True,auto_now=True, auto_now_add=False)
+    last_updated_at = models.DateField(null=True, auto_now=True, auto_now_add=False)
     created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, null=True,
                                    related_name="category_created_by")
     last_updated_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, null=True)
@@ -43,7 +46,7 @@ class Uom(models.Model):
     type = models.CharField(max_length=30)
     description = models.CharField(max_length=150, blank=True, null=True)
     created_at = models.DateField(auto_now_add=True, null=True)
-    last_updated_at = models.DateField(null=True,auto_now=True, auto_now_add=False)
+    last_updated_at = models.DateField(null=True, auto_now=True, auto_now_add=False)
     created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, null=True,
                                    related_name="uom_created_by")
     last_updated_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, null=True)
@@ -55,13 +58,14 @@ class Uom(models.Model):
 class Product(models.Model):
     company = models.ForeignKey(Company, on_delete=models.CASCADE, )
     brand = models.ForeignKey(Brand, on_delete=models.CASCADE, blank=True, null=True)
-    category = models.ForeignKey(Category, on_delete=models.CASCADE, )
+    category = TreeForeignKey(Category, on_delete=models.CASCADE, null=True, blank=True,
+                              related_name='product_category')
     name = models.CharField(max_length=30)
     description = models.CharField(max_length=30, blank=True, null=True)
-    uom = models.ForeignKey(Uom, on_delete=models.CASCADE, blank=True, null=True )
+    uom = models.ForeignKey(Uom, on_delete=models.CASCADE, blank=True, null=True)
 
     created_at = models.DateField(auto_now_add=True, null=True)
-    last_updated_at = models.DateField(null=True,auto_now=True, auto_now_add=False)
+    last_updated_at = models.DateField(null=True, auto_now=True, auto_now_add=False)
     created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, null=True,
                                    related_name="product_created_by")
     last_updated_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, null=True)
@@ -75,7 +79,7 @@ class Attribute(models.Model):
     name = models.CharField(max_length=50)
     display_name = models.CharField(max_length=50)
     created_at = models.DateField(auto_now_add=True, null=True)
-    last_updated_at = models.DateField(null=True,auto_now=True, auto_now_add=False)
+    last_updated_at = models.DateField(null=True, auto_now=True, auto_now_add=False)
     created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, null=True,
                                    related_name="attribute_created_by")
     last_updated_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, null=True)
@@ -88,7 +92,7 @@ class ProductAttribute(models.Model):
     product = models.ForeignKey(Product, on_delete=models.CASCADE, )
     attribute = models.ForeignKey(Attribute, on_delete=models.CASCADE, )
     created_at = models.DateField(auto_now_add=True, null=True)
-    last_updated_at = models.DateField(null=True,auto_now=True, auto_now_add=False)
+    last_updated_at = models.DateField(null=True, auto_now=True, auto_now_add=False)
     created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, null=True,
                                    related_name="product_attribute_created_by")
     last_updated_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, null=True)
@@ -100,7 +104,7 @@ class ProductAttribute(models.Model):
 class Item(models.Model):
     product = models.ForeignKey(Product, on_delete=models.CASCADE, )
     location = models.ForeignKey(Location, on_delete=models.CASCADE, )
-    uom = models.ForeignKey(Uom, on_delete=models.CASCADE, blank=True, null=True )
+    uom = models.ForeignKey(Uom, on_delete=models.CASCADE, blank=True, null=True)
     name = models.CharField(max_length=30)
     image = models.FileField(upload_to='uploads/', blank=True, null=True)
     description = models.CharField(max_length=30, blank=True, null=True)
@@ -112,7 +116,7 @@ class Item(models.Model):
     tax = models.BooleanField(max_length=30)
 
     created_at = models.DateField(auto_now_add=True, null=True)
-    last_updated_at = models.DateField(null=True,auto_now=True, auto_now_add=False)
+    last_updated_at = models.DateField(null=True, auto_now=True, auto_now_add=False)
     created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, null=True,
                                    related_name="item_created_by")
     last_updated_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, null=True)
@@ -126,7 +130,7 @@ class ItemAttributeValue(models.Model):
     attribute = models.ForeignKey(Attribute, on_delete=models.CASCADE, )
     value = models.CharField(max_length=30)
     created_at = models.DateField(auto_now_add=True, null=True)
-    last_updated_at = models.DateField(null=True,auto_now=True, auto_now_add=False)
+    last_updated_at = models.DateField(null=True, auto_now=True, auto_now_add=False)
     created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, null=True,
                                    related_name="item_attribute_created_by")
     last_updated_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, null=True)
@@ -136,13 +140,17 @@ class ItemAttributeValue(models.Model):
 
 
 class StokeTake(models.Model):
-    location = models.ForeignKey(Location, on_delete=models.CASCADE, )
+    location = models.ForeignKey(Location, on_delete=models.CASCADE, null=True, blank=True)
     company = models.ForeignKey(Company, on_delete=models.CASCADE, )
+    category = TreeForeignKey(Category, on_delete=models.CASCADE, null=True, blank=True,
+                              related_name='stoke_category')
     name = models.CharField(max_length=30)
-    type = models.CharField(max_length=30)
-    date = models.DateField(null=True,blank =True)
+    type = models.CharField(max_length=30,
+                            choices=[('all', 'All'), ('location', 'By Location'), ('category', 'By Category'),
+                                     ('random', 'Random')], default='all')
+    date = models.DateField(null=True, blank=True)
     created_at = models.DateField(auto_now_add=True, null=True)
-    last_updated_at = models.DateField(null=True,auto_now=True, auto_now_add=False)
+    last_updated_at = models.DateField(null=True, auto_now=True, auto_now_add=False)
     created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, null=True,
                                    related_name="stoketake_created_by")
     last_updated_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, null=True)
@@ -154,10 +162,10 @@ class StokeTake(models.Model):
 class StokeEntry(models.Model):
     stoke_take = models.ForeignKey(StokeTake, on_delete=models.CASCADE, )
     item = models.ForeignKey(Item, on_delete=models.CASCADE, )
-    quantity = models.IntegerField(null=True, blank=False)
+    quantity = models.IntegerField(null=True, blank=True)
     approval = models.BooleanField(default=False)
     created_at = models.DateField(auto_now_add=True, null=True)
-    last_updated_at = models.DateField(null=True,auto_now=True, auto_now_add=False)
+    last_updated_at = models.DateField(null=True, auto_now=True, auto_now_add=False)
     created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, null=True,
                                    related_name="stoke_entry_created_by")
     last_updated_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, null=True)

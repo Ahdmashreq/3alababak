@@ -35,14 +35,18 @@
                         <label>Date</label>
                         {{stoke_form.date}}
                     </div>
+                    {% if stoke_form.location.value %}
                     <div class="form-group col-md-6" id="location">
                         {{stoke_form.location.label}}
                         {{stoke_form.location}}
                     </div>
+                    {% endif %}
+                    {% if stoke_form.category.value %}
                     <div class="form-group col-md-6" id="category">
                         {{stoke_form.category.label}}
                         {{stoke_form.category}}
                     </div>
+                    {% endif %}
                 </div>
 
 
@@ -53,25 +57,5 @@
 
 
 </div>
-<script>
-document.getElementById('location').style.display = 'none'
-document.getElementById('category').style.display = 'none'
-function myFunction() {
-  if(document.getElementById('id_type').value === 'location') {
-    document.getElementById('category').style.display = 'none';
-    document.getElementById('location').style.display = 'block';
-    }
-  else if(document.getElementById('id_type').value === 'category') {
-  document.getElementById('location').style.display = 'none';
-  document.getElementById('category').style.display = 'block';
-  }
-  else {
-  document.getElementById('location').style.display = 'none';
-  document.getElementById('category').style.display = 'none';
 
-  }
-    }
-
-
-</script>
 {% endblock %}
