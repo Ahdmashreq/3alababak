@@ -4,7 +4,7 @@ from django.contrib import messages
 from inventory.models import (Category, Brand, Product, Attribute, Item, Uom, StokeTake, StokeEntry)
 from inventory.forms import (CategoryForm, category_model_formset, BrandForm, brand_model_formset,
                              AttributeForm, attribute_model_formset, ProductForm, product_item_inlineformset,
-                             stoke_entry_formset, uom_formset, StokeTakeForm,UOMForm)
+                              uom_formset, StokeTakeForm,UOMForm)
 
 
 def create_category_view(request):
@@ -135,38 +135,38 @@ def create_product_item_view(request):
     return render(request, 'create-product-item.html', context=attributeContext)
 
 
-def create_stoketake_view(request):
-    stoke_from = StokeTakeForm()
-    stoke_entry_inlineformset = stoke_entry_formset()
-    if request.method == 'POST':
-        stoke_form = StokeTakeForm(request.POST)
-        stoke_entry_inlineformset = stoke_entry_formset(request.POST)
-        if stoke_form.is_valid() and stoke_entry_inlineformset.is_valid():
-            stoke_obj = stoke_form.save(commit=False)
-            stoke_obj.created_by = request.user
-            stoke_obj.company = request.user.company
-            stoke_obj.save()
-            stoke_entry_inlineformset = stoke_entry_formset(request.POST, instance=stoke_obj)
-            if stoke_entry_inlineformset.is_valid():
-                stoke_entry_obj = stoke_entry_inlineformset.save(commit=False)
-                for stoke_entry in stoke_entry_obj:
-                    stoke_entry.created_by = request.user
-                    stoke_entry.save()
-                if 'Save and exit' in request.POST:
-                    return redirect('inventory:list-stokes')
-                elif 'Save and add' in request.POST:
-                    return redirect('inventory:create-stoke')
-            else:
-                print(stoke_entry_inlineformset.errors)
-        else:
-            print(stoke_form.errors)
-    stoke_context = {
-        'stoke_form': stoke_from,
-        'stoke_entry_inlineformset': stoke_entry_inlineformset,
-        'title': 'New Stoke Take'
-
-    }
-    return render(request, 'create-stoke.html', context=stoke_context)
+# def create_stoketake_view(request):
+#     stoke_from = StokeTakeForm()
+#     stoke_entry_inlineformset = stoke_entry_formset()
+#     if request.method == 'POST':
+#         stoke_form = StokeTakeForm(request.POST)
+#         stoke_entry_inlineformset = stoke_entry_formset(request.POST)
+#         if stoke_form.is_valid() and stoke_entry_inlineformset.is_valid():
+#             stoke_obj = stoke_form.save(commit=False)
+#             stoke_obj.created_by = request.user
+#             stoke_obj.company = request.user.company
+#             stoke_obj.save()
+#             stoke_entry_inlineformset = stoke_entry_formset(request.POST, instance=stoke_obj)
+#             if stoke_entry_inlineformset.is_valid():
+#                 stoke_entry_obj = stoke_entry_inlineformset.save(commit=False)
+#                 for stoke_entry in stoke_entry_obj:
+#                     stoke_entry.created_by = request.user
+#                     stoke_entry.save()
+#                 if 'Save and exit' in request.POST:
+#                     return redirect('inventory:list-stokes')
+#                 elif 'Save and add' in request.POST:
+#                     return redirect('inventory:create-stoke')
+#             else:
+#                 print(stoke_entry_inlineformset.errors)
+#         else:
+#             print(stoke_form.errors)
+#     stoke_context = {
+#         'stoke_form': stoke_from,
+#         'stoke_entry_inlineformset': stoke_entry_inlineformset,
+#         'title': 'New Stoke Take'
+#
+#     }
+#     return render(request, 'create-stoke.html', context=stoke_context)
 
 
 def list_stoketake_view(request):
@@ -222,12 +222,12 @@ def create_stoke_take_template(request):
 
 
 def create_stoketake_view(request):
-    stoke_from = StokeTakeForm()
+    stoke_from = StokeTakeForm(update=False)
     stoke_context = {}
     items = []
     if request.method == 'POST':
 
-        stoke_form = StokeTakeForm(request.POST)
+        stoke_form = StokeTakeForm(request.POST,update=False)
         if stoke_form.is_valid():
             stoke_obj = stoke_form.save(commit=False)
             stoke_obj.created_by = request.user
@@ -255,9 +255,7 @@ def create_stoketake_view(request):
 
             stoke_obj.save()
             entry_list = []
-            for item in items:
-                entry_list.append(StokeEntry(stoke_take=stoke_obj, item=item))
-            StokeEntry.objects.bulk_create(entry_list)
+
             print("****************8")
             print(StokeEntry.objects.all())
             stoke_context['items'] = items
