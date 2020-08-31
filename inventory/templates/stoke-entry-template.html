@@ -1,0 +1,72 @@
+{% extends 'master.html' %}
+{% load static %}
+{% load l10n %}
+{% load i18n %}
+
+{% block body%}
+<div class="container-fluid">
+  <div class="row">
+    <div class="col-12">
+      <h1>Stoke Take</h1>
+    </div>
+  </div>
+  <div class="row">
+    <div class="col-12">
+        <h6>{{name}},</h6>
+        <div class="text-zero top-right-button-container">
+        <a onclick="window.print(); return false;" class="btn btn-primary btn-lg top-right-button mr-1" href="#">Print</a>
+      </div>
+      <h6>{{date}}</h6>
+      {% if location  %}
+        <h6>Location:&emsp;{{location|capfirst}}</h6>
+      {% elif category %}
+        <h6>Category:&emsp;{{category|capfirst}}</h6>
+      {% endif %}
+      <div class="separator mb-5"></div>
+      </div>
+</div>
+</div>
+
+  <div class="row mb-4">
+    <div class="col-12 mb-4">
+      <div class="card">
+        <div class="card-body">
+          <div id="DataTables_Table_0_wrapper" class="table">
+            <table class="table table-bordered" id="DataTables_Table_0" role="grid" aria-describedby="DataTables_Table_0_info">
+              <thead>
+                <tr role="row">
+                  <th class="sorting_asc" tabindex="0" aria-controls="DataTables_Table_0" rowspan="1" colspan="1" aria-sort="ascending">Item ID</th>
+                  <th class="sorting" tabindex="0" aria-controls="DataTables_Table_0" rowspan="1" colspan="1">{% trans "Item" %}</th>
+                  <th class="sorting" tabindex="0" aria-controls="DataTables_Table_0" rowspan="1" colspan="1">{% trans "Image" %}</th>
+                  {% if not location %}
+                    <th class="sorting" tabindex="0" aria-controls="DataTables_Table_0" rowspan="1" colspan="1">{% trans "Location" %}</th>
+                  {% endif %}
+                  <th class="sorting" tabindex="0" aria-controls="DataTables_Table_0" rowspan="1" colspan="1">{% trans "Quantity" %}</th>
+
+
+                </tr>
+              </thead>
+              <tbody>
+                {% for item in items %}
+                <tr role="row">
+                  <td class="sorting_1">{{ forloop.counter }}</td>
+                  <td>{{ item }}</td>
+                  <td>{{item.image}}</td>
+                  {% if not location %}
+                    <td>{{item.location}} </td>
+                  {% endif %}
+                  <td></td>
+
+                </tr>
+
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+{% endblock body%}

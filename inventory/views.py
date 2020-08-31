@@ -1,6 +1,7 @@
+from django.db.models import Q
 from django.shortcuts import render, redirect
 from django.contrib import messages
-from inventory.models import (Category, Brand, Product, Attribute, Item, Uom, StokeTake)
+from inventory.models import (Category, Brand, Product, Attribute, Item, Uom, StokeTake, StokeEntry)
 from inventory.forms import (CategoryForm, category_model_formset, BrandForm, brand_model_formset,
                              AttributeForm, attribute_model_formset, ProductForm, product_item_inlineformset,
                              stoke_entry_formset, uom_formset, StokeTakeForm,UOMForm)
@@ -205,3 +206,76 @@ def list_uom_view(request):
         'uom_list': uom_list
     }
     return render(request, 'list-uom.html', context=uom_context)
+
+
+def create_stoke_take_template(request):
+    print('Hi')
+    # take the form values:name,type,date
+    # get all records accoding to type
+    # if category , it takes the value of cateogry and get all items under it
+    # if location , it takes the value of location and get all items under it
+    # design an html that has :
+    # stoke name, stoke date, stoke type
+    # a table for all items names , with a quatity columns an
+    # if all is choosen add column for location or make it as a section
+    # render it as pdf
+
+
+def create_stoketake_view(request):
+    stoke_from = StokeTakeForm()
+    stoke_context = {}
+    items = []
+    if request.method == 'POST':
+
+        stoke_form = StokeTakeForm(request.POST)
+        if stoke_form.is_valid():
+            stoke_obj = stoke_form.save(commit=False)
+            stoke_obj.created_by = request.user
+            stoke_obj.company = request.user.company
+            name = stoke_obj.name
+            date = stoke_obj.date
+            type = stoke_obj.type
+            stoke_context['name'] = name
+            stoke_context['date'] = date
+            stoke_context['type'] = type
+            if type == 'location':
+                location = stoke_obj.location
+                items = Item.objects.filter(location=location)
+                stoke_context['location'] = location
+            elif type == 'category':
+                category = stoke_obj.category
+                descendants = Category.objects.get(name=category).get_descendants(include_self=True)
+                items = Product.objects.filter(Q(category__parent__in=descendants) | Q(category__in=descendants))
+                # items = Product.objects.filter(category=category)
+                stoke_context['category'] = category
+            elif type == 'all':
+                items = Item.objects.all()
+            elif type == 'random':
+                pass
+
+            stoke_obj.save()
+            entry_list = []
+            for item in items:
+                entry_list.append(StokeEntry(stoke_take=stoke_obj, item=item))
+            StokeEntry.objects.bulk_create(entry_list)
+            print("****************8")
+            print(StokeEntry.objects.all())
+            stoke_context['items'] = items
+            return render(request, 'stoke-entry-template.html', context=stoke_context)
+
+        else:
+            print(stoke_form.errors)
+    stoke_context = {
+        'stoke_form': stoke_from,
+        'title': 'New Stoke Take'
+
+    }
+    return render(request, 'create-stoke.html', context=stoke_context)
+
+
+def update_stoke_entry_view(request, id):
+    stoke_obj = StokeTake.objects.get(id=id)
+    stoke_take_form = StokeTakeForm(update=True,instance=stoke_obj)
+    stoke_entries = StokeEntry.objects.filter(stoke_take=stoke_obj)
+    sub_context = {'title':"Update Stoke Entry",'stoke_entries': stoke_entries, 'stoke_form': stoke_take_form}
+    return render(request,'update-stoke.html',context=sub_context)

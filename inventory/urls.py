@@ -15,5 +15,7 @@ urlpatterns = [
                path('stoke/create/', views.create_stoketake_view, name='create-stoke'),
                path('uom/create/', views.create_uom_view, name='create-uom'),
                path('uom/list/', views.list_uom_view, name='list-uom'),
+               path('stoke/update/<id>', views.update_stoke_entry_view, name='update-stoke-entry'),
+
 
 ]

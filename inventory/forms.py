@@ -1,6 +1,7 @@
 from django import forms
 from django.forms import inlineformset_factory, modelformset_factory
 from inventory.models import (Category, Brand, Attribute, Uom, Item, Product, StokeTake, StokeEntry, Uom, )
+from mptt.forms import TreeNodeChoiceField
 
 
 class CategoryForm(forms.ModelForm):
@@ -109,12 +110,20 @@ class StokeTakeForm(forms.ModelForm):
         fields = '__all__'
         exclude = ('company', 'created_at', 'last_updated_at', 'created_by', 'last_updated_by')
         widgets = {
-            'date': forms.DateInput(attrs={'class': 'form-control tm', 'type': 'date', })
+            'date': forms.DateInput(attrs={'class': 'form-control tm', 'type': 'date', }),
+            # 'location':forms.HiddenInput(),
+            'type': forms.Select(attrs={'onchange': 'myFunction()'}),
         }
 
     def __init__(self, *args, **kwargs):
+        update = kwargs.pop('update')
         super(StokeTakeForm, self).__init__(*args, **kwargs)
+        self.fields['category'].empty_label = "(Select here)"
+        self.fields['location'].empty_label = "(Select here)"
         for field in self.fields:
+            if update:
+                self.fields[field].disabled = True
+                self.fields[field].widget.attrs['readonly'] = True
             if self.fields[field].widget.input_type == 'checkbox':
                 self.fields[field].widget.attrs['class'] = 'form-check-input'
             else:
@@ -125,7 +134,7 @@ class StokeEntryForm(forms.ModelForm):
     class Meta:
         model = StokeEntry
         fields = '__all__'
-        exclude = ('company', 'approval','created_at', 'last_updated_at', 'created_by', 'last_updated_by')
+        exclude = ('company', 'approval', 'created_at', 'last_updated_at', 'created_by', 'last_updated_by')
 
     def __init__(self, *args, **kwargs):
         super(StokeEntryForm, self).__init__(*args, **kwargs)
@@ -135,5 +144,4 @@ class StokeEntryForm(forms.ModelForm):
             else:
                 self.fields[field].widget.attrs['class'] = 'form-control'
 
-
-stoke_entry_formset = inlineformset_factory(StokeTake, StokeEntry, form=StokeEntryForm, extra=3, can_delete=False)
+# stoke_entry_formset = inlineformset_factory(StokeTake, StokeEntry, form=StokeEntryForm, extra=3, can_delete=False)

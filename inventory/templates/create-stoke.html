@@ -23,41 +23,45 @@
 {% endblock style  %}
 {% block body%}
 <div class="container-fluid">
-  <div class="row">
-    <div class="col-12">
-      <h1>{{title}}</h1>
-      <div class="text-zero top-right-button-container">
-        <a href="{% url 'inventory:list-stokes' %}"><button type="button" class="btn btn-primary btn-lg top-right-button mr-1">BACK TO LIST</button></a>
-      </div>
-      <div class="separator mb-5"></div>
+    <div class="row">
+        <div class="col-12">
+            <h1>{{title}}</h1>
+            <div class="text-zero top-right-button-container">
+                <a href="{% url 'inventory:list-stokes' %}">
+                    <button type="button" class="btn btn-primary btn-lg top-right-button mr-1">BACK TO LIST</button>
+                </a>
+            </div>
+            <div class="separator mb-5"></div>
+        </div>
     </div>
-  </div>
 
   <div class="card mb-4">
     <div class="card-body">
 
-      <form method="POST">
-        {% csrf_token %}
-        <div class="form-row">
-          <div class="form-group col-md-6">
-            <label>Name</label>
-            {{stoke_form.name}}
-          </div>
-          <div class="form-group col-md-6">
-            <label>Type</label>
-            {{stoke_form.type}}
-          </div>
-        </div>
-        <div class="form-row">
-          <div class="form-group col-md-4">
-            <label>Date</label>
-            {{stoke_form.date}}
-          </div>
-          <div class="form-group col-md-4">
-            <label>Location</label>
-            {{stoke_form.location}}
-          </div>
-        </div>
+            <form method="POST">
+                {% csrf_token %}
+                <div class="form-row">
+                    <div class="form-group col-md-6">
+                        <label>Name</label>
+                        {{stoke_form.name}}
+                    </div>
+                    <div class="form-group col-md-6" id="stoke-type">
+                        <label>Type</label>
+                        {{stoke_form.type}}
+                    </div>
+                    <div class="form-group col-md-6">
+                        <label>Date</label>
+                        {{stoke_form.date}}
+                    </div>
+                    <div class="form-group col-md-6" id="location">
+                        {{stoke_form.location.label}}
+                        {{stoke_form.location}}
+                    </div>
+                    <div class="form-group col-md-6" id="category">
+                        {{stoke_form.category.label}}
+                        {{stoke_form.category}}
+                    </div>
+                </div>
 
         <!-- Stoke entry part  -->
         <table class="data-table data-table-scrollable responsive nowrap dataTable no-footer dtr-inline">
@@ -100,5 +104,25 @@
 
 
 </div>
+<script>
+document.getElementById('location').style.display = 'none'
+document.getElementById('category').style.display = 'none'
+function myFunction() {
+  if(document.getElementById('id_type').value === 'location') {
+    document.getElementById('category').style.display = 'none';
+    document.getElementById('location').style.display = 'block';
+    }
+  else if(document.getElementById('id_type').value === 'category') {
+  document.getElementById('location').style.display = 'none';
+  document.getElementById('category').style.display = 'block';
+  }
+  else {
+  document.getElementById('location').style.display = 'none';
+  document.getElementById('category').style.display = 'none';
 
+  }
+    }
+
+
+</script>
 {% endblock %}

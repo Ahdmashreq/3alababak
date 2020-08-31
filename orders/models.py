@@ -10,7 +10,7 @@ class PurchaseOder(models.Model):
     company = models.ForeignKey(Company, on_delete=models.CASCADE)
     supplier = models.ForeignKey(Supplier, on_delete=models.CASCADE, )
     code = models.CharField(max_length=10)
-    total_price = MoneyField(max_digits=14, decimal_places=2, default_currency='EGP')
+    total_price = MoneyField(max_digits=14, decimal_places=2, default_currency='EGP', null=True, blank=True)
     status = models.CharField(max_length=8,
                               choices=[('received', 'Received'), ('returned', 'Returned'), ('shipping', 'Shipping')])
     date = models.DateField(null=True, blank=True)
