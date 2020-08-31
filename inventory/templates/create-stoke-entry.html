@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+       <!-- Stoke entry part  -->
+        <table class="data-table data-table-scrollable responsive nowrap dataTable no-footer dtr-inline">
+          {{ stoke_entry_inlineformset.management_form }}
+          {% for form in stoke_entry_inlineformset %}
+          {{ form.id }}
+          {% if forloop.first %}
+          <thead>
+            <tr>
+              {% for field in form.visible_fields %}
+              <th>{{ field.label|capfirst }}</th>
+              {% endfor %}
+            </tr>
+          </thead>
+          {% endif %}
+          <tr>
+            {% for field in form.visible_fields %}
+            <td>
+              {# exclude the hidden fields in the form #}
+              {% if forloop.first %}
+              {% for hidden in form.hidden_fields %}
+              {{ hidden }}
+              {% endfor %}
+              {% endif %}
+              {{ field.errors.as_ul }}
+              {{ field }}
+            </td>
+            {% endfor %}
+          </tr>
+          {% endfor %}
+        </table>
+</body>
+</html>

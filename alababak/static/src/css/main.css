@@ -14,6 +14,10 @@ body.show-spinner>main {
 body.show-spinner>* {
   opacity: 50;
 }
+.required
+{
+    color: red;
+}
 
 /* Spinner */
 body.show-spinner::after {

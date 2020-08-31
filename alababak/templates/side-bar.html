@@ -14,18 +14,8 @@
         </a>
       </li>
       <li class="color">
-        <a href="#accounts">
-          <i class="simple-icon-people"></i> Accounts
-        </a>
-      </li>
-      <li class="color">
-        <a href="#inventory">
-          <i class="iconsminds-box-close"></i> Inventory
-        </a>
-      </li>
-      <li class="color">
-        <a href="#locations">
-          <i class="iconsminds-location-2"></i> Locations
+        <a href="#orders">
+          <i class="iconsminds-shopping-cart"></i> Orders
         </a>
       </li>
       <li class="color">
@@ -34,8 +24,18 @@
         </a>
       </li>
       <li class="color">
-        <a href="#orders">
-          <i class="iconsminds-shopping-cart"></i> Orders
+        <a href="#inventory">
+          <i class="iconsminds-box-close"></i> Inventory
+        </a>
+      </li>
+       <li class="color">
+        <a href="#locations">
+          <i class="iconsminds-location-2"></i> Locations
+        </a>
+      </li>
+      <li class="color">
+        <a href="#accounts">
+          <i class="simple-icon-people"></i> Accounts
         </a>
       </li>
       <li class="color">
@@ -109,10 +109,23 @@
         </div>
       </li>
       <li class="color">
-        <a href="{% url 'inventory:list-stokes'%}">
-          <i class="simple-icon-screen-desktop"></i>
-          <span class="d-inline-block">Stocktaking</span>
+         <a href="#" data-toggle="collapse" data-target="#collapseForms" aria-expanded="true" aria-controls="collapseForms" class="rotate-arrow-icon opacity-50">
+          <i class="simple-icon-arrow-down"></i> <span class="d-inline-block">Stocktaking</span>
         </a>
+        <div id="collapseForms" class="collapse show">
+          <ul class="list-unstyled inner-level-menu">
+            <li class="color">
+              <a href="{% url 'inventory:list-stokes'%}">
+                <i class="simple-icon-event"></i> <span class="d-inline-block">Stoke</span>
+              </a>
+            </li>
+            <li class="color">
+              <a href="#">
+                <i class="simple-icon-event"></i> <span class="d-inline-block">Stoke Entry</span>
+              </a>
+            </li>
+          </ul>
+        </div>
       </li>
       <li class="color">
         <a href="{% url 'account:list-customers'%}">

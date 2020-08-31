@@ -22,7 +22,11 @@ def create_customer_address_account(request):
                     address.save()
 
                 messages.success(request, 'Saved Successfully')
-                return redirect('account:list-customers')
+                print("***************")
+                if 'Save and exit' in request.POST:
+                    return redirect('account:list-customers')
+                elif 'Save and add' in request.POST:
+                    return redirect('account:create-customer')
             else:
                 print(address_inlineformset.errors)
         else:
@@ -34,7 +38,8 @@ def create_customer_address_account(request):
     customer_information_context = {
         'account_form': customer_form,
         'address_inlineformset': address_inlineformset,
-        'title':'New Customer'
+        'title': 'New Customer',
+        'account_type':'Customer'
     }
     return render(request, 'create-supplier.html', context=customer_information_context)
 
@@ -56,7 +61,10 @@ def create_supplier_address_account(request):
                     address.save()
 
                 messages.success(request, 'Saved Successfully')
-                return redirect('account:list-suppliers')
+                if 'Save and exit' in request.POST:
+                    return redirect('account:list-suppliers')
+                elif 'Save and add' in request.POST:
+                    return redirect('account:create-supplier')
             else:
                 print(address_inlineformset.errors)
         else:
@@ -68,7 +76,7 @@ def create_supplier_address_account(request):
     supplier_information_context = {
         'account_form': supplier_form,
         'address_inlineformset': address_inlineformset,
-        'title':'New Supplier'
+        'title': 'New Supplier'
 
     }
 
@@ -160,7 +168,7 @@ def update_supplier_view(request, id):
             supplier_obj.save()
             address_inlineformset = supplier_address_formset(request.POST, instance=supplier_obj)
             if address_inlineformset.is_valid():
-                address_obj = address_inlineformset.save(commit = False)
+                address_obj = address_inlineformset.save(commit=False)
                 for address in address_obj:
                     address.last_updated_by = request.user
                     address.save()

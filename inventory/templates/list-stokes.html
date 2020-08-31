@@ -24,7 +24,7 @@
               <div class="col-sm-12">
               </div>
             </div>
-            <table class="data-table data-table-feature6 dataTable no-footer" id="DataTables_Table_0" role="grid" aria-describedby="DataTables_Table_0_info">
+            <table class="data-table data-table-feature7 dataTable no-footer" id="DataTables_Table_0" role="grid" aria-describedby="DataTables_Table_0_info">
               <thead>
                 <tr role="row">
                   <th class="sorting_asc" tabindex="0" aria-controls="DataTables_Table_0" rowspan="1" colspan="1" aria-sort="ascending">Stoke ID</th>
@@ -32,6 +32,7 @@
                   <th class="sorting" tabindex="0" aria-controls="DataTables_Table_0" rowspan="1" colspan="1">{% trans "Type" %}</th>
                   <th class="sorting" tabindex="0" aria-controls="DataTables_Table_0" rowspan="1" colspan="1">{% trans "Date" %}</th>
                   <th class="sorting" tabindex="0" aria-controls="DataTables_Table_0" rowspan="1" colspan="1">{% trans "Location" %}</th>
+                  <th class="sorting" tabindex="0" aria-controls="DataTables_Table_0" rowspan="1" colspan="1">{% trans "Category" %}</th>
                   <th class="sorting" tabindex="0" aria-controls="DataTables_Table_0" rowspan="1" colspan="1">{% trans "Actions" %}</th>
                 </tr>
               </thead>
@@ -43,13 +44,14 @@
                   <td>{{ stoke.type }}</td>
                   <td>{{ stoke.date }}</td>
                   <td>{{ stoke.location }}</td>
+                  <td>{{ stoke.category }}</td>
                   <td>
                     <div class="dropdown d-inline-block">
                       <a class="btn btn-outline-primary dropdown-toggle mb-1" href="#" role="button" id="dropdownMenuLink" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                         Actions
                       </a>
                       <div class="dropdown-menu" aria-labelledby="dropdownMenuLink" x-placement="top-start" style="position: absolute; will-change: transform; top: 0px; left: 0px; transform: translate3d(0px, -2px, 0px);">
-                        <a class="dropdown-item" href="#">{% trans "Update" %}</a>
+                        <a class="dropdown-item" href="{% url 'inventory:update-stoke-entry' id=stoke.id %}">{% trans "Update" %}</a>
                         <a class="dropdown-item" href="#" data-toggle="modal" data-target="#delete-modal{{stoke.pk}}">{% trans "Delete" %}</a>
                       </div>
                     </div>
