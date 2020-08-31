@@ -21,7 +21,10 @@ def create_location_view(request):
             location_obj.company = request.user.company
             location_obj.save()
             messages.success(request, 'Saved Successfully')
-            return redirect('location:list-locations')
+            if 'Save and exit' in request.POST:
+                return redirect('location:list-locations')
+            elif 'Save and add' in request.POST:
+                return redirect('location:create-locations')
     else:
         location_form = LocationCreationForm()
     location_context = {

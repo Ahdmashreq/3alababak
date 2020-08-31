@@ -3,22 +3,25 @@ from django.contrib import messages
 from inventory.models import (Category, Brand, Product, Attribute, Item, Uom, StokeTake)
 from inventory.forms import (CategoryForm, category_model_formset, BrandForm, brand_model_formset,
                              AttributeForm, attribute_model_formset, ProductForm, product_item_inlineformset,
-                             stoke_entry_formset, uom_formset, StokeTakeForm)
+                             stoke_entry_formset, uom_formset, StokeTakeForm,UOMForm)
 
 
 def create_category_view(request):
-    category_formset = category_model_formset(queryset=Category.objects.none())
+    category_form = CategoryForm()
     if request.method == 'POST':
-        category_formset = category_model_formset(request.POST)
-        if category_formset.is_valid():
-            category_obj = category_formset.save(commit=False)
-            for form in category_obj:
-                form.company = request.user.company
-                form.created_by = request.user
-                form.save()
-            return redirect('inventory:list-categories')
+        category_form = CategoryForm(request.POST)
+        if category_form.is_valid():
+            category_obj = category_form.save(commit=False)
+            category_obj.company = request.user.company
+            category_obj.created_by = request.user
+            category_obj.save()
+            if 'Save and exit' in request.POST:
+                return redirect('inventory:list-categories')
+            elif 'Save and add' in request.POST:
+                return redirect('inventory:create-category')
+
     categoryContext = {
-        'category_formset': category_formset,
+        'category_form': category_form,
         'title': 'New Category'
 
     }
@@ -42,18 +45,22 @@ def list_brands_view(request):
 
 
 def create_brand_view(request):
-    brand_formset = brand_model_formset(queryset=Brand.objects.none())
+    brand_form = BrandForm()
     if request.method == 'POST':
-        brand_formset = brand_model_formset(request.POST)
-        if brand_formset.is_valid():
-            brand_obj = brand_formset.save(commit=False)
-            for form in brand_obj:
-                form.company = request.user.company
-                form.created_by = request.user
-                form.save()
-            return redirect('inventory:list-brands')
+        brand_form = BrandForm(request.POST)
+        if brand_form.is_valid():
+            brand_obj = brand_form.save(commit=False)
+            brand_obj.company = request.user.company
+            brand_obj.created_by = request.user
+            brand_obj.save()
+            if 'Save and exit' in request.POST:
+                return redirect('inventory:list-brands')
+            elif 'Save and add' in request.POST:
+                return redirect('inventory:create-brand')
+
+
     categoryContext = {
-        'brand_formset': brand_formset,
+        'brand_form': brand_form,
         'title': 'New Brand'
 
     }
@@ -69,18 +76,21 @@ def list_attributes_view(request):
 
 
 def create_attribute_view(request):
-    attribute_formset = attribute_model_formset(queryset=Attribute.objects.none())
+    attribute_form = AttributeForm()
     if request.method == 'POST':
-        attribute_formset = attribute_model_formset(request.POST)
-        if attribute_formset.is_valid():
-            attribute_obj = attribute_formset.save(commit=False)
-            for form in attribute_obj:
-                form.company = request.user.company
-                form.created_by = request.user
-                form.save()
-            return redirect('inventory:list-attributes')
+        attribute_form = AttributeForm(request.POST)
+        if attribute_form.is_valid():
+            attribute_obj = attribute_form.save(commit=False)
+            attribute_obj.company = request.user.company
+            attribute_obj.created_by = request.user
+            attribute_obj.save()
+            if 'Save and exit' in request.POST:
+                return redirect('inventory:list-attributes')
+            elif 'Save and add' in request.POST:
+                return redirect('inventory:create-attribute')
+
     attributeContext = {
-        'attribute_formset': attribute_formset,
+        'attribute_form': attribute_form,
         'title': 'New Attribute'
 
     }
@@ -112,7 +122,10 @@ def create_product_item_view(request):
                 for form in item_obj:
                     form.created_by = request.user
                     form.save()
-            return redirect('inventory:list-products')
+                if 'Save and exit' in request.POST:
+                    return redirect('inventory:list-products')
+                elif 'Save and add' in request.POST:
+                    return redirect('inventory:create-product')
     attributeContext = {
         'product_form': product_form,
         'item_formset': item_formset,
@@ -138,7 +151,10 @@ def create_stoketake_view(request):
                 for stoke_entry in stoke_entry_obj:
                     stoke_entry.created_by = request.user
                     stoke_entry.save()
-                return redirect('inventory:list-stokes')
+                if 'Save and exit' in request.POST:
+                    return redirect('inventory:list-stokes')
+                elif 'Save and add' in request.POST:
+                    return redirect('inventory:create-stoke')
             else:
                 print(stoke_entry_inlineformset.errors)
         else:
@@ -161,16 +177,18 @@ def list_stoketake_view(request):
 
 
 def create_uom_view(request):
-    uom_from = uom_formset(queryset=Uom.objects.none())
+    uom_from = UOMForm()
     if request.method == 'POST':
-        uom_from = uom_formset(request.POST)
+        uom_from = UOMForm(request.POST)
         if uom_from.is_valid():
             uom_obj = uom_from.save(commit=False)
-            for uom in uom_obj:
-                uom.created_by = request.user
-                uom.company = request.user.company
-                uom.save()
-            return redirect("inventory:list-uom")
+            uom_obj.created_by = request.user
+            uom_obj.company = request.user.company
+            uom_obj.save()
+            if 'Save and exit' in request.POST:
+                return redirect('inventory:list-uom')
+            elif 'Save and add' in request.POST:
+                return redirect('inventory:create-uom')
         else:
             print(uom_from.errors)
     uom_context = {

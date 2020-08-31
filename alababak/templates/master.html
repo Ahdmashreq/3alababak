@@ -26,12 +26,13 @@
   <link rel="stylesheet" href="{% static "src/css/vendor/nouislider.min.css" %}" />
   <link rel="stylesheet" href="{% static "src/css/vendor/bootstrap-datepicker3.min.css" %}" />
   <link rel="stylesheet" href="{% static "src/css/vendor/component-custom-switch.min.css" %}" />
-  <link rel="stylesheet" href="{% static "src/css/main.css" %}" />
+  <link rel="stylesheet" href="{% static 'src/css/main.css' %}" />
   <link rel="stylesheet" href="{% static "src/css/dore.light.redruby.min.css" %}" />
 
 
 </head>
-
+{% block style %}
+{% endblock style  %}
 <body id="app-container" class="menu-default show-spinner">
 
   <nav class="navbar fixed-top">
@@ -99,5 +100,7 @@
   </script>
   {% block js %}{% endblock js %}
 </body>
+{% block jss %}
+{% endblock jss %}
 
 </html>

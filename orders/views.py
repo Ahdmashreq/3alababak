@@ -24,7 +24,10 @@ def create_purchase_order_view(request):
                     po_transaction.created_by = request.user
                     po_transaction.save()
                 messages.success(request, 'Saved Successfully')
-                return redirect('orders:list-po')
+                if 'Save and exit' in request.POST:
+                    return redirect('orders:list-po')
+                elif 'Save and add' in request.POST:
+                    return redirect('orders:create-po')
             else:
                 print(po_transaction_inlineformset.errors)
         else:
@@ -105,7 +108,10 @@ def create_sales_order_view(request):
                     so_transaction.created_by = request.user
                     so_transaction.save()
                 messages.success(request, 'Saved Successfully')
-                return redirect('orders:list-so')
+                if 'Save and exit' in request.POST:
+                    return redirect('orders:list-so')
+                elif 'Save and add' in request.POST:
+                    return redirect('orders:create-so')
             else:
                 print(so_transaction_inlineformset.errors)
         else:

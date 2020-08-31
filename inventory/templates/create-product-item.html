@@ -2,7 +2,25 @@
 {% load static %}
 {% load l10n %}
 {% load i18n %}
+{% block style %}
+<style>
 
+  .required
+  {
+      color: red;
+  }
+.submit-row {
+    display: display;
+    padding: 12px 14px;
+    margin: 0 0 20px;
+    background: #f8f8f8;
+    border: 1px solid #eee;
+    border-radius: 4px;
+    text-align: right;
+    overflow: hidden;
+}
+</style>
+{% endblock style  %}
 {% block body%}
 <div class="container-fluid">
   <div class="row">
@@ -75,7 +93,11 @@
           <br>
           {% endfor %}
         </table>
-        <button type="submit" class="btn btn-primary d-block mt-3">Save</button>
+         <div class="submit-row">
+          <button type="submit" class="btn btn-primary btn-lg mt-3" name ='Save'>Save</button>
+          <button type="submit" class="btn btn-primary btn-lg mt-3" name ='Save and exit'>Save and Exit</button>
+          <button type="submit" class="btn btn-primary btn-lg mt-3" name ='Save and add'>Save and Add</button>
+        </div>
       </form>
     </div>
   </div>
