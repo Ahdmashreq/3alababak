@@ -48,6 +48,10 @@
                     </div>
                     {% endif %}
                 </div>
+                <div class="mb-2">
+                    <div class="separator mb-5"></div>
+                </div>
+
                 <!-- Stoke entry part  -->
                 <table class="table table-bordered" id="DataTables_Table_0" role="grid" aria-describedby="DataTables_Table_0_info">
 
@@ -62,10 +66,9 @@
                       <th class="sorting" tabindex="0" aria-controls="DataTables_Table_0" rowspan="1" colspan="1">{% trans "Category" %}</th>
                       <th class="sorting" tabindex="0" aria-controls="DataTables_Table_0" rowspan="1" colspan="1">{% trans "Product" %}</th>
                       <th class="sorting" tabindex="0" aria-controls="DataTables_Table_0" rowspan="1" colspan="1">{% trans "Item" %}</th>
-                      {% if approval_mode %}
                       <th class="sorting" tabindex="0" aria-controls="DataTables_Table_0" rowspan="1" colspan="1">{% trans "On Hand" %}</th>
-                       {% endif %}
                       <th class="sorting" tabindex="0" aria-controls="DataTables_Table_0" rowspan="1" colspan="1">{% trans "Stoked Quantity" %}</th>
+                      <th class="sorting" tabindex="0" aria-controls="DataTables_Table_0" rowspan="1" colspan="1">{% trans "Approval" %}</th>
 
                     </tr>
                   </thead>
@@ -77,10 +80,9 @@
                           <td>{{ form.instance.item.product.category }}</td>
                           <td>{{ form.instance.item.product }}</td>
                           <td>{{ form.item }}</td>
-                          {% if approval_mode %}
-                          <td>{{form.item.quantity}}</td>
-                          {% endif %}
+                          <td>{{form.instance.item.quantity}}</td>
                           <td>{{ form.quantity }}</td>
+                          <td>{{ form.approval }}</td>
                       </tr>
                       {% endfor %}
                   </table>

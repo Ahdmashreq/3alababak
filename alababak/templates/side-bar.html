@@ -120,8 +120,13 @@
               </a>
             </li>
             <li class="color">
-              <a href="#">
+              <a href="{% url 'inventory:list-stokes-for-entry' %}">
                 <i class="simple-icon-event"></i> <span class="d-inline-block">Stoke Entry</span>
+              </a>
+            </li>
+            <li class="color">
+              <a href="{% url 'inventory:list-stokes-for-approval' %}">
+                <i class="simple-icon-event"></i> <span class="d-inline-block">Stoke Approval</span>
               </a>
             </li>
           </ul>

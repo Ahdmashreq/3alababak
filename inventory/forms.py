@@ -108,7 +108,7 @@ class StokeTakeForm(forms.ModelForm):
     class Meta:
         model = StokeTake
         fields = '__all__'
-        exclude = ('company', 'created_at', 'last_updated_at', 'created_by', 'last_updated_by')
+        exclude = ('status', 'company', 'created_at', 'last_updated_at', 'created_by', 'last_updated_by')
         widgets = {
             'date': forms.DateInput(attrs={'class': 'form-control tm', 'type': 'date', }),
             # 'location':forms.HiddenInput(),
@@ -120,28 +120,49 @@ class StokeTakeForm(forms.ModelForm):
         super(StokeTakeForm, self).__init__(*args, **kwargs)
         self.fields['category'].empty_label = "(Select here)"
         self.fields['location'].empty_label = "(Select here)"
+
         for field in self.fields:
             if update:
                 self.fields[field].disabled = True
                 self.fields[field].widget.attrs['readonly'] = True
+
             if self.fields[field].widget.input_type == 'checkbox':
                 self.fields[field].widget.attrs['class'] = 'form-check-input'
             else:
                 self.fields[field].widget.attrs['class'] = 'form-control'
+
+    def clean(self):
+        cleaned_data = super(StokeTakeForm, self).clean()
+        if cleaned_data['type'] == 'location':
+            if cleaned_data['location'] is None:
+                self.add_error('location', 'Location is required')
+
+        elif cleaned_data['type'] == 'category':
+            if cleaned_data['category'] is None:
+                self.add_error('category', 'category is required')
+
+        return cleaned_data
 
 
 class StokeEntryForm(forms.ModelForm):
     class Meta:
         model = StokeEntry
         fields = '__all__'
-        exclude = ('company', 'approval', 'created_at', 'last_updated_at', 'created_by', 'last_updated_by')
+        exclude = ('company','created_at', 'last_updated_at', 'created_by', 'last_updated_by')
 
     def __init__(self, *args, **kwargs):
+        approve = kwargs.pop('approve')
         super(StokeEntryForm, self).__init__(*args, **kwargs)
+        self.fields['item'].disabled = True
+        if approve:
+             self.fields['quantity'].disabled = True
+        else:
+            approval = forms.HiddenInput()
         for field in self.fields:
             if self.fields[field].widget.input_type == 'checkbox':
                 self.fields[field].widget.attrs['class'] = 'form-check-input'
             else:
                 self.fields[field].widget.attrs['class'] = 'form-control'
 
-# stoke_entry_formset = inlineformset_factory(StokeTake, StokeEntry, form=StokeEntryForm, extra=3, can_delete=False)
+
+stoke_entry_formset = inlineformset_factory(StokeTake, StokeEntry, form=StokeEntryForm, extra=0, can_delete=False)

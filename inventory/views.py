@@ -4,7 +4,7 @@ from django.contrib import messages
 from inventory.models import (Category, Brand, Product, Attribute, Item, Uom, StokeTake, StokeEntry)
 from inventory.forms import (CategoryForm, category_model_formset, BrandForm, brand_model_formset,
                              AttributeForm, attribute_model_formset, ProductForm, product_item_inlineformset,
-                              uom_formset, StokeTakeForm,UOMForm)
+                             uom_formset, StokeTakeForm, UOMForm, stoke_entry_formset, StokeEntryForm)
 
 
 def create_category_view(request):
@@ -58,7 +58,6 @@ def create_brand_view(request):
                 return redirect('inventory:list-brands')
             elif 'Save and add' in request.POST:
                 return redirect('inventory:create-brand')
-
 
     categoryContext = {
         'brand_form': brand_form,
@@ -226,8 +225,7 @@ def create_stoketake_view(request):
     stoke_context = {}
     items = []
     if request.method == 'POST':
-
-        stoke_form = StokeTakeForm(request.POST,update=False)
+        stoke_form = StokeTakeForm(request.POST, update=False)
         if stoke_form.is_valid():
             stoke_obj = stoke_form.save(commit=False)
             stoke_obj.created_by = request.user
@@ -245,8 +243,8 @@ def create_stoketake_view(request):
             elif type == 'category':
                 category = stoke_obj.category
                 descendants = Category.objects.get(name=category).get_descendants(include_self=True)
-                items = Product.objects.filter(Q(category__parent__in=descendants) | Q(category__in=descendants))
-                # items = Product.objects.filter(category=category)
+                products = Product.objects.filter(Q(category__parent__in=descendants) | Q(category__in=descendants))
+                items = Item.objects.filter(product__in=products)
                 stoke_context['category'] = category
             elif type == 'all':
                 items = Item.objects.all()
@@ -255,14 +253,17 @@ def create_stoketake_view(request):
 
             stoke_obj.save()
             entry_list = []
-
-            print("****************8")
-            print(StokeEntry.objects.all())
+            for item in items:
+                entry_list.append(StokeEntry(stoke_take=stoke_obj, item=item, created_by=request.user))
+            StokeEntry.objects.bulk_create(entry_list)
             stoke_context['items'] = items
+            messages.success(request, 'Stoke Take created successfully')
             return render(request, 'stoke-entry-template.html', context=stoke_context)
 
         else:
-            print(stoke_form.errors)
+            messages.error(request, 'Form is not Valid')
+            print(stoke_from.errors)
+
     stoke_context = {
         'stoke_form': stoke_from,
         'title': 'New Stoke Take'
@@ -271,9 +272,154 @@ def create_stoketake_view(request):
     return render(request, 'create-stoke.html', context=stoke_context)
 
 
+def update_stoke_take_view(request, id):
+    stoke_inst = StokeTake.objects.get(id=id)
+    stoke_form = StokeTakeForm(update=False, instance=stoke_inst)
+
+    if request.method == 'POST':
+        stoke_form = StokeTakeForm(request.POST, update=False, instance=stoke_inst)
+        if stoke_form.is_valid():
+            stoke_obj = stoke_form.save(commit=False)
+            stoke_obj.updated_by = request.user
+            if stoke_obj.type == 'location':
+                stoke_obj.category = None
+                items = Item.objects.filter(location=stoke_obj.location)
+            elif stoke_obj.type == 'category':
+                stoke_obj.location = None
+                category = stoke_obj.category
+                descendants = Category.objects.get(name=category).get_descendants(include_self=True)
+                products = Product.objects.filter(Q(category__parent__in=descendants) | Q(category__in=descendants))
+                items = Item.objects.filter(product__in=products)
+            elif stoke_obj.type == 'all':
+                stoke_obj.location = None
+                stoke_obj.category = None
+                items = Item.objects.all()
+
+            stoke_obj.save()
+            stoke_entry_instances = StokeEntry.objects.filter(stoke_take=stoke_obj)
+            stoke_entry_instances.delete()
+            entry_list = []
+            for item in items:
+                entry_list.append(StokeEntry(stoke_take=stoke_obj, item=item, created_by=request.user))
+            StokeEntry.objects.bulk_create(entry_list)
+            messages.success(request, 'Updated Successfully')
+            return redirect('inventory:list-stokes')
+        else:
+            messages.error(request, 'Form is not valid')
+
+    context = {'stoke_form': stoke_form, 'title': 'Update Stoke'}
+    return render(request, 'create-stoke.html', context=context)
+
+
+def list_stoketake_entries(request):
+    stoke_list = StokeTake.objects.all()
+    context = {"entry_mode": True, 'stoke_list': stoke_list}
+
+    return render(request, 'list-stokes.html', context=context)
+
+
 def update_stoke_entry_view(request, id):
     stoke_obj = StokeTake.objects.get(id=id)
-    stoke_take_form = StokeTakeForm(update=True,instance=stoke_obj)
-    stoke_entries = StokeEntry.objects.filter(stoke_take=stoke_obj)
-    sub_context = {'title':"Update Stoke Entry",'stoke_entries': stoke_entries, 'stoke_form': stoke_take_form}
-    return render(request,'update-stoke.html',context=sub_context)
+    stoke_take_form = StokeTakeForm(update=True, instance=stoke_obj)
+    stoke_entry_inline_formset = stoke_entry_formset(instance=stoke_obj, form_kwargs={'approve': False})
+
+    if request.method == 'POST':
+        stoke_entry_inline_formset = stoke_entry_formset(request.POST, instance=stoke_obj,
+                                                         form_kwargs={'approve': False})
+        if stoke_entry_inline_formset.is_valid():
+            stoke_entry_obj = stoke_entry_inline_formset.save(commit=False)
+            for stoke_entry in stoke_entry_obj:
+                stoke_entry.last_updated_by = request.user
+                stoke_entry.save()
+
+            print("{{{{{{{{{{{{{{{{{")
+            print(len(StokeEntry.objects.filter(stoke_take=stoke_obj, quantity=None)))
+            if len(StokeEntry.objects.filter(stoke_take=stoke_obj, quantity=None)) == 0:
+                print("::::::::::::;;")
+                stoke_obj.status = 'Pending Approval'
+                stoke_obj.save()
+            elif len(StokeEntry.objects.filter(stoke_take=stoke_obj).exclude(quantity=None)) > 0:
+                print("OOOOOOOOOOOOOOOOo")
+                stoke_obj.status = 'In Progress'
+                stoke_obj.save()
+            else:
+                print("???????????????//")
+                stoke_obj.status = 'Drafted'
+                stoke_obj.save()
+            return redirect("inventory:list-stokes-for-entry")
+
+    sub_context = {'title': "Create Entries", 'stoke_entry_inlineformset': stoke_entry_inline_formset,
+                   'stoke_form': stoke_take_form}
+    return render(request, 'update-stoke.html', context=sub_context)
+
+
+def delete_stoke_take(request, id):
+    stoke_take = StokeTake.objects.get(pk=id)
+    print(stoke_take.status)
+    if stoke_take.status == 'In Progress' or stoke_take.status == 'Done':
+        messages.error(request, "Stoke taking cannot be deleted while in progress")
+    else:
+        deleted = stoke_take.delete()
+        if deleted:
+            messages.success(request, "Deleted Successfully")
+        else:
+            messages.error(request, "Error Not deleted")
+    return redirect('inventory:list-stokes')
+
+
+def print_stoke(request, id):
+    stoke_obj = StokeTake.objects.get(id=id)
+    stoke_context = {}
+    name = stoke_obj.name
+    date = stoke_obj.date
+    type = stoke_obj.type
+    stoke_context['name'] = name
+    stoke_context['date'] = date
+    stoke_context['type'] = type
+    if type == 'location':
+        location = stoke_obj.location
+        items = Item.objects.filter(location=location)
+        stoke_context['location'] = location
+    elif type == 'category':
+        category = stoke_obj.category
+        descendants = Category.objects.get(name=category).get_descendants(include_self=True)
+        products = Product.objects.filter(Q(category__parent__in=descendants) | Q(category__in=descendants))
+        items = Item.objects.filter(product__in=products)
+        stoke_context['category'] = category
+    elif type == 'all':
+        items = Item.objects.all()
+    elif type == 'random':
+        pass
+    stoke_context['items'] = items
+    return render(request, 'stoke-entry-template.html', context=stoke_context)
+
+
+def list_stoketake_approvals(request):
+    stoke_list = StokeTake.objects.filter(Q(status='Pending Approval') | Q(status='Approved'))
+    context = {"entry_mode": True, 'stoke_list': stoke_list}
+    return render(request, 'list-stoke-approvals.html', context=context)
+
+
+def approve_stoke_view(request, id):
+    stoke_obj = StokeTake.objects.get(id=id)
+    stoke_take_form = StokeTakeForm(update=True, instance=stoke_obj)
+    stoke_entry_inline_formset = stoke_entry_formset(instance=stoke_obj, form_kwargs={'approve': True})
+
+    if request.method == 'POST':
+        stoke_entry_inline_formset = stoke_entry_formset(request.POST, instance=stoke_obj,
+                                                         form_kwargs={'approve': True})
+        if stoke_entry_inline_formset.is_valid():
+            stoke_entry_obj = stoke_entry_inline_formset.save(commit=False)
+            for stoke_entry in stoke_entry_obj:
+                stoke_entry.last_updated_by = request.user
+                stoke_entry.save()
+            if len(StokeEntry.objects.filter(stoke_take=stoke_obj, approval=False)) == 0:
+                print("::::::::::::;;")
+                stoke_obj.status = 'Approved'
+                stoke_obj.save()
+
+            return redirect("inventory:list-stokes-for-approval")
+
+    sub_context = {'title': "Approve Stoke", 'stoke_entry_inlineformset': stoke_entry_inline_formset,
+                   'stoke_form': stoke_take_form}
+    return render(request, 'approve-stoke.html', context=sub_context)

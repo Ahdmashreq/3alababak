@@ -1,0 +1,55 @@
+{% extends 'master.html' %}
+{% load static %}
+{% load l10n %}
+{% load i18n %}
+
+{% block body%}
+{% include 'messages.html' %}
+
+<div class="container-fluid">
+  <div class="row">
+    <div class="col-12">
+      <h1>Stoke Takes Approvals</h1>
+      <div class="separator mb-5"></div>
+    </div>
+  </div>
+
+  <div class="row mb-4">
+    <div class="col-12 mb-4">
+      <div class="card">
+        <div class="card-body">
+          <div id="DataTables_Table_0_wrapper" class="dataTables_wrapper container-fluid dt-bootstrap4 no-footer">
+            <div class="row view-filter">
+              <div class="col-sm-12">
+              </div>
+            </div>
+            <table class="data-table data-table-feature dataTable no-footer" id="DataTables_Table_0" role="grid" aria-describedby="DataTables_Table_0_info">
+              <thead>
+                <tr role="row">
+                  <th class="sorting_asc" tabindex="0" aria-controls="DataTables_Table_0" rowspan="1" colspan="1" aria-sort="ascending">Stoke ID</th>
+                  <th class="sorting" tabindex="0" aria-controls="DataTables_Table_0" rowspan="1" colspan="1">{% trans "Stoke Name" %}</th>
+                  <th class="sorting" tabindex="0" aria-controls="DataTables_Table_0" rowspan="1" colspan="1">{% trans "Date" %}</th>
+                  <th class="sorting" tabindex="0" aria-controls="DataTables_Table_0" rowspan="1" colspan="1">{% trans "Status" %}</th>
+
+                </tr>
+              </thead>
+              <tbody>
+                {% for stoke in stoke_list %}
+                <tr role="row">
+                  <td class="sorting_1">{{ forloop.counter }}</td>
+                  <td><a href="{% url 'inventory:approve-stoke' id=stoke.id %}">{{ stoke.name }}</a></td>
+                  <td>{{ stoke.date }}</td>
+                  <td>{{ stoke.status }}</td>
+
+                </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+{% endblock body%}
