@@ -171,6 +171,7 @@ def create_product_item_view(request):
 def list_stoketake_view(request):
     stoke_list = StokeTake.objects.all()
     stokes_context = {
+        "title": "Stoke Takes",
         'stoke_list': stoke_list
     }
     return render(request, 'list-stokes.html', context=stokes_context)
@@ -258,7 +259,11 @@ def create_stoketake_view(request):
             StokeEntry.objects.bulk_create(entry_list)
             stoke_context['items'] = items
             messages.success(request, 'Stoke Take created successfully')
-            return render(request, 'stoke-entry-template.html', context=stoke_context)
+            if 'Save and exit' in request.POST:
+                return redirect('inventory:list-stokes')
+            elif 'Save and print' in request.POST:
+                return render(request, 'stoke-entry-template.html', context=stoke_context)
+            # return redirect('inventory:create-stoke')
 
         else:
             messages.error(request, 'Form is not Valid')
@@ -303,7 +308,10 @@ def update_stoke_take_view(request, id):
                 entry_list.append(StokeEntry(stoke_take=stoke_obj, item=item, created_by=request.user))
             StokeEntry.objects.bulk_create(entry_list)
             messages.success(request, 'Updated Successfully')
-            return redirect('inventory:list-stokes')
+            if 'Save and exit' in request.POST:
+                return redirect('inventory:list-stokes')
+            elif 'Save and print' in request.POST:
+                return redirect('inventory:print-stoke', id=id)
         else:
             messages.error(request, 'Form is not valid')
 
@@ -312,8 +320,8 @@ def update_stoke_take_view(request, id):
 
 
 def list_stoketake_entries(request):
-    stoke_list = StokeTake.objects.all()
-    context = {"entry_mode": True, 'stoke_list': stoke_list}
+    stoke_list = StokeTake.objects.exclude(status='Approved')
+    context = {"title":"Stoke Take Entries","entry_mode": True, 'stoke_list': stoke_list}
 
     return render(request, 'list-stokes.html', context=context)
 
@@ -332,24 +340,21 @@ def update_stoke_entry_view(request, id):
                 stoke_entry.last_updated_by = request.user
                 stoke_entry.save()
 
-            print("{{{{{{{{{{{{{{{{{")
-            print(len(StokeEntry.objects.filter(stoke_take=stoke_obj, quantity=None)))
             if len(StokeEntry.objects.filter(stoke_take=stoke_obj, quantity=None)) == 0:
-                print("::::::::::::;;")
                 stoke_obj.status = 'Pending Approval'
                 stoke_obj.save()
             elif len(StokeEntry.objects.filter(stoke_take=stoke_obj).exclude(quantity=None)) > 0:
-                print("OOOOOOOOOOOOOOOOo")
                 stoke_obj.status = 'In Progress'
                 stoke_obj.save()
             else:
-                print("???????????????//")
                 stoke_obj.status = 'Drafted'
                 stoke_obj.save()
-            return redirect("inventory:list-stokes-for-entry")
+            if 'Save and exit' in request.POST:
+                return redirect('inventory:list-stokes-for-entry')
 
     sub_context = {'title': "Create Entries", 'stoke_entry_inlineformset': stoke_entry_inline_formset,
                    'stoke_form': stoke_take_form}
+
     return render(request, 'update-stoke.html', context=sub_context)
 
 
@@ -367,7 +372,7 @@ def delete_stoke_take(request, id):
     return redirect('inventory:list-stokes')
 
 
-def print_stoke(request, id):
+def view_stoke(request, id):
     stoke_obj = StokeTake.objects.get(id=id)
     stoke_context = {}
     name = stoke_obj.name
@@ -414,11 +419,13 @@ def approve_stoke_view(request, id):
                 stoke_entry.last_updated_by = request.user
                 stoke_entry.save()
             if len(StokeEntry.objects.filter(stoke_take=stoke_obj, approval=False)) == 0:
-                print("::::::::::::;;")
                 stoke_obj.status = 'Approved'
                 stoke_obj.save()
-
-            return redirect("inventory:list-stokes-for-approval")
+            elif len(StokeEntry.objects.filter(stoke_take=stoke_obj, approval=False)) > 0:
+                stoke_obj.status = 'Pending Approval'
+                stoke_obj.save()
+            if 'Save and exit' in request.POST:
+                return redirect('inventory:list-stokes-for-approval')
 
     sub_context = {'title': "Approve Stoke", 'stoke_entry_inlineformset': stoke_entry_inline_formset,
                    'stoke_form': stoke_take_form}

@@ -9,7 +9,7 @@
         <div class="col-12">
             <h1>{{title}}</h1>
             <div class="text-zero top-right-button-container">
-                <a href="{% url 'inventory:list-stokes-for-entry' %}">
+                <a href="{% url 'inventory:list-stokes-for-approval' %}">
                     <button type="button" class="btn btn-primary btn-lg top-right-button mr-1">BACK TO LIST</button>
                 </a>
             </div>
@@ -37,13 +37,13 @@
                     </div>
                     {% if stoke_form.location.value %}
                     <div class="form-group col-md-6" id="location">
-                        {{stoke_form.location.label}}
+                        <label>{{stoke_form.location.label}}</label>
                         {{stoke_form.location}}
                     </div>
                     {% endif %}
                     {% if stoke_form.category.value %}
                     <div class="form-group col-md-6" id="category">
-                        {{stoke_form.category.label}}
+                        <label>{{stoke_form.category.label}}</label>
                         {{stoke_form.category}}
                     </div>
                     {% endif %}
@@ -86,8 +86,11 @@
                       </tr>
                       {% endfor %}
                   </table>
+                 <div class="submit-row">
+                    <button type="submit" class="btn btn-primary btn-lg mt-3" name ='Save'>Save</button>
+                    <button type="submit" class="btn btn-primary btn-lg mt-3" name ='Save and exit'>Save and Exit</button>
+                 </div>
 
-                <button type="submit" class="btn btn-primary d-block mt-3">Save</button>
             </form>
         </div>
     </div>

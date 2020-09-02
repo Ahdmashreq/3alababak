@@ -9,7 +9,7 @@
 <div class="container-fluid">
   <div class="row">
     <div class="col-12">
-      <h1>Stoke Takes</h1>
+      <h1>{{title}}</h1>
       <div class="text-zero top-right-button-container">
         <a href="{% url 'inventory:create-stoke' %}"><button type="button" class="btn btn-primary btn-lg top-right-button mr-1">{% trans "ADD NEW" %}</button></a>
       </div>
@@ -26,7 +26,11 @@
               <div class="col-sm-12">
               </div>
             </div>
-            <table class="data-table data-table-feature dataTable no-footer" id="DataTables_Table_0" role="grid" aria-describedby="DataTables_Table_0_info">
+            {% if not entry_mode %}
+            <table class="data-table data-table-feature5 dataTable no-footer" id="DataTables_Table_0" role="grid" aria-describedby="DataTables_Table_0_info">
+            {% else %}
+            <table class="data-table data-table-feature4 dataTable no-footer" id="DataTables_Table_0" role="grid" aria-describedby="DataTables_Table_0_info">
+            {% endif %}
               <thead>
                 <tr role="row">
                   <th class="sorting_asc" tabindex="0" aria-controls="DataTables_Table_0" rowspan="1" colspan="1" aria-sort="ascending">Stoke ID</th>
@@ -52,7 +56,7 @@
                   {% if not entry_mode %}
                   <td>
                     <div class="d-inline-block">
-                      <a class="btn btn-outline-primary mb-1" href="{% url 'inventory:print-stoke' id=stoke.id %}" role="button">Print</a>
+                      <a class="btn btn-outline-primary mb-1" href="{% url 'inventory:print-stoke' id=stoke.id %}" role="button">View</a>
                     </div>
                     {% if stoke.status == 'Drafted' %}
                     <div class="dropdown d-inline-block">

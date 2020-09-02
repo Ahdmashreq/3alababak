@@ -19,7 +19,7 @@ urlpatterns = [
                path('stoke_take/update/<id>', views.update_stoke_take_view, name='update-stoke-take'),
                path('stoke_take/list/', views.list_stoketake_entries, name='list-stokes-for-entry'),
                path('stoke_take/delete/<int:id>', views.delete_stoke_take, name='delete-stoke-take'),
-               path('stoke_take/print/<int:id>', views.print_stoke, name='print-stoke'),
+               path('stoke_take/view/<int:id>', views.view_stoke, name='print-stoke'),
                path('stoke_take/approval/list', views.list_stoketake_approvals, name='list-stokes-for-approval'),
                path('stoke_take/approve/<id>', views.approve_stoke_view, name='approve-stoke'),
 ]
