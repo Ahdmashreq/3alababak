@@ -38,9 +38,9 @@ class PurchaseTransactionCreationForm(forms.ModelForm):
         model = PurchaseOder
         exclude = ('created_at', 'last_updated_at', 'created_by', 'last_updated_by')
         widgets = {
-            'item': forms.Select(attrs={'onchange': 'myAction(this)'}),
+            #'item': forms.Select(attrs={'onchange': 'myAction(this)'}),
             'quantity': forms.TextInput(attrs={'onchange': 'myFunction(this)'}),
-            'item': autocomplete.ModelSelect2(url="orders:items_list"),
+            'item': autocomplete.ModelSelect2(url="orders:items_list",attrs={'onchange': 'myAction(this)'}),
         }
 
     def __init__(self, *args, **kwargs):
@@ -50,7 +50,7 @@ class PurchaseTransactionCreationForm(forms.ModelForm):
             amount_widget=amount.widget, currency_widget=currency.widget)
         self.fields['uom_dummy'].disabled = True
         self.fields['unit_price_dummy'].disabled = True
-        #self.fields['unit_price_dummy'].disabled = True
+        self.fields['total_price'].disabled = True
 
 
         for field in self.fields:
