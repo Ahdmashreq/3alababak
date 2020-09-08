@@ -34,6 +34,8 @@ ALLOWED_HOSTS = ['127.0.0.1']
 # Application definition
 
 INSTALLED_APPS = [
+    'dal',
+    'dal_select2',
     'custom_user.apps.CustomUserConfig',
     'django.contrib.admin',
     'django.contrib.auth',
@@ -49,6 +51,9 @@ INSTALLED_APPS = [
     'orders',
     'home',
     'mptt',
+    'currencies',
+    'rest_framework',
+
 ]
 
 MIDDLEWARE = [

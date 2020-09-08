@@ -11,5 +11,7 @@ urlpatterns = [
     path('list/sale-orders/', views.list_sale_order_view, name='list-so'),
     path('update/sale-order/<id>', views.update_sale_order_view, name='update-so'),
     path('delete/sale-order/<id>', views.delete_sale_order_view, name='delete-so'),
+    path('purchase/item/<id>', views.get_item, name='get-item'),
+    path('po/autocomplete/', views.ItemAutocomplete.as_view(), name='items_list',),
 
 ]

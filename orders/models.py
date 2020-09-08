@@ -3,6 +3,7 @@ from djmoney.models.fields import MoneyField
 from account.models import Supplier, Customer, Company
 from inventory.models import Item
 from django.conf import settings
+#import django_filters
 
 
 # Create your models here.
@@ -72,3 +73,9 @@ class SalesTransaction(models.Model):
 
     def __str__(self):
         return self.sales_order.code + " Transaction"
+
+
+# class PoFilter(django_filters.FilterSet):
+#     class Meta:
+#         model = PurchaseTransaction
+#         fields = ['item']

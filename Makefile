@@ -12,3 +12,7 @@ migrations:
 	python manage.py makemigrations
 migrate: migrations
 	python manage.py migrate
+
+clean-migrations:
+	find . -path "*/migrations/*.py" -not -name "__init__.py" -delete
+	find . -path "*/migrations/*.pyc"  -delete

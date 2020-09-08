@@ -2,13 +2,27 @@ from django.shortcuts import render, redirect
 from orders.forms import PurchaseOrderCreationForm, purchase_transaction_formset, sale_transaction_formset, \
     SaleOrderCreationForm
 from orders.models import PurchaseOder, SalesOrder
+from inventory.models import Item
 from django.contrib import messages
+from json import dumps
+from django.core import serializers
+from django.http import HttpResponse
+from rest_framework.renderers import JSONRenderer
+from rest_framework.parsers import JSONParser
+import json
+from dal import autocomplete
+
+
+# from orders.models import PoFilter
 
 
 # Create your views here.
 def create_purchase_order_view(request):
     po_form = PurchaseOrderCreationForm()
     po_transaction_inlineformset = purchase_transaction_formset()
+    print("************88888")
+    print(po_transaction_inlineformset[0].fields['total_price'].fields[0])
+    # filter = PoFilter(request.GET, queryset=Item.objects.all())
     if request.method == 'POST':
         po_form = PurchaseOrderCreationForm(request.POST)
         po_transaction_inlineformset = purchase_transaction_formset(request.POST)
@@ -17,6 +31,7 @@ def create_purchase_order_view(request):
             po_obj.created_by = request.user
             po_obj.company = request.user.company
             po_instance = po_obj.save()
+
             po_transaction_inlineformset = purchase_transaction_formset(request.POST, instance=po_instance)
             if po_transaction_inlineformset.is_valid():
                 po_transaction_obj = po_transaction_inlineformset.save(commit=False)
@@ -32,10 +47,13 @@ def create_purchase_order_view(request):
                 print(po_transaction_inlineformset.errors)
         else:
             print(po_form.errors)
+    items = Item.objects.all()
     subcontext = {
         'po_form': po_form,
         'po_transaction_inlineformset': po_transaction_inlineformset,
-        'title':'New Purchase Order'
+        'items': items,
+        # 'filter': filter,
+        'title': 'New Purchase Order'
     }
     return render(request, 'create-purchase-order.html', context=subcontext)
 
@@ -173,3 +191,37 @@ def delete_sale_order_view(request, id):
         return redirect('orders:list-so')
     else:
         print("item not deleted")
+
+
+class JSONResponse(HttpResponse):
+
+    def __init__(self, data, **kwargs):
+        content = JSONRenderer().render(data)
+        kwargs['content_type'] = 'application/json'
+        super(JSONResponse, self).__init__(content, **kwargs)
+
+
+def get_item(request, id):
+    item = Item.objects.get(id=id)
+    print(item)
+    serialized = serializers.serialize('json', [item], fields=('avg_cost', 'uom'))
+    struct = json.loads(serialized)
+    data = json.dumps(struct[0])
+    return HttpResponse(data, content_type='application/json')
+    # print("%%%%%%%%%%%%%%%5")
+    # print(data.data)
+    # dataJSON = dumps(data)
+    # return JSONResponse(dataJSON)
+
+
+class ItemAutocomplete(autocomplete.Select2QuerySetView):
+    print("inside ItemAutocomplete")
+
+    def get_queryset(self):
+        print("inside get_queryset ItemAutocomplete")
+        if not self.request.user.is_authenticated:
+            return Item.objects.none()
+        qs = Item.objects.all()
+        if self.q:
+            qs = qs.filter(name__istartswith=self.q)
+        return qs
