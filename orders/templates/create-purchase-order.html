@@ -37,7 +37,6 @@
   </div>
 
   <div class="card mb-4">
-    <div class="card-body">
 
       <form method="POST">
         {% csrf_token %}
@@ -65,87 +64,55 @@
           </div>
         </div>
 
+
         <table class="table table-bordered" id="DataTables_Table_0" role="grid" aria-describedby="DataTables_Table_0_info">
           <thead class="thead-light">
             <tr role="row">
               <th class="sorting_asc" tabindex="0" aria-controls="DataTables_Table_0" rowspan="1" colspan="1" aria-sort="ascending">#</th>
               <th class="sorting" tabindex="0" aria-controls="DataTables_Table_0" rowspan="1" colspan="1">{% trans "Item" %}</th>
               <th class="sorting" tabindex="0" aria-controls="DataTables_Table_0" rowspan="1" colspan="1">{% trans "Quantity" %}</th>
-              <th class="sorting" tabindex="0" aria-controls="DataTables_Table_0" rowspan="1" colspan="1">{% trans "Unit" %}</th>
-              <th class="sorting" tabindex="0" aria-controls="DataTables_Table_0" rowspan="1" colspan="1">{% trans "Price per unit" %}</th>
-              <th class="sorting" tabindex="0" aria-controls="DataTables_Table_0" rowspan="1" colspan="1">{% trans "Total Price" %}</th>
+              <th style="width:15%" tabindex="0" aria-controls="DataTables_Table_0" rowspan="1" colspan="1">{% trans "Unit" %}</th>
+              <th style="width:30%" tabindex="0" aria-controls="DataTables_Table_0" rowspan="1" colspan="1">{% trans "Price per unit" %}</th>
+              <th style="width:50%"  tabindex="0" aria-controls="DataTables_Table_0" rowspan="1" colspan="1">{% trans "Total Price" %}</th>
 
             </tr>
           </thead>
           {{ po_transaction_inlineformset.management_form }}
-
-          {% for form in po_transaction_inlineformset %}
-          {{ form.id }}
-          {{ form.media }}
-          <tbody>
+           <tbody id="purchase_set">
+            {% for form in po_transaction_inlineformset %}
+            {{ form.id }}
+            {{ form.media }}
             <tr role="row">
-              <td class="sorting_1">{{ forloop.counter }}</td>
-              <td class="form-group3">{{form.item}}</td>
-              <td class="form-group2">{{ form.quantity}}</td>
+              <td>{{ forloop.counter }}</td>
+              <td>{{form.item}}</td>
+              <td>{{ form.quantity}}</td>
               <td>{{form.uom_dummy}}</td>
-              <td id="cost">{{form.unit_price_dummy}}</td>
+              <td>{{form.unit_price_dummy}}</td>
               <td>{{form.total_price}}</td>
             </tr>
             {% endfor %}
-          </tbody>
+           </tbody>
+
+
         </table>
-        <button type="button" id="add_more" class="btn cur-p btn-success" data-toggle="modal" data-target="#itemModal">{% trans "Add Inventory Item"%}
-        </button>
 
-        <div class="modal fade" id="itemModal" tabindex="-1" role="dialog" style="display: none;" aria-hidden="true">
-          <div class="modal-dialog" role="document">
-            <div class="modal-content">
-              <div class="modal-header">
-                <h5 class="modal-title" id="itemModalLabel">Add Inventory To Order</h5>
-                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                  <span aria-hidden="true">×</span>
-                </button>
-              </div>
-              <div class="modal-body">
-                <div class="row">
-                  <div class="col-12">
-                    <div class="card">
-                      <div class="card-body">
-                        <table style="width: 100%;margin-top:40px;">
-                          <tbody>
-                            {% for item in items %}
-                            <div class="mb-4">
-                              <tr>
-                                <td style="padding-top:0px; padding-bottom:5px;">
-                                  <p class="list-item-heading mb-1 color-theme-1">
-                                    {{item|capfirst}}</p>
-                                  <p class="mb-1 text-muted text-small">Category:
-                                    {{item.product.category}}</p>
-                                  <p class="mb-1 text-muted text-small">Selling Price:
-                                    {{item.selling_price}}</p>
-                                </td>
-                                <td>
-                                  <button onclick=myFunction(item=item) id="add_item" class="btn btn-light default mb-1">{% trans "Add Item"%}
-                                  </button>
-                                </td>
-                              </tr>
-                            </div>
-                            {% endfor %}
-                          </tbody>
-
-                        </table>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-              <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-                <button type="button" class="btn btn-primary">Save changes</button>
-              </div>
-            </div>
-          </div>
+        <button type="button" id="add_item" class="btn cur-p btn-success">{% trans "Add Inventory Item"%}</button>
+        <div id="empty_form" style="display:none">
+          <table class="table table-bordered" role="grid" aria-describedby="DataTables_Table_0_info">
+            <tbody>
+            <tr role="row">
+              <td>{{ forloop.counter }}</td>
+              <td>{{po_transaction_inlineformset.empty_form.item}}</td>
+              <td>{{po_transaction_inlineformset.empty_form.quantity}}</td>
+              <td>{{po_transaction_inlineformset.empty_form.uom_dummy}}</td>
+              <td>{{po_transaction_inlineformset.empty_form.unit_price_dummy}}</td>
+              <td>{{po_transaction_inlineformset.empty_form.total_price}}</td>
+            </tr>
+            </tbody>
+          </table>
         </div>
+
+
         <div class="submit-row">
           <button type="submit" class="btn btn-primary btn-lg mt-3" name='Save'>Save</button>
           <button type="submit" class="btn btn-primary btn-lg mt-3" name='Save and exit'>Save and Exit
@@ -154,7 +121,6 @@
         </div>
       </form>
     </div>
-  </div>
 </div>
 {% endblock body %}
 
@@ -191,7 +157,9 @@
             };
 
             };
-var grand_total = 0
+</script>
+
+<script>
 function myFunction(object) {
 
     console.log("Byyeeee")
@@ -223,7 +191,9 @@ function myFunction(object) {
         };
 
 };
+</script>
 
+<script>
 function grandTotal(){
     var x = document.getElementsByClassName("unique-class");
     var i;
@@ -236,7 +206,12 @@ function grandTotal(){
     document.getElementById("id_total_price_0").value = grand_total;
 
 }
-
-
+</script>
+<script>
+  $('#add_item').click(function() {
+    var form_idx = $('#id_purchasetransaction_set-TOTAL_FORMS').val();
+    $('#purchase_set').append($('#empty_form').html().replace(/__prefix__/g, form_idx));
+    $('#id_purchasetransaction_set-TOTAL_FORMS').val(parseInt(form_idx) + 1);
+  });
 </script>
 {% endblock js %}

@@ -105,7 +105,7 @@ class SaleTransactionCreationForm(forms.ModelForm):
 
 
 purchase_transaction_formset = inlineformset_factory(PurchaseOder, PurchaseTransaction,
-                                                     form=PurchaseTransactionCreationForm, extra=4, can_delete=True)
+                                                     form=PurchaseTransactionCreationForm, extra=1, can_delete=True)
 
 sale_transaction_formset = inlineformset_factory(SalesOrder, SalesTransaction,
                                                  form=SaleTransactionCreationForm, extra=3, can_delete=True)
