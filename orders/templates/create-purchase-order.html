@@ -153,54 +153,74 @@
     </div>
   </div>
 </div>
-
-{% endblock body %}
-
-{% block js %}
 <script>
-  function myAction(object) {
-    console.log("HIIIIIIIIIIIIIIIIIIIIIIII")
-    console.log(object.id)
-    item = object.value
-    if (item !== "") {
-      $.ajax({
-        type: "get",
-        url: "item/" + item,
-        contentType: 'application/json',
-        success: function(data) {
-          console.log("********")
-          var str = object.id
-          var res = str.split("-")
-          var id_prefix = res[0] + '-' + res[1]
-          uom_id = id_prefix + '-' + 'uom_dummy'
-          price_id = id_prefix + '-' + 'unit_price_dummy'
-          console.log(uom_id)
-          document.getElementById(uom_id).value = data['fields']['uom']
-          document.getElementById(price_id).value = data['fields']['avg_cost']
+    function myAction(object) {
+           console.log("HIIIIIIIIIIIIIIIIIIIIIIII")
+          item = object.value
+          if ( item !==""){
+                var str = object.id
+                var res= str.split("-")
+                var id_prefix = res[0]+'-'+res[1]
+                uom_id = id_prefix+'-'+'uom_dummy'
+                price_id = id_prefix+'-'+'unit_price_dummy'
+                quantity_id =  id_prefix+'-'+'quantity'
+                $.ajax({
+                type: "get",
+                url: "item/"+item,
+                contentType: 'application/json',
+                success: function(data){
+                      document.getElementById(uom_id).value=data['fields']['uom']
+                      document.getElementById(price_id).value=data['fields']['avg_cost']
 
-        },
-        error: function() {
-          alert("error");
-        }
-      });
-    };
-  };
+                },
+                error: function(){
+                    alert("error");
+                }
+                 });
+                 if (document.getElementById(quantity_id).value){
+                     console.log("I am hereeeeeeeeeeeee");
+                   myFunction(document.getElementById(quantity_id));
+                 };
+            };
 
-  function myFunction(object) {
+            };
+var grand_total = 0
+function myFunction(object) {
+
     console.log("Byyeeee")
-    var str = object.id;
-    var res = str.split("-");
-    var id_prefix = res[0] + '-' + res[1];
-    item_id = id_prefix + '-' + 'item';
-    price_id = id_prefix + '-' + 'unit_price_dummy';
-    total_price_id = id_prefix + '-' + 'total_price_0';
-    if (document.getElementById(item_id).value !== "") {
-      var total_per_item = document.getElementById(price_id).value * object.value;
-      console.log("$$$$$$$$$$$$$$$$");
-      console.log(total_per_item);
-      document.getElementById(total_price_id).value = total_per_item;
-    };
 
-  };
+    var str = object.id;
+    var res= str.split("-");
+    var id_prefix = res[0]+'-'+res[1];
+    item_id = id_prefix+'-'+'item';
+    price_id = id_prefix+'-'+'unit_price_dummy';
+    total_price_id = id_prefix+'-'+'total_price_0';
+    item =  document.getElementById(item_id).value
+    if ( item !==""){
+                $.ajax({
+                type: "get",
+                url: "item/"+item,
+                contentType: 'application/json',
+                success: function(data){
+                        var price_per_item = data['fields']['avg_cost']
+                        var total_per_item = price_per_item * object.value;
+                        document.getElementById(total_price_id).value = total_per_item;
+                        grand_total += total_per_item;
+                        document.getElementById("id_total_price_0").value = grand_total;
+
+                },
+                error: function(){
+                    alert("error");
+                }
+                 });
+
+        };
+
+};
+
+function grandTotal(){
+}
+
+
 </script>
 {% endblock js %}

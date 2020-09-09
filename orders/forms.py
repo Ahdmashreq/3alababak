@@ -17,6 +17,10 @@ class PurchaseOrderCreationForm(forms.ModelForm):
 
     def __init__(self, *args, **kwargs):
         super(PurchaseOrderCreationForm, self).__init__(*args, **kwargs)
+        self.fields['total_price'].disabled = True
+        amount, currency = self.fields['total_price'].fields
+        self.fields['total_price'].widget = CustomMoneyWidget(
+            amount_widget=amount.widget, currency_widget=currency.widget)
         for field in self.fields:
             if field == 'total_price':
                 self.fields[field].widget.attrs['class'] = 'form-control'
@@ -51,7 +55,7 @@ class PurchaseTransactionCreationForm(forms.ModelForm):
             amount_widget=amount.widget, currency_widget=currency.widget)
         self.fields['uom_dummy'].disabled = True
         self.fields['unit_price_dummy'].disabled = True
-        #self.fields['unit_price_dummy'].disabled = True
+        self.fields['total_price'].disabled = True
 
         for field in self.fields:
             if field == 'total_price':
