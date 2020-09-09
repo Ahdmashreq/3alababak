@@ -162,7 +162,7 @@
 </div>
 
 {% endblock %}
-{% block jss %}
+{% block js %}
 <script>
   $('#add_more').click(function() {
     var form_idx = $('#id_form-TOTAL_FORMS').val();
@@ -170,4 +170,4 @@
     $('#id_form-TOTAL_FORMS').val(parseInt(form_idx) + 1);
   });
 </script>
-{% endblock jss %}
+{% endblock js %}
