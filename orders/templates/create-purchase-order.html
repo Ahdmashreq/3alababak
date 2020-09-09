@@ -183,8 +183,8 @@
                 url: "item/"+item,
                 contentType: 'application/json',
                 success: function(data){
-                      document.getElementById(uom_id).value=data['fields']['uom']
-                      document.getElementById(price_id).value=data['fields']['avg_cost']
+                      document.getElementById(uom_id).value=data['uom']
+                      document.getElementById(price_id).value=data['avg_cost']
 
                 },
                 error: function(){
@@ -216,7 +216,7 @@ function myFunction(object) {
                 url: "item/"+item,
                 contentType: 'application/json',
                 success: function(data){
-                        var price_per_item = data['fields']['avg_cost']
+                        var price_per_item = data['avg_cost']
                         var total_per_item = price_per_item * object.value;
                         document.getElementById(total_price_id).value = total_per_item;
                         grand_total += total_per_item;

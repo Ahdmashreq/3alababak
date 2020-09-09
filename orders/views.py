@@ -5,7 +5,8 @@ from orders.models import PurchaseOder, SalesOrder
 from inventory.models import Item
 from django.contrib import messages
 from json import dumps
-from django.core import serializers
+from rest_framework import serializers
+# from django.core import serializers
 from django.http import HttpResponse
 from rest_framework.renderers import JSONRenderer
 from rest_framework.parsers import JSONParser
@@ -201,17 +202,18 @@ class JSONResponse(HttpResponse):
         super(JSONResponse, self).__init__(content, **kwargs)
 
 
+class ItemSerializer(serializers.ModelSerializer):
+    uom = serializers.StringRelatedField(many=False)
+
+    class Meta:
+        model = Item
+        fields = ('avg_cost', 'uom',)
+
+
 def get_item(request, id):
-    item = Item.objects.get(id=id)
-    print(item)
-    serialized = serializers.serialize('json', [item], fields=('avg_cost', 'uom'))
-    struct = json.loads(serialized)
-    data = json.dumps(struct[0])
-    return HttpResponse(data, content_type='application/json')
-    # print("%%%%%%%%%%%%%%%5")
-    # print(data.data)
-    # dataJSON = dumps(data)
-    # return JSONResponse(dataJSON)
+    item = Item.objects.select_related().get(pk=id)
+    serialized = ItemSerializer(item)
+    return JSONResponse(serialized.data, content_type='application/json')
 
 
 class ItemAutocomplete(autocomplete.Select2QuerySetView):

@@ -104,7 +104,7 @@ class ProductAttribute(models.Model):
 class Item(models.Model):
     product = models.ForeignKey(Product, on_delete=models.CASCADE, )
     location = models.ForeignKey(Location, on_delete=models.CASCADE, )
-    uom = models.ForeignKey(Uom, on_delete=models.CASCADE, blank=True, null=True)
+    uom = models.ForeignKey(Uom, on_delete=models.CASCADE, blank=True, null=True,related_name='uom')
     name = models.CharField(max_length=30)
     description = models.CharField(max_length=30, blank=True, null=True)
     quantity = models.IntegerField()
