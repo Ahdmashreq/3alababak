@@ -17,6 +17,10 @@ class PurchaseOrderCreationForm(forms.ModelForm):
 
     def __init__(self, *args, **kwargs):
         super(PurchaseOrderCreationForm, self).__init__(*args, **kwargs)
+        self.fields['total_price'].disabled = True
+        amount, currency = self.fields['total_price'].fields
+        self.fields['total_price'].widget = CustomMoneyWidget(
+            amount_widget=amount.widget, currency_widget=currency.widget)
         for field in self.fields:
             if field == 'total_price':
                 self.fields[field].widget.attrs['class'] = 'form-control'
@@ -35,7 +39,7 @@ class PurchaseTransactionCreationForm(forms.ModelForm):
     uom_dummy = forms.CharField(max_length=30)
     unit_price_dummy = forms.DecimalField(max_digits=2)
     class Meta:
-        model = PurchaseOder
+        model = SalesTransaction
         exclude = ('created_at', 'last_updated_at', 'created_by', 'last_updated_by')
         widgets = {
             #'item': forms.Select(attrs={'onchange': 'myAction(this)'}),
