@@ -59,6 +59,10 @@
             <label>Status</label>
             {{po_form.status}}
           </div>
+          <div class="form-group col-md-6">
+            <label>Grand Total</label>
+            {{po_form.total_price}}
+          </div>
         </div>
 
         <table class="table table-bordered" id="DataTables_Table_0" role="grid" aria-describedby="DataTables_Table_0_info">
@@ -121,8 +125,7 @@
                                     {{item.selling_price}}</p>
                                 </td>
                                 <td>
-                                  <button onclick=myFunction(item=item) id="add_item" class="btn btn-light default mb-1">{% trans "Add
-                                                                    Item"%}
+                                  <button onclick=myFunction(item=item) id="add_item" class="btn btn-light default mb-1">{% trans "Add Item"%}
                                   </button>
                                 </td>
                               </tr>
@@ -153,6 +156,9 @@
     </div>
   </div>
 </div>
+{% endblock body %}
+
+{% block js %}
 <script>
     function myAction(object) {
            console.log("HIIIIIIIIIIIIIIIIIIIIIIII")
@@ -179,6 +185,7 @@
                  });
                  if (document.getElementById(quantity_id).value){
                      console.log("I am hereeeeeeeeeeeee");
+                      grandTotal();
                    myFunction(document.getElementById(quantity_id));
                  };
             };
@@ -205,8 +212,7 @@ function myFunction(object) {
                         var price_per_item = data['avg_cost']
                         var total_per_item = price_per_item * object.value;
                         document.getElementById(total_price_id).value = total_per_item;
-                        grand_total += total_per_item;
-                        document.getElementById("id_total_price_0").value = grand_total;
+                        grandTotal();
 
                 },
                 error: function(){
@@ -219,6 +225,16 @@ function myFunction(object) {
 };
 
 function grandTotal(){
+    var x = document.getElementsByClassName("unique-class");
+    var i;
+    var grand_total = 0;
+    for (i = 0; i < x.length; i++) {
+      if (x[i].value){
+        grand_total = grand_total + Number(x[i].value);
+        }
+     }
+    document.getElementById("id_total_price_0").value = grand_total;
+
 }
 
 

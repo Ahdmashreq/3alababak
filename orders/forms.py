@@ -59,7 +59,8 @@ class PurchaseTransactionCreationForm(forms.ModelForm):
 
         for field in self.fields:
             if field == 'total_price':
-                self.fields[field].widget.attrs['class'] = 'form-control'
+                self.fields[field].fields[0].widget.attrs['class'] = 'unique-class form-control'
+                self.fields[field].fields[1].widget.attrs['class'] = 'form-control'
             elif self.fields[field].widget.input_type == 'checkbox':
                 self.fields[field].widget.attrs['class'] = 'form-check-input'
             else:
