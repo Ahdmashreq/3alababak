@@ -1,6 +1,9 @@
 from django.shortcuts import render, redirect
-from orders.forms import PurchaseOrderCreationForm, purchase_transaction_formset, sale_transaction_formset, \
-    SaleOrderCreationForm
+from orders.forms import (PurchaseTransactionCreationForm,
+                          PurchaseOrderCreationForm,
+                          purchase_transaction_formset,
+                          sale_transaction_formset,
+                          SaleOrderCreationForm)
 from orders.models import PurchaseOder, SalesOrder
 from inventory.models import Item
 from django.contrib import messages
@@ -13,10 +16,6 @@ import json
 from dal import autocomplete
 
 
-# from orders.models import PoFilter
-
-
-# Create your views here.
 def create_purchase_order_view(request):
     po_form = PurchaseOrderCreationForm()
     po_transaction_inlineformset = purchase_transaction_formset()
@@ -53,7 +52,7 @@ def create_purchase_order_view(request):
         'po_transaction_inlineformset': po_transaction_inlineformset,
         'items': items,
         # 'filter': filter,
-        'title': 'New Purchase Order'
+        'title': 'New Purchase Order',
     }
     return render(request, 'create-purchase-order.html', context=subcontext)
 

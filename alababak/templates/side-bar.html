@@ -3,222 +3,120 @@
 {% load l10n %}
 {% get_current_language as LANGUAGE_CODE %}
 {% get_current_language_bidi as LANGUAGE_BIDI %}
+<div class="nav">
+  <a class="nav-link" href="{% url 'home:homepage'%}">
+    <div class="sb-nav-link-icon">
+      <i class="fas fa-tachometer-alt"></i></div>
+    Dashboard
+  </a>
 
-<div class="main-menu">
-  <div class="scroll">
-    <ul class="list-unstyled">
-      <li class="color">
-        <a href="#dashboard">
-          <i class="iconsminds-shop-4"></i>
-          <span>Dashboards</span>
-        </a>
-      </li>
-      <li class="color">
-        <a href="#orders">
-          <i class="iconsminds-shopping-cart"></i> Orders
-        </a>
-      </li>
-      <li class="color">
-        <a href="#trans">
-          <i class="iconsminds-receipt-4"></i> Transactions
-        </a>
-      </li>
-      <li class="color">
-        <a href="#inventory">
-          <i class="iconsminds-box-close"></i> Inventory
-        </a>
-      </li>
-       <li class="color">
-        <a href="#locations">
-          <i class="iconsminds-location-2"></i> Locations
-        </a>
-      </li>
-      <li class="color">
-        <a href="#accounts">
-          <i class="simple-icon-people"></i> Accounts
-        </a>
-      </li>
-      <li class="color">
-        <a href="#">
-          <i class="simple-icon-notebook"></i> Reports
-        </a>
-      </li>
-    </ul>
+
+  <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#productsMenu" aria-expanded="false" aria-controls="collapsePages">
+    <div class="sb-nav-link-icon">
+      <i class="fab fa-product-hunt"></i>
+    </div>
+    Products
+    <div class="sb-sidenav-collapse-arrow"><i class="fas fa-angle-down"></i></div>
+  </a>
+  <div class="collapse" id="productsMenu" aria-labelledby="headingTwo" data-parent="#sidenavAccordion">
+    <nav class="sb-sidenav-menu-nested nav accordion" id="sidenavAccordionPages">
+      <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#pagesCollapseProduct" aria-expanded="false" aria-controls="pagesCollapseAuth">Products
+        <div class="sb-sidenav-collapse-arrow">
+          <i class="fas fa-angle-down"></i></div>
+      </a>
+      <div class="collapse" id="pagesCollapseProduct" aria-labelledby="headingOne" data-parent="#sidenavAccordionPages">
+        <nav class="sb-sidenav-menu-nested nav">
+          <a class="nav-link" href="{% url 'inventory:list-products'%}">Products</a>
+          <a class="nav-link" href="{% url 'inventory:list-attributes'%}">Attributes</a>
+          <a class="nav-link" href="{% url 'inventory:list-brands'%}">Brands</a>
+          <a class="nav-link" href="{% url 'inventory:list-categories'%}">Categories</a>
+        </nav>
+      </div>
+      <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#pagesCollapseStocktak" aria-expanded="false" aria-controls="pagesCollapseError">Stocktaking
+        <div class="sb-sidenav-collapse-arrow">
+          <i class="fas fa-angle-down"></i>
+        </div>
+      </a>
+      <div class="collapse" id="pagesCollapseStocktak" aria-labelledby="headingOne" data-parent="#sidenavAccordionPages">
+        <nav class="sb-sidenav-menu-nested nav">
+          <a class="nav-link" href="{% url 'inventory:list-stokes'%}">Stocktak</a>
+          <a class="nav-link" href="{% url 'inventory:list-stokes-for-entry' %}">Stocktak Entry</a>
+          <a class="nav-link" href="{% url 'inventory:list-stokes-for-approval' %}">Approve Stocktak</a>
+        </nav>
+      </div>
+    </nav>
+
+    <a class="nav-link" href="{% url 'account:list-customers'%}">
+      <div class="sb-nav-link-icon">
+        <i class="fas fa-tachometer-alt"></i></div>
+      Taxing
+    </a>
+    <a class="nav-link" href="{% url 'inventory:list-uom'%}">
+      <div class="sb-nav-link-icon">
+        <i class="fas fa-tachometer-alt"></i></div>
+      UOM
+    </a>
   </div>
-</div>
 
-<div class="sub-menu">
-  <div class="scroll">
-    <ul class="list-unstyled" data-link="dashboard">
-      <li class="color">
-        <a href="{% url 'home:homepage'%}">
-          <i class="simple-icon-rocket"></i> <span class="d-inline-block">Default</span>
-        </a>
-      </li>
-    </ul>
-    <ul class="list-unstyled" data-link="accounts">
-      <li class="color">
-        <a href="#" data-toggle="collapse" data-target="#collapseAuthorization" aria-expanded="true" aria-controls="collapseAuthorization" class="rotate-arrow-icon opacity-50">
-          <i class="simple-icon-arrow-down"></i> <span class="d-inline-block">Accounts List</span>
-        </a>
-        <div id="collapseAuthorization" class="collapse show">
-          <ul class="list-unstyled inner-level-menu">
-            <li class="color">
-              <a href="{% url 'account:list-customers'%}">
-                <i class="simple-icon-user-following"></i> <span class="d-inline-block">Customers</span>
-              </a>
-            </li>
-            <li class="color">
-              <a href="{% url 'account:list-suppliers'%}">
-                <i class="simple-icon-user-follow"></i> <span class="d-inline-block">Suppliers</span>
-              </a>
-            </li>
-          </ul>
-        </div>
-      </li>
-    </ul>
-
-    <ul class="list-unstyled" data-link="inventory">
-      <li class="color">
-        <a href="#" data-toggle="collapse" data-target="#collapseForms" aria-expanded="true" aria-controls="collapseForms" class="rotate-arrow-icon opacity-50">
-          <i class="simple-icon-arrow-down"></i> <span class="d-inline-block">Products</span>
-        </a>
-        <div id="collapseForms" class="collapse show">
-          <ul class="list-unstyled inner-level-menu">
-            <li class="color">
-              <a href="{% url 'inventory:list-products'%}">
-                <i class="simple-icon-event"></i> <span class="d-inline-block">Products</span>
-              </a>
-            </li>
-            <li class="color">
-              <a href="{% url 'inventory:list-attributes'%}">
-                <i class="simple-icon-doc"></i> <span class="d-inline-block">Attributes</span>
-              </a>
-            </li>
-            <li class="color">
-              <a href="{% url 'inventory:list-brands'%}">
-                <i class="simple-icon-check"></i> <span class="d-inline-block">Brands</span>
-              </a>
-            </li>
-            <li class="color">
-              <a href="{% url 'inventory:list-categories'%}">
-                <i class="simple-icon-magic-wand"></i> <span class="d-inline-block">Categories</span>
-              </a>
-            </li>
-          </ul>
-        </div>
-      </li>
-      <li class="color">
-         <a href="#" data-toggle="collapse" data-target="#collapseForms" aria-expanded="true" aria-controls="collapseForms" class="rotate-arrow-icon opacity-50">
-          <i class="simple-icon-arrow-down"></i> <span class="d-inline-block">Stocktaking</span>
-        </a>
-        <div id="collapseForms" class="collapse show">
-          <ul class="list-unstyled inner-level-menu">
-            <li class="color">
-              <a href="{% url 'inventory:list-stokes'%}">
-                <i class="simple-icon-event"></i> <span class="d-inline-block">Stoke</span>
-              </a>
-            </li>
-            <li class="color">
-              <a href="{% url 'inventory:list-stokes-for-entry' %}">
-                <i class="simple-icon-event"></i> <span class="d-inline-block">Stoke Entry</span>
-              </a>
-            </li>
-            <li class="color">
-              <a href="{% url 'inventory:list-stokes-for-approval' %}">
-                <i class="simple-icon-event"></i> <span class="d-inline-block">Stoke Approval</span>
-              </a>
-            </li>
-          </ul>
-        </div>
-      </li>
-      <li class="color">
-        <a href="{% url 'account:list-customers'%}">
-          <i class="iconsminds-coins"></i> <span class="d-inline-block">Tax</span>
-        </a>
-      </li>
-      <li class="color">
-        <a href="{% url 'inventory:list-uom'%}">
-          <i class="simple-icon-calculator"></i> <span class="d-inline-block">UOM</span>
-        </a>
-      </li>
-    </ul>
-
-    <ul class="list-unstyled" data-link="locations">
-      <li class="color">
-        <a href="#" data-toggle="collapse" data-target="#collapseForms" aria-expanded="true" aria-controls="collapseForms" class="rotate-arrow-icon opacity-50">
-          <i class="simple-icon-arrow-down"></i> <span class="d-inline-block">Locations & Warehouses</span>
-        </a>
-        <div id="collapseForms" class="collapse show">
-          <ul class="list-unstyled inner-level-menu">
-            <li class="color">
-              <a href="{% url 'location:list-locations'%}">
-                <i class="iconsminds-home-3"></i> <span class="d-inline-block">Warehouses</span>
-              </a>
-            </li>
-            <li class="color">
-              <a href="{% url 'location:list-locations'%}">
-                <i class="iconsminds-home-3"></i> <span class="d-inline-block">Stores</span>
-              </a>
-            </li>
-          </ul>
-        </div>
-      </li>
-    </ul>
-
-    <ul class="list-unstyled" data-link="trans" id="menuTypes">
-      <li class="color">
-        <a href="#" data-toggle="collapse" data-target="#collapseMenuDetached" aria-expanded="true" aria-controls="collapseMenuDetached" class="rotate-arrow-icon collapsed">
-          <i class="simple-icon-arrow-down"></i> <span class="d-inline-block">Transactions</span>
-        </a>
-        <div id="collapseMenuDetached" class="collapse show">
-          <ul class="list-unstyled inner-level-menu">
-            <li class="color">
-              <a href="{% url 'account:list-customers'%}">
-                <i class="iconsminds-arrow-inside"></i> <span class="d-inline-block">Receiving</span>
-              </a>
-            </li>
-            <li class="color">
-              <a href="{% url 'account:list-customers'%}">
-                <i class="iconsminds-arrow-loop"></i> <span class="d-inline-block">Return Receiving</span>
-              </a>
-            </li>
-            <li class="color">
-              <a href="{% url 'account:list-customers'%}">
-                <i class="iconsminds-arrow-outside"></i> <span class="d-inline-block">Shipping</span>
-              </a>
-            </li>
-            <li class="color">
-              <a href="{% url 'account:list-customers'%}">
-                <i class="iconsminds-arrow-loop"></i> <span class="d-inline-block">Return Shipping</span>
-              </a>
-            </li>
-          </ul>
-        </div>
-      </li>
-    </ul>
-
-    <ul class="list-unstyled" data-link="orders">
-      <li class="color">
-        <a href="#" data-toggle="collapse" data-target="#collapseForms" aria-expanded="true" aria-controls="collapseForms" class="rotate-arrow-icon opacity-50">
-          <i class="simple-icon-arrow-down"></i> <span class="d-inline-block">Orders Menu</span>
-        </a>
-        <div id="collapseForms" class="collapse show">
-          <ul class="list-unstyled inner-level-menu">
-            <li class="color">
-              <a href="{% url 'orders:list-po'%}">
-                <i class="iconsminds-add-cart"></i> <span class="d-inline-block">Purchase Orders</span>
-              </a>
-            </li>
-            <li class="color">
-              <a href="{% url 'orders:list-so'%}">
-                <i class="iconsminds-add-cart"></i> <span class="d-inline-block">Sales Orders</span>
-              </a>
-            </li>
-          </ul>
-        </div>
-      </li>
-    </ul>
-
+  <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#ordersLayouts" aria-expanded="false" aria-controls="collapseLayouts">
+    <div class="sb-nav-link-icon">
+      <i class="fas fa-archive"></i>
+    </div>
+    Orders
+    <div class="sb-sidenav-collapse-arrow"><i class="fas fa-angle-down"></i></div>
+  </a>
+  <div class="collapse" id="ordersLayouts" aria-labelledby="headingOne" data-parent="#sidenavAccordion">
+    <nav class="sb-sidenav-menu-nested nav">
+      <a class="nav-link" href="{% url 'orders:list-po'%}">Purchase Orders</a>
+      <a class="nav-link" href="{% url 'orders:list-so'%}">Sales Orders</a>
+    </nav>
   </div>
+
+  <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#transactionsLayouts" aria-expanded="false" aria-controls="collapseLayouts">
+    <div class="sb-nav-link-icon">
+      <i class="far fa-calendar-alt"></i>
+    </div>
+    Transactions
+    <div class="sb-sidenav-collapse-arrow"><i class="fas fa-angle-down"></i></div>
+  </a>
+  <div class="collapse" id="transactionsLayouts" aria-labelledby="headingOne" data-parent="#sidenavAccordion">
+    <nav class="sb-sidenav-menu-nested nav">
+      <a class="nav-link" href="#">Receiving</a>
+      <a class="nav-link" href="#">Return Receiving</a>
+      <a class="nav-link" href="#">Shipping</a>
+      <a class="nav-link" href="#">Return Shipping</a>
+    </nav>
+  </div>
+
+  <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#locationLayouts" aria-expanded="false" aria-controls="collapseLayouts">
+    <div class="sb-nav-link-icon">
+      <i class="fas fa-archway"></i>
+    </div>
+    Locations
+    <div class="sb-sidenav-collapse-arrow"><i class="fas fa-angle-down"></i></div>
+  </a>
+  <div class="collapse" id="locationLayouts" aria-labelledby="headingOne" data-parent="#sidenavAccordion">
+    <nav class="sb-sidenav-menu-nested nav">
+      <a class="nav-link" href="{% url 'location:list-locations'%}">Warehouses</a>
+    </nav>
+  </div>
+
+  <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#accountsLayouts" aria-expanded="false" aria-controls="collapseLayouts">
+    <div class="sb-nav-link-icon">
+      <i class="far fa-address-book"></i>
+    </div>
+    Accounts
+    <div class="sb-sidenav-collapse-arrow"><i class="fas fa-angle-down"></i></div>
+  </a>
+  <div class="collapse" id="accountsLayouts" aria-labelledby="headingOne" data-parent="#sidenavAccordion">
+    <nav class="sb-sidenav-menu-nested nav">
+      <a class="nav-link" href="{% url 'account:list-customers'%}">Customers</a>
+      <a class="nav-link" href="{% url 'account:list-suppliers'%}">Suppliers</a>
+    </nav>
+  </div>
+
+
+  <div class="sb-sidenav-menu-heading">Reports</div>
+
+
 </div>
