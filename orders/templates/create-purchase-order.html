@@ -63,55 +63,93 @@
             {{po_form.total_price}}
           </div>
         </div>
+      <div class="row" style="margin-left:0px;">
+        <div class="col-md-12">
+          <div class="bgc-white bd bdrs-3 p-20 mB-20">
+            {{ po_transaction_inlineformset.management_form }}
+            <div id="purchase_set">
+            <div class="form-row">
+               <div class="form-group col-md-1">
+                   <label>#</label>
+               </div>
+               <div class="form-group col-md-4 text-center">
+                   <label>{% trans "Item" %}</label>
+               </div>
+               <div class="form-group col-md-1">
+                   <label>{% trans "Quantity" %}</label>
+               </div>
+               <div class="form-group col-md-1">
+                   <label>{% trans "Unit" %}</label>
+               </div>
+               <div class="form-group col-md-1">
+                   <label>{% trans "Price per unit" %}</label>
+               </div>
+                 <div class="form-group col-md-2">
+                   <label>{% trans "Total Price" %}</label>
+               </div>
+                <div class="form-group col-md-1 text-center">
+                     <label>{% trans "Delete" %}</label>
+                 </div>
+            </div>
+                {% for form in po_transaction_inlineformset %}
+                {{ form.id }}
+                {{ form.media }}
+               <div class="form-row">
+                 <div class="form-group col-md-1">
+                  {{ forloop.counter }}
+                 </div>
+                 <div class="form-group col-md-4">
+                  {{form.item}}
+                 </div>
+                 <div class="form-group col-md-1">
+                   {{ form.quantity}}
+                 </div>
+                 <div class="form-group col-md-1">
+                   {{form.temp_uom}}
+                 </div>
+                 <div class="form-group col-md-1">
+                 {{form.temp_unit_price}}
+                 </div>
+                 <div class="form-group col-md-2">
+                   {{form.total_price}}
+                 </div>
+                 <div class="form-group col-md-1 text-center">
+                          {{ form.DELETE }}
+                 </div>
+                   </div>
+               {% endfor %}
 
+      </div>
 
-        <table class="table table-bordered" id="DataTables_Table_0" role="grid" aria-describedby="DataTables_Table_0_info">
-          <thead class="thead-light">
-            <tr role="row">
-              <th class="sorting_asc" tabindex="0" aria-controls="DataTables_Table_0" rowspan="1" colspan="1" aria-sort="ascending">#</th>
-              <th class="sorting" tabindex="0" aria-controls="DataTables_Table_0" rowspan="1" colspan="1">{% trans "Item" %}</th>
-              <th class="sorting" tabindex="0" aria-controls="DataTables_Table_0" rowspan="1" colspan="1">{% trans "Quantity" %}</th>
-              <th style="width:15%" tabindex="0" aria-controls="DataTables_Table_0" rowspan="1" colspan="1">{% trans "Unit" %}</th>
-              <th style="width:30%" tabindex="0" aria-controls="DataTables_Table_0" rowspan="1" colspan="1">{% trans "Price per unit" %}</th>
-              <th style="width:50%"  tabindex="0" aria-controls="DataTables_Table_0" rowspan="1" colspan="1">{% trans "Total Price" %}</th>
-
-            </tr>
-          </thead>
-          {{ po_transaction_inlineformset.management_form }}
-           <tbody id="purchase_set">
-            {% for form in po_transaction_inlineformset %}
-            {{ form.id }}
-            {{ form.media }}
-            <tr role="row">
-              <td>{{ forloop.counter }}</td>
-              <td>{{form.item}}</td>
-              <td>{{ form.quantity}}</td>
-              <td>{{form.uom_dummy}}</td>
-              <td>{{form.unit_price_dummy}}</td>
-              <td>{{form.total_price}}</td>
-            </tr>
-            {% endfor %}
-           </tbody>
-
-
-        </table>
 
         <button type="button" id="add_item" class="btn cur-p btn-success">{% trans "Add Inventory Item"%}</button>
-        <div id="empty_form" style="display:none">
-          <table class="table table-bordered" role="grid" aria-describedby="DataTables_Table_0_info">
-            <tbody>
-            <tr role="row">
-              <td>{{ forloop.counter }}</td>
-              <td>{{po_transaction_inlineformset.empty_form.item}}</td>
-              <td>{{po_transaction_inlineformset.empty_form.quantity}}</td>
-              <td>{{po_transaction_inlineformset.empty_form.uom_dummy}}</td>
-              <td>{{po_transaction_inlineformset.empty_form.unit_price_dummy}}</td>
-              <td>{{po_transaction_inlineformset.empty_form.total_price}}</td>
-            </tr>
-            </tbody>
-          </table>
-        </div>
+          <div id="empty_form" style="display:none">
+                  <table class='no_error'>
+                    <div class="form-row">
+                    <div class="form-group col-md-1" id ="serial">
 
+                    </div>
+                      <div class="form-group col-md-4">
+                        {{ po_transaction_inlineformset.empty_form.item}}
+                      </div>
+                      <div class="form-group col-md-1">
+                        {{ po_transaction_inlineformset.empty_form.quantity}}
+                      </div>
+                      <div class="form-group col-md-1">
+                        {{ po_transaction_inlineformset.empty_form.temp_uom}}
+                      </div>
+                      <div class="form-group col-md-1">
+                        {{ po_transaction_inlineformset.empty_form.temp_unit_price }}
+                      </div>
+                      <div class="form-group col-md-2 text-center">
+                        {{ po_transaction_inlineformset.empty_form.total_price}}
+                      </div>
+                        <div class="form-group col-md-1 text-center">
+                        {{ po_transaction_inlineformset.empty_form.DELETE}}
+                      </div>
+                    </div>
+                  </table>
+                </div>
 
         <div class="submit-row">
           <button type="submit" class="btn btn-primary btn-lg mt-3" name='Save'>Save</button>
@@ -126,6 +164,12 @@
 
 {% block js %}
 <script>
+    $(document).ready(function() {
+
+    });
+</script>
+
+<script>
     function myAction(object) {
            console.log("HIIIIIIIIIIIIIIIIIIIIIIII")
           item = object.value
@@ -133,8 +177,8 @@
                 var str = object.id
                 var res= str.split("-")
                 var id_prefix = res[0]+'-'+res[1]
-                uom_id = id_prefix+'-'+'uom_dummy'
-                price_id = id_prefix+'-'+'unit_price_dummy'
+                uom_id = id_prefix+'-'+'temp_uom'
+                price_id = id_prefix+'-'+'temp_unit_price'
                 quantity_id =  id_prefix+'-'+'quantity'
                 $.ajax({
                 type: "get",
@@ -143,20 +187,21 @@
                 success: function(data){
                       document.getElementById(uom_id).value=data['uom']
                       document.getElementById(price_id).value=data['avg_cost']
+                      if (document.getElementById(quantity_id).value){
+                     console.log("I am hereeeeeeeeeeeee");
+                     myFunction(document.getElementById(quantity_id));
+
+                 };
 
                 },
                 error: function(){
                     alert("error");
                 }
                  });
-                 if (document.getElementById(quantity_id).value){
-                     console.log("I am hereeeeeeeeeeeee");
-                      grandTotal();
-                   myFunction(document.getElementById(quantity_id));
-                 };
-            };
 
             };
+
+    };
 </script>
 
 <script>
@@ -168,7 +213,7 @@ function myFunction(object) {
     var res= str.split("-");
     var id_prefix = res[0]+'-'+res[1];
     item_id = id_prefix+'-'+'item';
-    price_id = id_prefix+'-'+'unit_price_dummy';
+    price_id = id_prefix+'-'+'temp_unit_price';
     total_price_id = id_prefix+'-'+'total_price_0';
     item =  document.getElementById(item_id).value
     if ( item !==""){
@@ -177,8 +222,9 @@ function myFunction(object) {
                 url: "item/"+item,
                 contentType: 'application/json',
                 success: function(data){
-                        var price_per_item = data['avg_cost']
+                        var price_per_item = data['avg_cost'];
                         var total_per_item = price_per_item * object.value;
+                        document.getElementById(total_price_id).disabled = false;
                         document.getElementById(total_price_id).value = total_per_item;
                         grandTotal();
 
@@ -201,8 +247,9 @@ function grandTotal(){
     for (i = 0; i < x.length; i++) {
       if (x[i].value){
         grand_total = grand_total + Number(x[i].value);
-        }
-     }
+        };
+     };
+    document.getElementById("id_total_price_0").disabled =false;
     document.getElementById("id_total_price_0").value = grand_total;
 
 }
@@ -212,6 +259,14 @@ function grandTotal(){
     var form_idx = $('#id_purchasetransaction_set-TOTAL_FORMS').val();
     $('#purchase_set').append($('#empty_form').html().replace(/__prefix__/g, form_idx));
     $('#id_purchasetransaction_set-TOTAL_FORMS').val(parseInt(form_idx) + 1);
+    var current_indx = Number(form_idx)
+<!--    document.getElementById("id_purchasetransaction_set-"+current_indx+"-total_price_0").disabled = true-->
+    document.getElementById("serial").innerHTML = Number(form_idx)+1;
+
+
+
+
+
   });
 </script>
 {% endblock js %}

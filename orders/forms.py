@@ -7,6 +7,7 @@ from orders.models import PurchaseOder, PurchaseTransaction, SalesOrder, SalesTr
 from djmoney.models.fields import MoneyField
 from dal import autocomplete
 
+
 class PurchaseOrderCreationForm(forms.ModelForm):
     class Meta:
         model = PurchaseOder
@@ -17,7 +18,7 @@ class PurchaseOrderCreationForm(forms.ModelForm):
 
     def __init__(self, *args, **kwargs):
         super(PurchaseOrderCreationForm, self).__init__(*args, **kwargs)
-        self.fields['total_price'].disabled = True
+        #self.fields['total_price'].disabled = True
         amount, currency = self.fields['total_price'].fields
         self.fields['total_price'].widget = CustomMoneyWidget(
             amount_widget=amount.widget, currency_widget=currency.widget)
@@ -36,8 +37,9 @@ class CustomMoneyWidget(MoneyWidget):
 
 
 class PurchaseTransactionCreationForm(forms.ModelForm):
-    uom_dummy = forms.CharField(max_length=30)
-    unit_price_dummy = forms.DecimalField(max_digits=2)
+    temp_uom = forms.CharField(max_length=30, required=False)
+    temp_unit_price = forms.DecimalField(max_digits=10, required=False)
+
     class Meta:
         model = PurchaseTransaction
         exclude = ('created_at', 'last_updated_at', 'created_by', 'last_updated_by')
@@ -53,9 +55,9 @@ class PurchaseTransactionCreationForm(forms.ModelForm):
         amount, currency = self.fields['total_price'].fields
         self.fields['total_price'].widget = CustomMoneyWidget(
             amount_widget=amount.widget, currency_widget=currency.widget)
-        self.fields['uom_dummy'].disabled = True
-        self.fields['unit_price_dummy'].disabled = True
-        self.fields['total_price'].disabled = True
+        #self.fields['temp_uom'].disabled = True
+        #self.fields['temp_unit_price'].disabled = True
+        # self.fields['total_price'].disabled = True
 
         for field in self.fields:
             if field == 'total_price':

@@ -30,9 +30,9 @@ def create_purchase_order_view(request):
             po_obj = po_form.save(commit=False)
             po_obj.created_by = request.user
             po_obj.company = request.user.company
-            po_instance = po_obj.save()
+            po_obj.save()
 
-            po_transaction_inlineformset = purchase_transaction_formset(request.POST, instance=po_instance)
+            po_transaction_inlineformset = purchase_transaction_formset(request.POST, instance=po_obj)
             if po_transaction_inlineformset.is_valid():
                 po_transaction_obj = po_transaction_inlineformset.save(commit=False)
                 for po_transaction in po_transaction_obj:
@@ -44,9 +44,12 @@ def create_purchase_order_view(request):
                 elif 'Save and add' in request.POST:
                     return redirect('orders:create-po')
             else:
+                print("************")
                 print(po_transaction_inlineformset.errors)
         else:
+            print("))))))))))))))))")
             print(po_form.errors)
+            print(po_transaction_inlineformset.errors)
     items = Item.objects.all()
     subcontext = {
         'po_form': po_form,
