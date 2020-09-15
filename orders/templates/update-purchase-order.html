@@ -77,17 +77,16 @@
                <div class="form-group col-md-1">
                    <label>{% trans "Unit" %}</label>
                </div>
-               <div class="form-group col-md-2">
+               <div class="form-group col-md-3">
                    <label>{% trans "Price per unit" %}</label>
                </div>
                  <div class="form-group col-md-3">
                    <label>{% trans "Total Price" %}</label>
                </div>
-                <div class="form-group col-md-1 text-center">
-                     <label>{% trans "Delete" %}</label>
-                 </div>
+
             </div>
-        {{ po_transaction_inlineformset.management_form }}
+
+      {{ po_transaction_inlineformset.management_form }}
        {% for form in po_transaction_inlineformset %}
             {{ form.id }}
             {{ form.media }}
@@ -101,22 +100,18 @@
              <div class="form-group col-md-1">
                {{form.temp_uom}}
              </div>
-             <div class="form-group col-md-2">
+             <div class="form-group col-md-3">
              {{form.price_per_unit}}
              </div>
              <div class="form-group col-md-3">
                {{form.total_price}}
              </div>
-             <div class="form-group col-md-1 text-center">
-                      {{ form.DELETE }}
-             </div>
+
            </div>
            {% endfor %}
-          </div>
+         </div>
         </div>
       </div>
-
-
       </div>
 
 
@@ -124,7 +119,6 @@
           <div id="empty_form" style="display:none">
                   <table class='no_error'>
                     <div class="form-row">
-                        {{ po_transaction_inlineformset.empty_form.media }}
                       <div class="form-group col-md-4">
                         {{ po_transaction_inlineformset.empty_form.item}}
                       </div>
@@ -134,15 +128,13 @@
                       <div class="form-group col-md-1">
                         {{ po_transaction_inlineformset.empty_form.temp_uom}}
                       </div>
-                      <div class="form-group col-md-2">
+                      <div class="form-group col-md-3">
                         {{ po_transaction_inlineformset.empty_form.price_per_unit }}
                       </div>
                       <div class="form-group col-md-3 text-center">
                         {{ po_transaction_inlineformset.empty_form.total_price}}
                       </div>
-                        <div class="form-group col-md-1 text-center">
-                        {{ po_transaction_inlineformset.empty_form.DELETE}}
-                      </div>
+
                     </div>
                   </table>
                 </div>
@@ -158,11 +150,6 @@
 {% endblock body %}
 
 {% block js %}
-<script>
-    $(document).ready(function() {
-
-    });
-</script>
 
 <script>
     function myAction(object) {

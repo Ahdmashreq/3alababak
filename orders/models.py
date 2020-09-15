@@ -3,15 +3,17 @@ from djmoney.models.fields import MoneyField
 from account.models import Supplier, Customer, Company
 from inventory.models import Item
 from django.conf import settings
-#import django_filters
+
+
+# import django_filters
 
 
 # Create your models here.
 class PurchaseOder(models.Model):
     company = models.ForeignKey(Company, on_delete=models.CASCADE)
     supplier = models.ForeignKey(Supplier, on_delete=models.CASCADE, )
-    code = models.CharField(max_length=10)
-    total_price = MoneyField(max_digits=14, decimal_places=2, default_currency='EGP')
+    order_name = models.CharField(max_length=10)
+    total_price = MoneyField(max_digits=14, decimal_places=2,null=True, blank=True,  default_currency='EGP')
     status = models.CharField(max_length=8,
                               choices=[('received', 'Received'), ('returned', 'Returned'), ('shipping', 'Shipping')])
     date = models.DateField(null=True, blank=True)
@@ -22,7 +24,7 @@ class PurchaseOder(models.Model):
     last_updated_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, null=True)
 
     def __str__(self):
-        return self.code
+        return self.order_name
 
 
 class SalesOrder(models.Model):
@@ -48,7 +50,8 @@ class PurchaseTransaction(models.Model):
     purchase_order = models.ForeignKey(PurchaseOder, on_delete=models.CASCADE, )
     item = models.ForeignKey(Item, on_delete=models.CASCADE, )
     quantity = models.IntegerField()
-    total_price = MoneyField(max_digits=14, decimal_places=2, default_currency='EGP')
+    price_per_unit = MoneyField(max_digits=14, decimal_places=2,null=True, blank=True, default_currency='EGP')
+    total_price = MoneyField(max_digits=14, decimal_places=2, null=True, blank=True, default_currency='EGP')
     created_at = models.DateField(auto_now_add=True, null=True)
     last_updated_at = models.DateField(null=True, auto_now=True, auto_now_add=False)
     created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, null=True,
@@ -57,7 +60,7 @@ class PurchaseTransaction(models.Model):
 
 
 def __str__(self):
-    return self.purchase_order.code + " Transaction"
+    return self.item
 
 
 class SalesTransaction(models.Model):
@@ -79,3 +82,22 @@ class SalesTransaction(models.Model):
 #     class Meta:
 #         model = PurchaseTransaction
 #         fields = ['item']
+
+class ReceivingTransaction(models.Model):
+    po_transaction = models.ForeignKey(PurchaseTransaction, on_delete=models.CASCADE, )
+    date = models.DateField(null=True, blank=True)
+    received_quantity = models.IntegerField()
+    created_at = models.DateField(auto_now_add=True, null=True)
+    last_updated_at = models.DateField(null=True, auto_now=True, auto_now_add=False)
+    created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, null=True,
+                                   related_name="receiving_transaction_created_by")
+    last_updated_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, null=True)
+
+
+    def __str__(self):
+        return self.po_transaction
+
+class PoReceiving(models.Model):
+    receiving_transaction = models.ForeignKey(ReceivingTransaction, on_delete=models.CASCADE, )
+    po_transaction = models.ForeignKey(PurchaseTransaction, on_delete=models.CASCADE, )
+

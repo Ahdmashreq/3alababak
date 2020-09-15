@@ -1,3 +1,4 @@
+from django.conf.urls import url
 from django.urls import path
 from orders import views
 
@@ -12,6 +13,9 @@ urlpatterns = [
     path('update/sale-order/<id>', views.update_sale_order_view, name='update-so'),
     path('delete/sale-order/<id>', views.delete_sale_order_view, name='delete-so'),
     path('purchase/item/<id>', views.get_item, name='get-item'),
-    path('po/autocomplete/', views.ItemAutocomplete.as_view(), name='items_list',),
+    path('po/autocomplete/', views.ItemAutocomplete.as_view(), name='items_list', ),
+    path('list/receivings/<int:id>', views.list_receiving, name='list-receiving', ),
+    path('create/receiving-transactions/<int:id>', views.create_receiving, name='create-receiving', ),
+    path('list/purchases-for-receiving/', views.list_purchases_for_receiving, name='list-po-for-receiving'),
 
 ]
