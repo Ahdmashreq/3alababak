@@ -167,6 +167,8 @@ CACHES = {
 CITIES_LIGHT_TRANSLATION_LANGUAGES = ['ar', 'en']
 CITIES_LIGHT_INCLUDE_COUNTRIES = ['EG','UAE','SA']
 
+# ident pixilation for displaying category tree
+MPTT_ADMIN_LEVEL_INDENT = 20
 
 # Activate Django-Heroku.
 django_heroku.settings(locals())

@@ -34,7 +34,7 @@ def list_categorires_view(request):
     categoryContext = {
         'categories_list': categories_list
     }
-    return render(request, 'list-categories.html', context=categoryContext)
+    return render(request, 'list-category.html', context=categoryContext)
 
 
 def list_brands_view(request):
@@ -321,7 +321,7 @@ def update_stoke_take_view(request, id):
 
 def list_stoketake_entries(request):
     stoke_list = StokeTake.objects.exclude(status='Approved')
-    context = {"title":"Stoke Take Entries","entry_mode": True, 'stoke_list': stoke_list}
+    context = {"title": "Stoke Take Entries", "entry_mode": True, 'stoke_list': stoke_list}
 
     return render(request, 'list-stokes.html', context=context)
 
@@ -430,3 +430,34 @@ def approve_stoke_view(request, id):
     sub_context = {'title': "Approve Stoke", 'stoke_entry_inlineformset': stoke_entry_inline_formset,
                    'stoke_form': stoke_take_form}
     return render(request, 'approve-stoke.html', context=sub_context)
+
+
+def delete_category_view(request, id):
+    category = Category.objects.get(pk=id)
+    deleted = category.delete()
+    if deleted:
+        messages.success(request, "Deleted Successfully")
+    else:
+        messages.error(request, "Error Not deleted")
+    return redirect('inventory:list-categories')
+
+
+def update_category_view(request, id):
+    category = Category.objects.get(id=id)
+    category_form = CategoryForm(instance=category)
+    if request.method == 'POST':
+        category_form = CategoryForm(request.POST,instance=category)
+        if category_form.is_valid():
+            category_obj = category_form.save(commit=False)
+            category_obj.last_updated_by = request.user
+            category_obj.save()
+            if 'Save and exit' in request.POST:
+                return redirect('inventory:list-categories')
+
+    categoryContext = {
+        'category_form': category_form,
+        'title': 'Update Category',
+        'update':True,
+
+    }
+    return render(request, 'create-category.html', context=categoryContext)

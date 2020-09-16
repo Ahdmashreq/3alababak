@@ -1,15 +1,18 @@
 from django.contrib import admin
 from inventory.models import *
+from mptt.admin import MPTTModelAdmin
+
+
 
 # Register your models here.
 # admin.site.register(product,)
 admin.site.register(Brand)
-admin.site.register(Category)
+#admin.site.register(Category)
 admin.site.register(Uom)
 # admin.site.register(item)
 # admin.site.register(product_attribute)
 admin.site.register(Attribute)
-
+admin.site.register(Category, MPTTModelAdmin)
 
 # admin.site.register(item_attribute_value)
 
