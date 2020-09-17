@@ -1,58 +1,110 @@
 <!DOCTYPE html>
 {% load static %}
-<html lang="en">
+{% load i18n %}
+{% load l10n %}
+{% get_current_language as LANGUAGE_CODE %}
+{% get_current_language_bidi as LANGUAGE_BIDI %}
+<html {% if LANGUAGE_BIDI %} dir="rtl" {% else %} dir="ltr" {% endif %}>
 
 <head>
-  <meta charset="utf-8" />
-  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
-  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
-  <meta name="description" content="" />
-  <meta name="author" content="" />
+  <meta charset="UTF-8">
   <title>3alababak</title>
-  <link href="{% static 'css/styles.css' %}" rel="stylesheet" />
-  <link href="https://cdn.datatables.net/1.10.20/css/dataTables.bootstrap4.min.css" rel="stylesheet" crossorigin="anonymous" />
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.11.2/js/all.min.js" crossorigin="anonymous"></script>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <link rel="icon" type="image/png" href="{% static "src/logos/3alababak_icon.png"%}">
+  <link rel="stylesheet" href="{% static "src/font/iconsmind-s/css/iconsminds.css" %}" />
+  <link rel="stylesheet" href="{% static "src/font/simple-line-icons/css/simple-line-icons.css" %}" />
 
+  <link rel="stylesheet" href="{% static "src/css/vendor/bootstrap.min.css" %}" />
+  <link rel="stylesheet" href="{% static "src/css/vendor/bootstrap.rtl.only.min.css" %}" />
+  <link rel="stylesheet" href="{% static "src/css/vendor/fullcalendar.min.css" %}" />
+  <link rel="stylesheet" href="{% static "src/css/vendor/dataTables.bootstrap4.min.css" %}" />
+  <link rel="stylesheet" href="{% static "src/css/vendor/datatables.responsive.bootstrap4.min.css" %}" />
+  <link rel="stylesheet" href="{% static "src/css/vendor/select2.min.css" %}" />
+  <link rel="stylesheet" href="{% static "src/css/vendor/perfect-scrollbar.css" %}" />
+  <link rel="stylesheet" href="{% static "src/css/vendor/glide.core.min.css" %}" />
+  <link rel="stylesheet" href="{% static "src/css/vendor/bootstrap-stars.css" %}" />
+  <link rel="stylesheet" href="{% static "src/css/vendor/nouislider.min.css" %}" />
+  <link rel="stylesheet" href="{% static "src/css/vendor/bootstrap-datepicker3.min.css" %}" />
+  <link rel="stylesheet" href="{% static "src/css/vendor/component-custom-switch.min.css" %}" />
+  <link rel="stylesheet" href="{% static 'src/css/main.css' %}" />
+  <link rel="stylesheet" href="{% static "src/css/dore.light.redruby.min.css" %}" />
   <!-- the following two lines for select2 lip -->
   <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.8.3/jquery.min.js"></script>
   <script src="http://code.jquery.com/ui/1.9.2/jquery-ui.js"></script>
+
+
+
+
 </head>
+{% block style %}
+{% endblock style  %}
 
-<body class="sb-nav-fixed">
-  <nav class="sb-topnav navbar navbar-expand navbar-dark bg-dark">
+<body id="app-container" class="menu-default show-spinner">
+
+  <nav class="navbar fixed-top">
     {% include 'top-nav.html' %}
-
   </nav>
-  <div id="layoutSidenav">
-    <div id="layoutSidenav_nav">
-      <nav class="sb-sidenav accordion sb-sidenav-dark" id="sidenavAccordion">
-        <div class="sb-sidenav-menu">
-          {% include 'side-bar.html' %}
-        </div>
-        <div class="sb-sidenav-footer">
-          <div class="small">Logged in as:</div>
-          {{request.user}}
-        </div>
-      </nav>
-    </div>
-    <div id="layoutSidenav_content">
-      <main>
-        {% block body %}
-        {% endblock body %}
-      </main>
-    </div>
+  <div class="menu">
+    {% include 'side-bar.html' %}
   </div>
-  <script src="https://code.jquery.com/jquery-3.4.1.min.js" crossorigin="anonymous"></script>
-  <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.bundle.min.js" crossorigin="anonymous"></script>
-  <script src="{% static 'js/scripts.js' %}"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.8.0/Chart.min.js" crossorigin="anonymous"></script>
-  <script src="{% static 'assets/demo/chart-area-demo.js' %}"></script>
-  <script src="{% static 'assets/demo/chart-bar-demo.js' %}"></script>
-  <script src="https://cdn.datatables.net/1.10.20/js/jquery.dataTables.min.js" crossorigin="anonymous"></script>
-  <script src="https://cdn.datatables.net/1.10.20/js/dataTables.bootstrap4.min.js" crossorigin="anonymous"></script>
-  <script src="{% static 'assets/demo/datatables-demo.js' %}"></script>
-  {% block js %}
-  {% endblock js %}
+
+  <main>
+
+    <div class="container-fluid">
+      {% block body %}
+      {% endblock body %}
+    </div>
+  </main>
+
+  <footer class="page-footer">
+    {% include 'footer.html' %}
+  </footer>
+
+
+  <script src="{% static "src/js/vendor/jquery-3.3.1.min.js" %}"></script>
+  <script src="{% static "src/js/vendor/bootstrap.bundle.min.js" %}"></script>
+  <script src="{% static "src/js/vendor/Chart.bundle.min.js" %}"></script>
+  <script src="{% static "src/js/vendor/chartjs-plugin-datalabels.js" %}"></script>
+  <script src="{% static "src/js/vendor/moment.min.js" %}"></script>
+  <script src="{% static "src/js/vendor/fullcalendar.min.js" %}"></script>
+  <script src="{% static "src/js/vendor/datatables.min.js" %}"></script>
+  <script src="{% static "src/js/vendor/perfect-scrollbar.min.js" %}"></script>
+  <script src="{% static "src/js/vendor/progressbar.min.js" %}"></script>
+  <script src="{% static "src/js/vendor/jquery.barrating.min.js" %}"></script>
+  <script src="{% static "src/js/vendor/select2.full.js" %}"></script>
+  <script src="{% static "src/js/vendor/nouislider.min.js" %}"></script>
+  <script src="{% static "src/js/vendor/bootstrap-datepicker.js" %}"></script>
+  <script src="{% static "src/js/vendor/Sortable.js" %}"></script>
+  <script src="{% static "src/js/vendor/mousetrap.min.js" %}"></script>
+  <script src="{% static "src/js/vendor/glide.min.js" %}"></script>
+
+  <script src="{% static "src/js/dore.script.js" %}"></script>
+  <script src="{% static "src/js/scripts.single.theme.js" %}"></script>
+
+  <script type="text/javascript">
+    $(".color").click(function() { //toggleClass
+      if ($(this).hasClass("active")) {
+        console.log('clicked');
+        //$(this).addClass("active");
+        $(this).removeClass("active");
+      } else {
+        console.log('testclicked');
+        $(this).addClass("active");
+      }
+      localStorage.setItem("active", $(this).parent().index());
+      localStorage.setItem("activec", $(this).index());
+      console.log('testclickeding' + $(this).parent().index() + $(this).index());
+
+    });
+
+    var ele = localStorage.getItem("active");
+    var ele1 = localStorage.getItem("activec");
+    //$('ul li:eq(' + ele1 + ')').find('a').addClass("active");
+    $('ul li:eq(' + ele1 + ')').find('a').addClass("active");
+    $('ul li:eq(' + ele + ')').addClass("active");
+    console.log('testclicked' + ele + ele1);
+  </script>
+  {% block js %}{% endblock js %}
 </body>
 
 </html>
