@@ -58,5 +58,5 @@ class CompanyCreationForm(forms.ModelForm):
                 self.fields[field].widget.attrs['class'] = 'form-control'
 
 
-customer_address_formset = inlineformset_factory(Customer, Address, form=AddressCreationForm, extra=1, can_delete=False)
-supplier_address_formset = inlineformset_factory(Supplier, Address, form=AddressCreationForm, extra=1, can_delete=False)
+customer_address_formset = inlineformset_factory(Customer, Address, form=AddressCreationForm, extra=0, can_delete=False)
+supplier_address_formset = inlineformset_factory(Supplier, Address, form=AddressCreationForm, extra=0, can_delete=False)

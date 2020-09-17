@@ -74,7 +74,6 @@
           </div>
         </div>
         <!-- Address part  -->
-      {{ address_inlineformset.management_form }}
       <div id="form_set">
         <div class="form-row">
            <div class="form-group col-md-2">
@@ -95,6 +94,7 @@
            <div class="form-group col-md-2">
                <label>{% trans "Zip code" %}</label>
            </div>
+            {{ address_inlineformset.management_form }}
            {% for form in address_inlineformset.forms %}
              <div class="form-group col-md-2">
                {{ form.address }}
@@ -165,9 +165,9 @@
 {% block js %}
 <script>
   $('#add_more').click(function() {
-    var form_idx = $('#id_form-TOTAL_FORMS').val();
+    var form_idx = $('#id_address_set-TOTAL_FORMS').val();
     $('#form_set').append($('#empty_form').html().replace(/__prefix__/g, form_idx));
-    $('#id_form-TOTAL_FORMS').val(parseInt(form_idx) + 1);
+    $('#id_address_set-TOTAL_FORMS').val(parseInt(form_idx) + 1);
   });
 </script>
 {% endblock js %}

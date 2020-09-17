@@ -50,6 +50,7 @@ def create_purchase_order_view(request):
             print(po_form.errors)
             print(po_transaction_inlineformset.errors)
     items = Item.objects.all()
+    print(po_form['total_price'].field.localize)
     subcontext = {
         'po_form': po_form,
         'po_transaction_inlineformset': po_transaction_inlineformset,
