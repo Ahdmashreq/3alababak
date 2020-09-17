@@ -1,10 +1,10 @@
 from django.db.models import Q
 from django.shortcuts import render, redirect
 from django.contrib import messages
-from inventory.models import (Category, Brand, Product, Attribute, Item, Uom, StokeTake, StokeEntry)
+from inventory.models import (Category, Brand, Product, Attribute, Item, Uom, StokeTake, StokeEntry, UomCategory)
 from inventory.forms import (CategoryForm, category_model_formset, BrandForm, brand_model_formset,
                              AttributeForm, attribute_model_formset, ProductForm, product_item_inlineformset,
-                             uom_formset, StokeTakeForm, UOMForm, stoke_entry_formset, StokeEntryForm)
+                             uom_formset, StokeTakeForm, UOMForm, stoke_entry_formset, StokeEntryForm, UomCategoryForm)
 
 
 def create_category_view(request):
@@ -446,7 +446,7 @@ def update_category_view(request, id):
     category = Category.objects.get(id=id)
     category_form = CategoryForm(instance=category)
     if request.method == 'POST':
-        category_form = CategoryForm(request.POST,instance=category)
+        category_form = CategoryForm(request.POST, instance=category)
         if category_form.is_valid():
             category_obj = category_form.save(commit=False)
             category_obj.last_updated_by = request.user
@@ -457,7 +457,33 @@ def update_category_view(request, id):
     categoryContext = {
         'category_form': category_form,
         'title': 'Update Category',
-        'update':True,
+        'update': True,
 
     }
     return render(request, 'create-category.html', context=categoryContext)
+
+
+def create_uom_category(request):
+    category_form = UomCategoryForm()
+    uom_categories = UomCategory.objects.all()
+    if request.method == 'POST':
+        category_form = UomCategoryForm(request.POST)
+        if category_form.is_valid():
+            category_obj = category_form.save(commit=False)
+            category_obj.company = request.user.company
+            category_obj.created_by = request.user
+            category_obj.save()
+            messages.success(request, 'UOM Category created successfully')
+            uom_categories = UomCategory.objects.all()
+        else:
+            messages.error(request, 'UOM Category NOT created')
+    context = {'category_from': category_form,"uom_category_list": uom_categories}
+    return redirect('inventory:list-uom-category')
+
+
+def list_uom_category(request):
+    uom_categories = UomCategory.objects.all()
+    print(uom_categories)
+    uom_category_form = UomCategoryForm()
+    context = {"uom_category_list": uom_categories, 'category_from': uom_category_form}
+    return render(request,'list-uom-categories.html', context=context)

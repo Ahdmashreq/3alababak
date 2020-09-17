@@ -40,16 +40,32 @@ class Category(MPTTModel):
         return self.name
 
 
+class UomCategory(models.Model):
+    name = models.CharField(max_length=30)
+    company = models.ForeignKey(Company, on_delete=models.CASCADE, )
+    created_at = models.DateField(auto_now_add=True, null=True)
+    last_updated_at = models.DateField(null=True, auto_now=True, auto_now_add=False)
+    created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, null=True,
+                                   related_name="uom_category_created_by")
+    last_updated_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, null=True,blank=True)
+
+    def __str__(self):
+        return self.name
+
+
 class Uom(models.Model):
     company = models.ForeignKey(Company, on_delete=models.CASCADE, )
     name = models.CharField(max_length=30)
-    type = models.CharField(max_length=30)
-    description = models.CharField(max_length=150, blank=True, null=True)
+    type = models.CharField(max_length=30, choices=[('reference', 'Reference Unit of Measure of this category'),
+                                                    ('smaller', 'Smaller Than The Reference Unit of Measure '),
+                                                    ('bigger', 'Bigger Than The Reference Unit of Measure')])
+    ratio = models.DecimalField(max_digits=14, decimal_places=2,null=True,blank=True, help_text="A content for this thing")
+    category = models.ForeignKey(UomCategory, on_delete=models.CASCADE, )
     created_at = models.DateField(auto_now_add=True, null=True)
     last_updated_at = models.DateField(null=True, auto_now=True, auto_now_add=False)
     created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, null=True,
                                    related_name="uom_created_by")
-    last_updated_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, null=True)
+    last_updated_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, null=True,blank=True)
 
     def __str__(self):
         return self.name
@@ -62,13 +78,12 @@ class Product(models.Model):
                               related_name='product_category')
     name = models.CharField(max_length=30)
     description = models.CharField(max_length=30, blank=True, null=True)
-    uom = models.ForeignKey(Uom, on_delete=models.CASCADE, blank=True, null=True)
 
     created_at = models.DateField(auto_now_add=True, null=True)
     last_updated_at = models.DateField(null=True, auto_now=True, auto_now_add=False)
     created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, null=True,
                                    related_name="product_created_by")
-    last_updated_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, null=True)
+    last_updated_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, null=True,blank=True)
 
     def __str__(self):
         return self.name
@@ -82,7 +97,7 @@ class Attribute(models.Model):
     last_updated_at = models.DateField(null=True, auto_now=True, auto_now_add=False)
     created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, null=True,
                                    related_name="attribute_created_by")
-    last_updated_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, null=True)
+    last_updated_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, null=True,blank=True)
 
     def __str__(self):
         return self.name
@@ -95,7 +110,7 @@ class ProductAttribute(models.Model):
     last_updated_at = models.DateField(null=True, auto_now=True, auto_now_add=False)
     created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, null=True,
                                    related_name="product_attribute_created_by")
-    last_updated_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, null=True)
+    last_updated_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, null=True,blank=True)
 
     def __str__(self):
         return self.product.name + ' ' + self.attribute.name
@@ -104,7 +119,7 @@ class ProductAttribute(models.Model):
 class Item(models.Model):
     product = models.ForeignKey(Product, on_delete=models.CASCADE, )
     location = models.ForeignKey(Location, on_delete=models.CASCADE, )
-    uom = models.ForeignKey(Uom, on_delete=models.CASCADE, blank=True, null=True,related_name='uom')
+    uom = models.ForeignKey(Uom, on_delete=models.CASCADE, blank=True, null=True, related_name='uom')
     name = models.CharField(max_length=30)
     description = models.CharField(max_length=30, blank=True, null=True)
     quantity = models.IntegerField()
@@ -118,7 +133,7 @@ class Item(models.Model):
     last_updated_at = models.DateField(null=True, auto_now=True, auto_now_add=False)
     created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, null=True,
                                    related_name="item_created_by")
-    last_updated_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, null=True)
+    last_updated_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, null=True,blank=True)
 
     def __str__(self):
         return self.name
@@ -132,7 +147,7 @@ class ItemAttributeValue(models.Model):
     last_updated_at = models.DateField(null=True, auto_now=True, auto_now_add=False)
     created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, null=True,
                                    related_name="item_attribute_created_by")
-    last_updated_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, null=True)
+    last_updated_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, null=True,blank=True)
 
     def __str__(self):
         return self.item.name + ' ' + self.attribute.name
@@ -149,13 +164,14 @@ class StokeTake(models.Model):
                                      ('random', 'Random')], default='all')
     date = models.DateField(null=True, blank=True)
     status = models.CharField(max_length=30, choices=[('Drafted', 'Drafted'), ('In Progress', 'In Progress'),
-                                                      ('Pending Approval', 'Pending Approval'),('Approved','Approved'),
+                                                      ('Pending Approval', 'Pending Approval'),
+                                                      ('Approved', 'Approved'),
                                                       ('Done', 'Done')], default='Drafted')
     created_at = models.DateField(auto_now_add=True, null=True)
     last_updated_at = models.DateField(null=True, auto_now=True, auto_now_add=False)
     created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, null=True,
                                    related_name="stoketake_created_by")
-    last_updated_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, null=True)
+    last_updated_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, null=True,blank=True)
 
     def __str__(self):
         return self.name
@@ -170,7 +186,7 @@ class StokeEntry(models.Model):
     last_updated_at = models.DateField(null=True, auto_now=True, auto_now_add=False)
     created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, null=True,
                                    related_name="stoke_entry_created_by")
-    last_updated_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, null=True)
+    last_updated_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, null=True,blank=True)
 
     def __str__(self):
         return self.item.name

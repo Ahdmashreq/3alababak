@@ -13,7 +13,7 @@ admin.site.register(Uom)
 # admin.site.register(product_attribute)
 admin.site.register(Attribute)
 admin.site.register(Category, MPTTModelAdmin)
-
+admin.site.register(UomCategory)
 # admin.site.register(item_attribute_value)
 
 class ItemAttributeValueInline(admin.TabularInline):

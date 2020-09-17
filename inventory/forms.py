@@ -1,6 +1,6 @@
 from django import forms
 from django.forms import inlineformset_factory, modelformset_factory
-from inventory.models import (Category, Brand, Attribute, Uom, Item, Product, StokeTake, StokeEntry, Uom, )
+from inventory.models import (Category, Brand, Attribute, Uom, Item, Product, StokeTake, StokeEntry, Uom,UomCategory)
 from mptt.forms import TreeNodeChoiceField
 
 
@@ -63,6 +63,10 @@ class UOMForm(forms.ModelForm):
         model = Uom
         fields = '__all__'
         exclude = ('company', 'created_at', 'last_updated_at', 'created_by', 'last_updated_by')
+        widgets = {
+            'type': forms.Select(attrs={'onchange': 'myFunction()'}),
+        }
+        help_texts = {'ratio': "1*(this unit) = ratio * Reference unit of measurement", }
 
     def __init__(self, *args, **kwargs):
         super(UOMForm, self).__init__(*args, **kwargs)
@@ -71,6 +75,7 @@ class UOMForm(forms.ModelForm):
                 self.fields[field].widget.attrs['class'] = 'form-check-input'
             else:
                 self.fields[field].widget.attrs['class'] = 'form-control'
+
 
 
 uom_formset = modelformset_factory(Uom, form=UOMForm, extra=3, can_delete=False)
@@ -164,5 +169,14 @@ class StokeEntryForm(forms.ModelForm):
             else:
                 self.fields[field].widget.attrs['class'] = 'form-control'
 
+class UomCategoryForm(forms.ModelForm):
+    class Meta:
+        model =UomCategory
+        exclude = ('company','created_at', 'last_updated_at', 'created_by', 'last_updated_by')
+
+    def __init__(self, *args, **kwargs):
+        super(UomCategoryForm, self).__init__(*args, **kwargs)
+        for field in self.fields:
+            self.fields[field].widget.attrs['class'] = 'form-control'
 
 stoke_entry_formset = inlineformset_factory(StokeTake, StokeEntry, form=StokeEntryForm, extra=0, can_delete=False)

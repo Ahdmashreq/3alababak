@@ -41,16 +41,20 @@
         {% csrf_token %}
         <div class="form-row">
           <div class="form-group col-md-6">
-            <label>UOM Name <span class="required">*</span></label>
+            <label>Unit Of Measurement <span class="required">*</span></label>
             {{uom_from.name}}
           </div>
-          <div class="form-group col-md-6">
-            <label>UOM Description <span class="required">*</span></label>
-            {{uom_from.description}}
+          <div class="form-group col-md-6" id="type">
+            <label>Type <span class="required">*</span></label>
+            {{uom_from.type}}
           </div>
           <div class="form-group col-md-6">
-            <label>UOM Type <span class="required">*</span></label>
-            {{uom_from.type}}
+            <label>Category <span class="required">*</span></label>
+            {{uom_from.category}}
+          </div>
+          <div class="form-group col-md-6" id="ratio">
+            <label>Ratio</label>
+            {{uom_from.ratio}}
           </div>
 
         </div>
@@ -67,4 +71,23 @@
 
 </div>
 
+<script>
+
+
+
+    if(document.getElementById('id_type').value == 'reference' || document.getElementById('id_type').value == ''){
+
+    document.getElementById('ratio').style.display = 'none';
+    }
+
+    function myFunction() {
+
+      if(document.getElementById('id_type').value != 'reference') {
+        document.getElementById('ratio').style.display = 'block';
+       }else {
+       document.getElementById('ratio').style.display = 'none';
+
+}
+}
+</script>
 {% endblock %}
