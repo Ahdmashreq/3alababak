@@ -18,7 +18,6 @@ TEMPLATES_DIR = os.path.join(BASE_DIR, "alababak", "templates")
 STATIC_DIR = os.path.join(BASE_DIR, "alababak", "static")
 MEDIA_DIR = os.path.join(BASE_DIR, "alababak", "media")
 
-
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/2.2/howto/deployment/checklist/
 
@@ -29,7 +28,6 @@ SECRET_KEY = 'udi2s+pa_3xphtm-9upkzn7c0omv*my_e-up_d$ph++-z)g3kv'
 DEBUG = True
 
 ALLOWED_HOSTS = ['127.0.0.1']
-
 
 # Application definition
 
@@ -79,13 +77,13 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
+                'currencies.context_processors.currencies',
             ],
         },
     },
 ]
 
 WSGI_APPLICATION = 'alababak.wsgi.application'
-
 
 # Database
 # https://docs.djangoproject.com/en/2.2/ref/settings/#databases
@@ -117,10 +115,10 @@ AUTH_PASSWORD_VALIDATORS = [
 
 DATE_INPUT_FORMATS = [
     '%Y-%m-%d', '%m/%d/%Y', '%m/%d/%y',  # '2006-10-25', '10/25/2006', '10/25/06'
-    '%b %d %Y', '%b %d, %Y',             # 'Oct 25 2006', 'Oct 25, 2006'
-    '%d %b %Y', '%d %b, %Y',             # '25 Oct 2006', '25 Oct, 2006'
-    '%B %d %Y', '%B %d, %Y',             # 'October 25 2006', 'October 25, 2006'
-    '%d %B %Y', '%d %B, %Y',             # '25 October 2006', '25 October, 2006'
+    '%b %d %Y', '%b %d, %Y',  # 'Oct 25 2006', 'Oct 25, 2006'
+    '%d %b %Y', '%d %b, %Y',  # '25 Oct 2006', '25 Oct, 2006'
+    '%B %d %Y', '%B %d, %Y',  # 'October 25 2006', 'October 25, 2006'
+    '%d %B %Y', '%d %B, %Y',  # '25 October 2006', '25 October, 2006'
 ]
 
 # Internationalization
@@ -142,7 +140,7 @@ LANGUAGES = (
 )
 
 LOCALE_PATHS = (
-                os.path.join(BASE_DIR, 'locale'),
+    os.path.join(BASE_DIR, 'locale'),
 )
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/2.0/howto/static-files/
@@ -151,7 +149,7 @@ STATIC_URL = '/static/'
 
 STATICFILES_DIRS = [
     STATIC_DIR,
-    ]
+]
 
 # Media files uploaded by user (images etc.)
 MEDIA_URL = '/media/'
@@ -162,13 +160,18 @@ AUTH_USER_MODEL = 'custom_user.User'
 CACHES = {
     'default': {
         'BACKEND': 'django.core.cache.backends.dummy.DummyCache',
-   }
+    }
 }
 CITIES_LIGHT_TRANSLATION_LANGUAGES = ['ar', 'en']
-CITIES_LIGHT_INCLUDE_COUNTRIES = ['EG','UAE','SA']
+CITIES_LIGHT_INCLUDE_COUNTRIES = ['EG', 'UAE', 'SA']
 
 # ident pixilation for displaying category tree
 MPTT_ADMIN_LEVEL_INDENT = 20
 
 # Activate Django-Heroku.
 django_heroku.settings(locals())
+
+# Currencies in money field
+CURRENCIES = ('USD', 'EUR', 'EGP')
+CURRENCY_CHOICES = [('USD', 'USD $'), ('EUR', 'EUR €'), ('EGP', 'EGP E£')]
+OPENEXCHANGERATES_APP_ID = "c2b2efcb306e075d9c2f2d0b614119ea"

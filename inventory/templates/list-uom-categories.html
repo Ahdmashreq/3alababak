@@ -36,6 +36,7 @@
                     </div>
                       <div class="modal-footer">
                         <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+
                        <button type="submit" class="btn btn-primary" name ='Save'>Save Changes</button>
                     </div>
                   </form>
@@ -44,6 +45,7 @@
     </div>
         </div>
       </div>
+
 
   <div class="row">
     <div class="col-12">
@@ -73,7 +75,7 @@
                         Actions
                       </a>
                       <div class="dropdown-menu" aria-labelledby="dropdownMenuLink" x-placement="top-start" style="position: absolute; will-change: transform; top: 0px; left: 0px; transform: translate3d(0px, -2px, 0px);">
-                        <a class="dropdown-item" href="#">{% trans "Update" %}</a>
+                        <a class="dropdown-item" href="{% url 'inventory:update-uom-category' id=category.id %}" data-toggle="modal" data-target="#update-{{category.id}}">{% trans "Update" %}</a>
                         <a class="dropdown-item" href="#" data-toggle="modal" data-target="#delete-modal{{category.pk}}">{% trans "Delete" %}</a>
                       </div>
                     </div>
@@ -87,11 +89,40 @@
                       </div>
                       <div class="modal-footer">
                         <button type="button" class="btn btn-secondary" data-dismiss="modal">{% trans "No" %}</button>
-                        <a href="#" class="btn btn-danger" type="button">{% trans "Delete" %}</a>
+                        <a href="{% url 'inventory:delete-uom-category' id=category.pk %}" class="btn btn-danger" type="button">{% trans "Delete" %}</a>
                       </div>
                     </div>
                   </div>
                 </div>
+                <div class="modal fade" id="update-{{category.id}}" tabindex="-1" role="dialog" aria-hidden="true">
+      <div class="modal-dialog" role="document">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="exampleModalLabel">Update Category</h5>
+            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+              <span aria-hidden="true">&times;</span>
+            </button>
+          </div>
+          <div class="modal-body">
+                  <form action="{% url 'inventory:update-uom-category' id=category.id %}" method="POST">
+                    {% csrf_token %}
+                    <div class="form-row">
+                      <div class="form-group col-md-12">
+                        <label>Category Name <span class="required">*</span></label>
+                        {{category_from.name}}
+                      </div>
+                    </div>
+                      <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                       <button type="submit" class="btn btn-primary" name ='Save'>Save Changes</button>
+                    </div>
+                  </form>
+
+      </div>
+    </div>
+        </div>
+      </div>
+
                 {% endfor %}
               </tbody>
             </table>

@@ -9,30 +9,32 @@ from dal import autocomplete
 
 
 class PurchaseOrderCreationForm(forms.ModelForm):
+    # my_global_price = forms.DecimalField(max_digits=200, decimal_places=2)
+    my_total_price_after_discount = forms.DecimalField(max_digits=200, decimal_places=2)
+
     class Meta:
         model = PurchaseOder
-        exclude = ('company', 'created_at', 'last_updated_at', 'created_by', 'last_updated_by')
+        exclude = ('currency', 'balance', 'status', 'company', 'created_at', 'last_updated_at', 'created_by',
+                   'last_updated_by')
         widgets = {
             'date': forms.DateInput(attrs={'class': 'form-control tm', 'type': 'date', })
         }
 
     def __init__(self, *args, **kwargs):
         super(PurchaseOrderCreationForm, self).__init__(*args, **kwargs)
-        amount, currency = self.fields['total_price'].fields
-        amount.widget.attrs['readonly'] = True
-        amount.disabled = True
-        currency.widget.attrs['readonly'] = True
-        currency.disabled = True
-        self.fields['total_price'].widget = CustomMoneyWidget(
-            amount_widget=amount.widget, currency_widget=currency.widget)
+        self.fields['global_price'].widget.attrs['readonly'] = True
+        self.fields['global_price'].widget.attrs['disabled'] = True
+        self.fields['my_total_price_after_discount'].widget.attrs['readonly'] = True
+        self.fields['my_total_price_after_discount'].widget.attrs['disabled'] = True
+        # amount, currency = self.fields['global_price'].fields
+        # amount.widget.attrs['readonly'] = True
+        # amount.widget.attrs['disabled'] = True
+        # currency.widget.attrs['readonly'] = True
+        # currency.widget.attrs['disabled'] = True
+        # self.fields['global_price'].widget = CustomMoneyWidget(
+        #      amount_widget=amount.widget, currency_widget=currency.widget)
         for field in self.fields:
-            if field == 'total_price':
-                self.fields[field].widget.attrs['class'] = 'form-control'
-
-            elif self.fields[field].widget.input_type == 'checkbox':
-                self.fields[field].widget.attrs['class'] = 'form-check-input'
-            else:
-                self.fields[field].widget.attrs['class'] = 'form-control'
+            self.fields[field].widget.attrs['class'] = 'form-control'
 
 
 class CustomMoneyWidget(MoneyWidget):
@@ -41,10 +43,13 @@ class CustomMoneyWidget(MoneyWidget):
 
 class PurchaseTransactionCreationForm(forms.ModelForm):
     temp_uom = forms.CharField(max_length=30, required=False)
+    # my_total_price = forms.DecimalField(max_digits=200, decimal_places=2)
+    # my_price_per_unit = forms.DecimalField(max_digits=200, decimal_places=2)
+    after_discount = forms.DecimalField(max_digits=200, decimal_places=2)
 
     class Meta:
         model = PurchaseTransaction
-        exclude = ('created_at', 'last_updated_at', 'created_by', 'last_updated_by')
+        exclude = ('currency', 'balance', 'status', 'created_at', 'last_updated_at', 'created_by', 'last_updated_by')
         widgets = {
             # 'item': forms.Select(attrs={'onchange': 'myAction(this)'}),
             'quantity': forms.TextInput(attrs={'onchange': 'myFunction(this)'}),
@@ -54,31 +59,32 @@ class PurchaseTransactionCreationForm(forms.ModelForm):
 
     def __init__(self, *args, **kwargs):
         super(PurchaseTransactionCreationForm, self).__init__(*args, **kwargs)
-        amount, currency = self.fields['total_price'].fields
-        amount2, currency2 = self.fields['price_per_unit'].fields
-        amount.widget.attrs['readonly'] = True
-        amount.disabled = True
-        currency.widget.attrs['readonly'] = True
-        currency.disabled = True
-        self.fields['temp_uom'].widget.attrs['readonly'] = True
-        amount2.widget.attrs['onchange'] = 'myFunction(this)'
+        # amount, currency = self.fields['total_price'].fields
+        # currency.initial = 'EGP'
+        # amount2, currency2 = self.fields['price_per_unit'].fields
+        # currency2.initial = 'EGP'
 
-        self.fields['price_per_unit'].widget = CustomMoneyWidget(
-            amount_widget=amount2.widget, currency_widget=currency2.widget)
-        self.fields['total_price'].widget = CustomMoneyWidget(
-            amount_widget=amount.widget, currency_widget=currency.widget)
-        # self.fields['temp_uom'].disabled = True
-        # self.fields['temp_unit_price'].disabled = True
-        # self.fields['total_price'].disabled = True
+        # amount.widget.attrs['readonly'] = True
+        # amount.widget.attrs['disabled'] = True
+        # currency.widget.attrs['readonly'] = True
+        # currency.widget.attrs['disabled'] = True
+        self.fields['temp_uom'].widget.attrs['readonly'] = True
+        self.fields['price_per_unit'].widget.attrs['onchange'] = 'myFunction(this)'
+        self.fields['total_price'].widget.attrs['readonly'] = True
+        self.fields['total_price'].widget.attrs['disabled'] = True
+        self.fields['after_discount'].widget.attrs['readonly'] = True
+        self.fields['after_discount'].widget.attrs['disabled'] = True
+
+        # amount2.widget.attrs['onchange'] = 'myFunction(this)'
+        # self.fields['price_per_unit'].widget = CustomMoneyWidget(
+        #     amount_widget=amount2.widget, currency_widget=currency2.widget)
+        # self.fields['total_price'].widget = CustomMoneyWidget(
+        #     amount_widget=amount.widget, currency_widget=currency.widget)
 
         for field in self.fields:
             if field == 'total_price':
-                self.fields[field].fields[0].widget.attrs['class'] = 'unique-class form-control'
-                self.fields[field].fields[1].widget.attrs['class'] = 'form-control'
-            elif field == 'price_per_unit':
-                self.fields[field].widget.attrs['class'] = 'form-control'
-            elif self.fields[field].widget.input_type == 'checkbox':
-                self.fields[field].widget.attrs['class'] = 'form-check-input'
+                self.fields['total_price'].widget.attrs['class'] = 'unique-class  form-control'
+
             else:
                 self.fields[field].widget.attrs['class'] = 'form-control'
 
@@ -86,7 +92,7 @@ class PurchaseTransactionCreationForm(forms.ModelForm):
 class SaleOrderCreationForm(forms.ModelForm):
     class Meta:
         model = SalesOrder
-        exclude = ('company', 'created_at', 'last_updated_at', 'created_by', 'last_updated_by')
+        exclude = ('status', 'company', 'created_at', 'last_updated_at', 'created_by', 'last_updated_by')
         widgets = {
             'date': forms.DateInput(attrs={'class': 'form-control tm', 'type': 'date', })
         }
@@ -95,25 +101,21 @@ class SaleOrderCreationForm(forms.ModelForm):
         super(SaleOrderCreationForm, self).__init__(*args, **kwargs)
         amount, currency = self.fields['total_price'].fields
         amount.widget.attrs['readonly'] = True
-        amount.disabled = True
+        amount.widget.attrs['disabled'] = True
         currency.widget.attrs['readonly'] = True
-        currency.disabled = True
+        currency.widget.attrs['disabled'] = True
 
         self.fields['total_price'].widget = CustomMoneyWidget(
             amount_widget=amount.widget, currency_widget=currency.widget)
         for field in self.fields:
             if field == 'total_price':
                 self.fields[field].widget.attrs['class'] = 'form-control'
-
-            elif self.fields[field].widget.input_type == 'checkbox':
-                self.fields[field].widget.attrs['class'] = 'form-check-input'
             else:
                 self.fields[field].widget.attrs['class'] = 'form-control'
 
 
 class SaleTransactionCreationForm(forms.ModelForm):
     temp_uom = forms.CharField(max_length=30, required=False)
-    temp_unit_price = forms.DecimalField(max_digits=10, required=False)
 
     class Meta:
         model = SalesTransaction
@@ -128,20 +130,25 @@ class SaleTransactionCreationForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         super(SaleTransactionCreationForm, self).__init__(*args, **kwargs)
         amount, currency = self.fields['total_price'].fields
+        amount2, currency2 = self.fields['price_per_unit'].fields
         amount.widget.attrs['readonly'] = True
-        amount.disabled = True
+        amount.widget.attrs['disabled'] = True
         currency.widget.attrs['readonly'] = True
-        currency.disabled = True
+        currency.widget.attrs['disabled'] = True
+
         self.fields['temp_uom'].widget.attrs['readonly'] = True
-        self.fields['temp_unit_price'].widget.attrs['readonly'] = True
+        amount2.widget.attrs['onchange'] = 'myFunction(this)'
+        self.fields['price_per_unit'].widget = CustomMoneyWidget(
+            amount_widget=amount2.widget, currency_widget=currency2.widget)
         self.fields['total_price'].widget = CustomMoneyWidget(
             amount_widget=amount.widget, currency_widget=currency.widget)
         for field in self.fields:
             if field == 'total_price':
                 self.fields[field].fields[0].widget.attrs['class'] = 'unique-class form-control'
                 self.fields[field].fields[1].widget.attrs['class'] = 'form-control'
-            elif self.fields[field].widget.input_type == 'checkbox':
-                self.fields[field].widget.attrs['class'] = 'form-check-input'
+            elif field == 'price_per_unit':
+                self.fields[field].widget.attrs['class'] = 'form-control'
+
             else:
                 self.fields[field].widget.attrs['class'] = 'form-control'
 
@@ -150,7 +157,6 @@ class ReceivingTransactionCreationForm(forms.ModelForm):
     class Meta:
         model = ReceivingTransaction
         exclude = ('created_at', 'last_updated_at', 'created_by', 'last_updated_by')
-
 
     def __init__(self, *args, **kwargs):
         super(ReceivingTransactionCreationForm, self).__init__(*args, **kwargs)

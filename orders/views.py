@@ -3,7 +3,7 @@ from orders.forms import (PurchaseTransactionCreationForm,
                           PurchaseOrderCreationForm,
                           purchase_transaction_formset,
                           sale_transaction_formset,
-                          SaleOrderCreationForm,ReceivingTransactionCreation_formset)
+                          SaleOrderCreationForm, ReceivingTransactionCreation_formset)
 from orders.models import PurchaseOder, SalesOrder, PurchaseTransaction
 from inventory.models import Item, Uom
 from django.contrib import messages
@@ -15,29 +15,40 @@ from rest_framework.renderers import JSONRenderer
 from rest_framework.parsers import JSONParser
 import json
 from dal import autocomplete
+from moneyed import Money, EGP
 
 
 def create_purchase_order_view(request):
     po_form = PurchaseOrderCreationForm()
     po_transaction_inlineformset = purchase_transaction_formset()
-    print("************88888")
-    # filter = PoFilter(request.GET, queryset=Item.objects.all())
     if request.method == 'POST':
-
         po_form = PurchaseOrderCreationForm(request.POST)
         po_transaction_inlineformset = purchase_transaction_formset(request.POST)
         if po_form.is_valid() and po_transaction_inlineformset.is_valid():
             po_obj = po_form.save(commit=False)
+            # po_obj.global_price = Money(str(po_form.cleaned_data['my_global_price']), EGP)
             po_obj.created_by = request.user
             po_obj.company = request.user.company
+            if 'Save as draft' in request.POST:
+                po_obj.status = "drafted"
             po_obj.save()
-
             po_transaction_inlineformset = purchase_transaction_formset(request.POST, instance=po_obj)
             if po_transaction_inlineformset.is_valid():
-                po_transaction_obj = po_transaction_inlineformset.save(commit=False)
-                for po_transaction in po_transaction_obj:
-                    po_transaction.created_by = request.user
-                    po_transaction.save()
+                for form in po_transaction_inlineformset:
+                    po_transaction_obj = form.save(commit=False)
+                    po_transaction_obj.created_by = request.user
+                    # po_transaction_obj.price_per_unit = Money(str(form.cleaned_data['my_price_per_unit']), EGP)
+                    if po_obj.discount_type == "percentage":
+                        po_transaction_obj.discount_percentage = po_obj.discount
+                    elif po_obj.discount_type == "amount":
+                        # TODO: implement this if
+                        po_transaction_obj.discount_percentage = po_obj.discount
+
+                    po_transaction_obj.save()
+                    # po_transaction_obj = po_transaction_inlineformset.save(commit=False)
+                # for po_transaction in po_transaction_obj:
+                #     po_transaction.created_by = request.user
+                #     po_transaction.save()
                 messages.success(request, 'Saved Successfully')
                 if 'Save and exit' in request.POST:
                     return redirect('orders:list-po')
@@ -50,14 +61,13 @@ def create_purchase_order_view(request):
             print(po_form.errors)
             print(po_transaction_inlineformset.errors)
     items = Item.objects.all()
-    print(po_form['total_price'].field.localize)
     subcontext = {
         'po_form': po_form,
         'po_transaction_inlineformset': po_transaction_inlineformset,
         'items': items,
-        # 'filter': filter,
         'title': 'New Purchase Order',
     }
+
     return render(request, 'create-purchase-order.html', context=subcontext)
 
 
@@ -73,31 +83,40 @@ def update_purchase_order_view(request, id):
     order = PurchaseOder.objects.get(pk=id)
     purchase_order_form = PurchaseOrderCreationForm(instance=order)
     po_transaction_inlineformset = purchase_transaction_formset(instance=order)
+    purchase_order_form.fields["my_total_price_after_discount"].initial = order.global_price_after_discount
     for form in po_transaction_inlineformset:
-        print(form.instance.item.id)
         item = form.instance.item
         uom = item.uom
-
         unit_price = item.avg_cost.amount
-        print(unit_price)
         form.fields["temp_uom"].initial = uom
         form.fields["price_per_unit"].initial = unit_price
+        form.fields["after_discount"].initial = form.instance.total_price_after_discount
+
     if request.method == 'POST':
         purchase_order_form = PurchaseOrderCreationForm(request.POST, instance=order)
         po_transaction_inlineformset = purchase_transaction_formset(request.POST, instance=order)
         if purchase_order_form.is_valid() and po_transaction_inlineformset.is_valid():
             po_obj = purchase_order_form.save(commit=False)
             po_obj.last_updated_by = request.user
+            if 'Save as open' in request.POST:
+                po_obj.status = 'open'
             po_obj.save()
             po_transaction_inlineformset = purchase_transaction_formset(request.POST, instance=po_obj)
             if po_transaction_inlineformset.is_valid():
-                po_transaction_obj = po_transaction_inlineformset.save(commit=False)
-                for po_transaction in po_transaction_obj:
-                    po_transaction.last_updated_by = request.user
-                    po_transaction.save()
+                for form in po_transaction_inlineformset:
+                    po_transaction_obj = form.save(commit=False)
+                    po_transaction_obj.last_updated_by = request.user
+                    if po_obj.discount_type == "percentage":
+                        po_transaction_obj.discount_percentage = po_obj.discount
+                    elif po_obj.discount_type == "amount":
+                        # TODO: implement this if
+                        po_transaction_obj.discount_percentage = po_obj.discount
+                    po_transaction_obj.save()
                 messages.success(request, 'Saved Successfully')
                 if 'Save and exit' in request.POST:
                     return redirect('orders:list-po')
+
+
             else:
                 print(po_transaction_inlineformset.errors)
         else:
@@ -175,7 +194,7 @@ def update_sale_order_view(request, id):
         unit_price = item.avg_cost.amount
         print(unit_price)
         form.fields["temp_uom"].initial = uom
-        form.fields["temp_unit_price"].initial = unit_price
+        form.fields["price_per_unit"].initial = unit_price
     if request.method == 'POST':
         sale_order_form = SaleOrderCreationForm(request.POST, instance=order)
         so_transaction_inlineformset = sale_transaction_formset(request.POST, instance=order)
@@ -278,7 +297,7 @@ def create_receiving(request, id):
         pass
 
     subcontext = {
-        'po':purchase_order,
+        'po': purchase_order,
         'receiving_form': receiving_formset
 
     }

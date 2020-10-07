@@ -160,13 +160,14 @@ class StokeTake(models.Model):
                               related_name='stoke_category')
     name = models.CharField(max_length=30)
     type = models.CharField(max_length=30,
-                            choices=[('all', 'All'), ('location', 'By Location'), ('category', 'By Category'),
-                                     ('random', 'Random')], default='all')
+                            choices=[('location', 'By Location'), ('category', 'By Category'),
+                                     ('random', 'Random')], default='location')
     date = models.DateField(null=True, blank=True)
     status = models.CharField(max_length=30, choices=[('Drafted', 'Drafted'), ('In Progress', 'In Progress'),
                                                       ('Pending Approval', 'Pending Approval'),
                                                       ('Approved', 'Approved'),
                                                       ('Done', 'Done')], default='Drafted')
+    random_number = models.IntegerField(blank=True, null=True)
     created_at = models.DateField(auto_now_add=True, null=True)
     last_updated_at = models.DateField(null=True, auto_now=True, auto_now_add=False)
     created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, null=True,
@@ -179,9 +180,8 @@ class StokeTake(models.Model):
 
 class StokeEntry(models.Model):
     stoke_take = models.ForeignKey(StokeTake, on_delete=models.CASCADE, )
-    item = models.ForeignKey(Item, on_delete=models.CASCADE, )
+    item = models.ForeignKey(Item, on_delete=models.CASCADE,related_name="items" )
     quantity = models.IntegerField(null=True, blank=True)
-    approval = models.BooleanField(default=False)
     created_at = models.DateField(auto_now_add=True, null=True)
     last_updated_at = models.DateField(null=True, auto_now=True, auto_now_add=False)
     created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, null=True,

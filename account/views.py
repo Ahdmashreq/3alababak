@@ -31,6 +31,7 @@ def create_customer_address_account(request):
                 print(address_inlineformset.errors)
         else:
             print(customer_form.errors)
+            print(address_inlineformset.errors)
     else:
         customer_form = CustomerCreationForm()
         address_inlineformset = customer_address_formset()
@@ -140,10 +141,16 @@ def update_customer_view(request, id):
                     address.last_updated_by = request.user
                     address.save()
                 messages.success(request, 'Saved Successfully')
-                return redirect('account:list-customers')
+                if 'Save and exit' in request.POST:
+                    return redirect('account:list-customers')
+
             else:
+                print("*************")
+                print(customer_form.errors)
                 print(address_inlineformset.errors)
         else:
+            print("*)))))))))))))))000")
+            print(address_inlineformset.errors)
             print(customer_form.errors)
 
     supContext = {
@@ -154,6 +161,7 @@ def update_customer_view(request, id):
 
     }
     return render(request, 'create-supplier.html', supContext)
+
 
 
 def update_supplier_view(request, id):
@@ -180,6 +188,7 @@ def update_supplier_view(request, id):
                 print(address_inlineformset.errors)
         else:
             print(supplier_form.errors)
+            print(address_inlineformset.errors)
 
     supContext = {
         'account_form': supplier_form,

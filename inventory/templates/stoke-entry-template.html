@@ -20,9 +20,9 @@
           <a onclick="window.print(); return false;" class="btn btn-primary btn-lg top-right-button mr-1" href="#">Print</a>
         </div>
       <h6>{{date}}</h6>
-      {% if location  %}
+       <h6>Type:&emsp;{{type|capfirst}}</h6>
         <h6>Location:&emsp;{{location|capfirst}}</h6>
-      {% elif category %}
+      {% if category %}
         <h6>Category:&emsp;{{category|capfirst}}</h6>
       {% endif %}
      <div class="mb-2">
@@ -49,6 +49,7 @@
                   {% endif %}
                   <th class="sorting" tabindex="0" aria-controls="DataTables_Table_0" rowspan="1" colspan="1">{% trans "Product" %}</th>
                   <th class="sorting" tabindex="0" aria-controls="DataTables_Table_0" rowspan="1" colspan="1">{% trans "Item" %}</th>
+                  <th class="sorting" tabindex="0" aria-controls="DataTables_Table_0" rowspan="1" colspan="1">{% trans "Uom" %}</th>
 
                   <th class="sorting" tabindex="0" aria-controls="DataTables_Table_0" rowspan="1" colspan="1">{% trans "Quantity" %}</th>
 
@@ -67,6 +68,7 @@
                   {% endif %}
                   <td>{{item.product}} </td>
                   <td>{{ item }}</td>
+                  <td>{{ item.uom }}</td>
                   <td></td>
 
                 </tr>

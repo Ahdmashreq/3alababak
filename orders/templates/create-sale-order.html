@@ -37,8 +37,9 @@
   </div>
 
   <div class="card mb-4">
-
-      <form method="POST">
+    <div class="card">
+      <div class="card-body">
+      <form method="POST" id="myform">
         {% csrf_token %}
         <div class="form-row">
           <div class="form-group col-md-6">
@@ -46,29 +47,25 @@
             {{so_form.customer}}
           </div>
           <div class="form-group col-md-6">
-            <label>Code</label>
-            {{so_form.code}}
+            <label>Name</label>
+            {{so_form.order_name}}
           </div>
           <div class="form-group col-md-6">
             <label>Date</label>
             {{so_form.date}}
-          </div>
-
-          <div class="form-group col-md-6">
-            <label>Status</label>
-            {{so_form.status}}
           </div>
           <div class="form-group col-md-6">
             <label>Grand Total</label>
             {{so_form.total_price}}
           </div>
         </div>
+      <div class="separator mb-5"></div>
       <div class="row" style="margin-left:0px;">
         <div class="col-md-12">
           <div class="bgc-white bd bdrs-3 p-20 mB-20">
             <div id="purchase_set">
             <div class="form-row">
-               <div class="form-group col-md-4 text-center">
+               <div class="form-group col-md-4">
                    <label>{% trans "Item" %}</label>
                </div>
                <div class="form-group col-md-1">
@@ -77,15 +74,13 @@
                <div class="form-group col-md-1">
                    <label>{% trans "Unit" %}</label>
                </div>
-               <div class="form-group col-md-1">
+               <div class="form-group col-md-3">
                    <label>{% trans "Price per unit" %}</label>
                </div>
-                 <div class="form-group col-md-2">
+                 <div class="form-group col-md-3">
                    <label>{% trans "Total Price" %}</label>
                </div>
-                <div class="form-group col-md-1 text-center">
-                     <label>{% trans "Delete" %}</label>
-                 </div>
+
             </div>
              {{ so_transaction_inlineformset.management_form }}
             {% for form in so_transaction_inlineformset %}
@@ -101,15 +96,13 @@
              <div class="form-group col-md-1">
                {{form.temp_uom}}
              </div>
-             <div class="form-group col-md-1">
-             {{form.temp_unit_price}}
+             <div class="form-group col-md-3">
+                 {{form.price_per_unit}}
              </div>
-             <div class="form-group col-md-2">
+             <div class="form-group col-md-3">
                {{form.total_price}}
              </div>
-             <div class="form-group col-md-1 text-center">
-                      {{ form.DELETE }}
-             </div>
+
            </div>
            {% endfor %}
           </div>
@@ -134,15 +127,13 @@
                       <div class="form-group col-md-1">
                         {{ so_transaction_inlineformset.empty_form.temp_uom}}
                       </div>
-                      <div class="form-group col-md-1">
-                        {{ so_transaction_inlineformset.empty_form.temp_unit_price }}
+                      <div class="form-group col-md-3">
+                        {{ so_transaction_inlineformset.empty_form.price_per_unit}}
                       </div>
-                      <div class="form-group col-md-2 text-center">
+                      <div class="form-group col-md-3">
                         {{ so_transaction_inlineformset.empty_form.total_price}}
                       </div>
-                        <div class="form-group col-md-1 text-center">
-                        {{ so_transaction_inlineformset.empty_form.DELETE}}
-                      </div>
+
                     </div>
                   </table>
                 </div>
@@ -153,20 +144,26 @@
           </button>
         </div>
       </form>
+      </div>
+    </div>
     </div>
 </div>
 {% endblock body %}
 
 {% block js %}
 <script>
-    $(document).ready(function() {
+   $('#myform').on('submit', function() {
+for (i = 0; i < $('#id_salestransaction_set-TOTAL_FORMS').val(); i++) {
+    $('#id_salestransaction_set-'+i+'-total_price_1').prop('disabled', false);
+    $('#id_salestransaction_setcd -'+i+'-total_price_0').prop('disabled', false);
 
-    });
+    }
+         $('#id_total_price_1').prop('disabled', false);
+         $('#id_total_price_0').prop('disabled', false);
+});
 </script>
-
 <script>
     function myAction(object) {
-           console.log("HIIIIIIIIIIIIIIIIIIIIIIII")
           item = object.value
           var endpoint = '{% url "orders:get-item" -1 %}'.replace('-1', item);
           if ( item !==""){
@@ -174,7 +171,7 @@
                 var res= str.split("-")
                 var id_prefix = res[0]+'-'+res[1]
                 uom_id = id_prefix+'-'+'temp_uom'
-                price_id = id_prefix+'-'+'temp_unit_price'
+                price_id = id_prefix+'-'+'price_per_unit_0'
                 quantity_id =  id_prefix+'-'+'quantity'
                 $.ajax({
                 type: "get",
@@ -184,10 +181,9 @@
                       document.getElementById(uom_id).value=data['uom']
                       document.getElementById(price_id).value=data['avg_cost']
                       if (document.getElementById(quantity_id).value){
-                     console.log("I am hereeeeeeeeeeeee");
-                     myFunction(document.getElementById(quantity_id));
+                        myFunction(document.getElementById(quantity_id));
+                      };
 
-                 };
 
                 },
                 error: function(){
@@ -203,33 +199,23 @@
 <script>
 function myFunction(object) {
 
-    console.log("Byyeeee")
-
     var str = object.id;
     var res= str.split("-");
     var id_prefix = res[0]+'-'+res[1];
     item_id = id_prefix+'-'+'item';
-    price_id = id_prefix+'-'+'temp_unit_price';
+    price_id = id_prefix+'-'+'price_per_unit_0';
     total_price_id = id_prefix+'-'+'total_price_0';
+    quantity_id = id_prefix+'-'+'quantity';
+    quantity = document.getElementById(quantity_id).value;
     item =  document.getElementById(item_id).value;
-    var endpoint = '{% url "orders:get-item" -1 %}'.replace('-1', item);
-    if ( item !==""){
-                $.ajax({
-                type: "get",
-                url: endpoint,
-                contentType: 'application/json',
-                success: function(data){
-                        var price_per_item = data['avg_cost'];
-                        var total_per_item = price_per_item * object.value;
-                        document.getElementById(total_price_id).disabled = false;
-                        document.getElementById(total_price_id).value = total_per_item;
-                        grandTotal();
+    price = document.getElementById(price_id).value;
+    if (price){
 
-                },
-                error: function(){
-                    alert("error");
-                }
-                 });
+            var total_per_item = price * quantity;
+            document.getElementById(total_price_id).value = total_per_item;
+            grandTotal();
+
+
 
         };
 
@@ -247,7 +233,6 @@ function grandTotal(){
         };
      };
      console.log(grand_total)
-    document.getElementById("id_total_price_0").disabled =false;
     document.getElementById("id_total_price_0").value = grand_total;
 
 }
@@ -258,7 +243,6 @@ function grandTotal(){
     $('#purchase_set').append($('#empty_form').html().replace(/__prefix__/g, form_idx));
     $('#id_salestransaction_set-TOTAL_FORMS').val(parseInt(form_idx) + 1);
     var current_indx = Number(form_idx)
-<!--    document.getElementById("id_salestransaction_set-"+current_indx+"-total_price_0").disabled = true-->
 
 
 

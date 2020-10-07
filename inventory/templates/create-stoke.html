@@ -43,25 +43,34 @@
             <form method="POST">
                 {% csrf_token %}
                 <div class="form-row">
-                    <div class="form-group col-md-6">
+                    <div class="form-group col-md-4">
                         <label>Name</label>
                         {{stoke_form.name}}
                     </div>
-                    <div class="form-group col-md-6" id="stoke-type">
+                    <div class="form-group col-md-4" id="stoke-type">
                         <label>Type</label>
                         {{stoke_form.type}}
                     </div>
-                    <div class="form-group col-md-6">
+                    <div class="form-group col-md-4">
                         <label>Date</label>
                         {{stoke_form.date}}
                     </div>
+                </div>
+                <div class="form-row">
                     <div class="form-group col-md-6" id="location">
                         <label>{{stoke_form.location.label}}</label>
                         {{stoke_form.location}}
+                     {{stoke_form.location.errors}}
                     </div>
                     <div class="form-group col-md-6" id="category">
                         <label>{{stoke_form.category.label}}</label>
                         {{stoke_form.category}}
+                         {{stoke_form.category.errors}}
+                    </div>
+                     <div class="form-group col-md-6" id="number">
+                        <label>{{stoke_form.random_number.label}}</label>
+                        {{stoke_form.random_number}}
+                         {{stoke_form.random_number.errors}}
                     </div>
                 </div>
 
@@ -80,26 +89,47 @@
 <script>
 if(document.getElementById('id_type').value === 'location') {
     document.getElementById('category').style.display = 'none';
+    document.getElementById('number').style.display = 'none';
+
 } else if (document.getElementById('id_type').value === 'category'){
-    document.getElementById('location').style.display = 'none';
-} else {
+    document.getElementById('location').style.display = 'block';
+    document.getElementById('number').style.display = 'none';
+
+} else if (document.getElementById('id_type').value === 'random'){
+     document.getElementById('category').style.display = 'none';
+     document.getElementById('location').style.display = 'block';
+
+ }
+else {
 document.getElementById('category').style.display = 'none';
 document.getElementById('location').style.display = 'none';
+document.getElementById('number').style.display = 'none';
+
 
 }
 
 function myFunction() {
   if(document.getElementById('id_type').value === 'location') {
     document.getElementById('category').style.display = 'none';
+    document.getElementById('number').style.display = 'none';
     document.getElementById('location').style.display = 'block';
     }
   else if(document.getElementById('id_type').value === 'category') {
-  document.getElementById('location').style.display = 'none';
+  document.getElementById('location').style.display = 'block';
+  document.getElementById('number').style.display = 'none';
   document.getElementById('category').style.display = 'block';
   }
+  else if (document.getElementById('id_type').value === 'random'){
+     document.getElementById('category').style.display = 'none';
+     document.getElementById('location').style.display = 'block';
+       document.getElementById('number').style.display = 'block';
+
+
+ }
   else {
   document.getElementById('location').style.display = 'none';
   document.getElementById('category').style.display = 'none';
+  document.getElementById('number').style.display = 'block';
 
   }
     }

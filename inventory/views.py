@@ -5,6 +5,7 @@ from inventory.models import (Category, Brand, Product, Attribute, Item, Uom, St
 from inventory.forms import (CategoryForm, category_model_formset, BrandForm, brand_model_formset,
                              AttributeForm, attribute_model_formset, ProductForm, product_item_inlineformset,
                              uom_formset, StokeTakeForm, UOMForm, stoke_entry_formset, StokeEntryForm, UomCategoryForm)
+import random
 
 
 def create_category_view(request):
@@ -208,49 +209,39 @@ def list_uom_view(request):
     return render(request, 'list-uom.html', context=uom_context)
 
 
-def create_stoke_take_template(request):
-    print('Hi')
-    # take the form values:name,type,date
-    # get all records accoding to type
-    # if category , it takes the value of cateogry and get all items under it
-    # if location , it takes the value of location and get all items under it
-    # design an html that has :
-    # stoke name, stoke date, stoke type
-    # a table for all items names , with a quatity columns an
-    # if all is choosen add column for location or make it as a section
-    # render it as pdf
-
-
 def create_stoketake_view(request):
-    stoke_from = StokeTakeForm(update=False)
+    stoke_form = StokeTakeForm(update=False)
     stoke_context = {}
     items = []
     if request.method == 'POST':
         stoke_form = StokeTakeForm(request.POST, update=False)
+        print("************")
         if stoke_form.is_valid():
+            print("&&&&&&&&&&&&&&&&&")
             stoke_obj = stoke_form.save(commit=False)
             stoke_obj.created_by = request.user
             stoke_obj.company = request.user.company
             name = stoke_obj.name
             date = stoke_obj.date
             type = stoke_obj.type
+            location = stoke_obj.location
             stoke_context['name'] = name
             stoke_context['date'] = date
             stoke_context['type'] = type
+            stoke_context['location'] = location
             if type == 'location':
-                location = stoke_obj.location
                 items = Item.objects.filter(location=location)
-                stoke_context['location'] = location
+
             elif type == 'category':
                 category = stoke_obj.category
                 descendants = Category.objects.get(name=category).get_descendants(include_self=True)
                 products = Product.objects.filter(Q(category__parent__in=descendants) | Q(category__in=descendants))
-                items = Item.objects.filter(product__in=products)
+                items = Item.objects.filter(product__in=products).filter(location=location)
                 stoke_context['category'] = category
-            elif type == 'all':
-                items = Item.objects.all()
             elif type == 'random':
-                pass
+                items_set = Item.objects.filter(location=location)
+                number_of_items = stoke_form.cleaned_data['random_number']
+                items = random.sample(list(items_set), number_of_items)
 
             stoke_obj.save()
             entry_list = []
@@ -267,10 +258,10 @@ def create_stoketake_view(request):
 
         else:
             messages.error(request, 'Form is not Valid')
-            print(stoke_from.errors)
+            print(stoke_form['location'].errors)
 
     stoke_context = {
-        'stoke_form': stoke_from,
+        'stoke_form': stoke_form,
         'title': 'New Stoke Take'
 
     }
@@ -285,21 +276,21 @@ def update_stoke_take_view(request, id):
         stoke_form = StokeTakeForm(request.POST, update=False, instance=stoke_inst)
         if stoke_form.is_valid():
             stoke_obj = stoke_form.save(commit=False)
-            stoke_obj.updated_by = request.user
+            stoke_obj.last_updated_by = request.user
+            location = stoke_obj.location
             if stoke_obj.type == 'location':
                 stoke_obj.category = None
-                items = Item.objects.filter(location=stoke_obj.location)
+                items = Item.objects.filter(location=location)
             elif stoke_obj.type == 'category':
-                stoke_obj.location = None
                 category = stoke_obj.category
                 descendants = Category.objects.get(name=category).get_descendants(include_self=True)
                 products = Product.objects.filter(Q(category__parent__in=descendants) | Q(category__in=descendants))
-                items = Item.objects.filter(product__in=products)
-            elif stoke_obj.type == 'all':
-                stoke_obj.location = None
+                items = Item.objects.filter(product__in=products).filter(location=location)
+            elif stoke_obj.type == 'random':
                 stoke_obj.category = None
-                items = Item.objects.all()
-
+                items_set = Item.objects.filter(location=location)
+                number_of_items = stoke_form.cleaned_data['random_number']
+                items = random.sample(list(items_set), number_of_items)
             stoke_obj.save()
             stoke_entry_instances = StokeEntry.objects.filter(stoke_take=stoke_obj)
             stoke_entry_instances.delete()
@@ -340,15 +331,18 @@ def update_stoke_entry_view(request, id):
                 stoke_entry.last_updated_by = request.user
                 stoke_entry.save()
 
-            if len(StokeEntry.objects.filter(stoke_take=stoke_obj, quantity=None)) == 0:
-                stoke_obj.status = 'Pending Approval'
-                stoke_obj.save()
-            elif len(StokeEntry.objects.filter(stoke_take=stoke_obj).exclude(quantity=None)) > 0:
+            if 'send' in request.POST:
+                if len(StokeEntry.objects.filter(stoke_take=stoke_obj, quantity=None)) != 0:
+                    messages.error(request, 'You must fill all quantities')
+                else:
+                    stoke_obj.status = 'Pending Approval'
+                    stoke_obj.save()
+                    return redirect('inventory:list-stokes-for-entry')
+
+            if len(StokeEntry.objects.filter(stoke_take=stoke_obj).exclude(quantity=None)) > 0:
                 stoke_obj.status = 'In Progress'
                 stoke_obj.save()
-            else:
-                stoke_obj.status = 'Drafted'
-                stoke_obj.save()
+
             if 'Save and exit' in request.POST:
                 return redirect('inventory:list-stokes-for-entry')
 
@@ -378,13 +372,15 @@ def view_stoke(request, id):
     name = stoke_obj.name
     date = stoke_obj.date
     type = stoke_obj.type
+    location = stoke_obj.location
     stoke_context['name'] = name
     stoke_context['date'] = date
     stoke_context['type'] = type
+    stoke_context['location'] = location
+
     if type == 'location':
         location = stoke_obj.location
         items = Item.objects.filter(location=location)
-        stoke_context['location'] = location
     elif type == 'category':
         category = stoke_obj.category
         descendants = Category.objects.get(name=category).get_descendants(include_self=True)
@@ -394,7 +390,9 @@ def view_stoke(request, id):
     elif type == 'all':
         items = Item.objects.all()
     elif type == 'random':
-        pass
+        stoke_entries = StokeEntry.objects.select_related().filter(stoke_take=stoke_obj)
+        items = [stoke_entry.item for stoke_entry in stoke_entries]
+
     stoke_context['items'] = items
     return render(request, 'stoke-entry-template.html', context=stoke_context)
 
@@ -409,26 +407,28 @@ def approve_stoke_view(request, id):
     stoke_obj = StokeTake.objects.get(id=id)
     stoke_take_form = StokeTakeForm(update=True, instance=stoke_obj)
     stoke_entry_inline_formset = stoke_entry_formset(instance=stoke_obj, form_kwargs={'approve': True})
+    status = stoke_obj.status
 
     if request.method == 'POST':
-        stoke_entry_inline_formset = stoke_entry_formset(request.POST, instance=stoke_obj,
-                                                         form_kwargs={'approve': True})
-        if stoke_entry_inline_formset.is_valid():
-            stoke_entry_obj = stoke_entry_inline_formset.save(commit=False)
-            for stoke_entry in stoke_entry_obj:
-                stoke_entry.last_updated_by = request.user
-                stoke_entry.save()
-            if len(StokeEntry.objects.filter(stoke_take=stoke_obj, approval=False)) == 0:
-                stoke_obj.status = 'Approved'
-                stoke_obj.save()
-            elif len(StokeEntry.objects.filter(stoke_take=stoke_obj, approval=False)) > 0:
-                stoke_obj.status = 'Pending Approval'
-                stoke_obj.save()
-            if 'Save and exit' in request.POST:
-                return redirect('inventory:list-stokes-for-approval')
+        if 'approve' in request.POST:
+            item_quantity_list = StokeEntry.objects.values('item', 'quantity').filter(stoke_take=stoke_obj)
+            print(item_quantity_list)
+            success = update_items_quantity(item_quantity_list)
+            if success:
+                StokeTake.objects.filter(id=id).update(status='Approved')
+                messages.success(request, 'Stoke record is approved, Inventory is updated')
+            else:
+                print("*************88")
+                print(success)
+                messages.error(request, 'Error in updating inventory')
+
+        elif 'disapprove' in request.POST:
+            StokeTake.objects.filter(id=id).update(status='In Progress')
+            messages.success(request, 'Stoke record sent back to stoke entry page')
+        return redirect('inventory:list-stokes-for-approval')
 
     sub_context = {'title': "Approve Stoke", 'stoke_entry_inlineformset': stoke_entry_inline_formset,
-                   'stoke_form': stoke_take_form}
+                   'stoke_form': stoke_take_form,'status':status}
     return render(request, 'approve-stoke.html', context=sub_context)
 
 
@@ -477,7 +477,17 @@ def create_uom_category(request):
             uom_categories = UomCategory.objects.all()
         else:
             messages.error(request, 'UOM Category NOT created')
-    context = {'category_from': category_form,"uom_category_list": uom_categories}
+    context = {'category_from': category_form, "uom_category_list": uom_categories}
+    return redirect('inventory:list-uom-category')
+
+
+def delete_uom_category(request, id):
+    uom_category = UomCategory.objects.get(id=id)
+    deleted = uom_category.delete()
+    if deleted:
+        messages.success(request, "Deleted Successfully")
+    else:
+        messages.error(request, "Error Not deleted")
     return redirect('inventory:list-uom-category')
 
 
@@ -486,4 +496,59 @@ def list_uom_category(request):
     print(uom_categories)
     uom_category_form = UomCategoryForm()
     context = {"uom_category_list": uom_categories, 'category_from': uom_category_form}
-    return render(request,'list-uom-categories.html', context=context)
+    return render(request, 'list-uom-categories.html', context=context)
+
+
+def update_uom_category(request, id):
+    uom_category = UomCategory.objects.get(id=id)
+    category_form = UomCategoryForm(instance=uom_category)
+    uom_categories = UomCategory.objects.all()
+    if request.method == 'POST':
+        category_form = UomCategoryForm(request.POST, instance=uom_category)
+        if category_form.is_valid():
+            category_obj = category_form.save(commit=False)
+            category_obj.last_updated_by = request.user
+            category_obj.save()
+            messages.success(request, 'UOM Category updated successfully')
+            uom_categories = UomCategory.objects.all()
+        else:
+            messages.error(request, 'UOM Category NOT updated')
+    context = {'category_from': category_form, "uom_category_list": uom_categories, "update": True}
+    return redirect('inventory:list-uom-category')
+
+
+def update_uom(request, id):
+    uom = Uom.objects.get(id=id)
+    uom_from = UOMForm(instance=uom)
+    if request.method == 'POST':
+        uom_from = UOMForm(request.POST, instance=uom)
+        if uom_from.is_valid():
+            uom_obj = uom_from.save(commit=False)
+            uom_obj.last_updated_by = request.user
+            uom_obj.save()
+            if 'Save and exit' in request.POST:
+                return redirect('inventory:list-uom')
+        else:
+            print(uom_from.errors)
+    uom_context = {
+        'uom_from': uom_from,
+        'title': 'Update UOM',
+        'update': True,
+
+    }
+    return render(request, 'create-uom.html', context=uom_context)
+
+
+def update_items_quantity(item_quantity_list: list):
+    items = []
+    for item_quantity in item_quantity_list:
+        item = Item.objects.get(id=item_quantity['item'])
+        item.quantity = item_quantity['quantity']
+        items.append(item)
+    try:
+        Item.objects.bulk_update(items, ['quantity'])
+        success = True
+    except Exception as e:
+        print(e)
+        success = False
+    return success

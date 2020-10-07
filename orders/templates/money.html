@@ -1,14 +1,13 @@
 
 <div id class="row">
-    <div class="col-md-6">
+    <div class="col-md-12">
         {% with widget=widget.subwidgets.0 %}
             {% include widget.template_name %}
         {% endwith %}
     </div>
-    <div class="col-md-6">
+    <div class="col-md-12">
         {% with widget=widget.subwidgets.1 %}
-            {% include widget.template_name %}
-
+          {% include widget.template_name %}
         {% endwith %}
     </div>
 </div>

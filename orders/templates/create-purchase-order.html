@@ -19,142 +19,172 @@
     text-align: right;
     overflow: hidden;
   }
+
 </style>
 {% endblock style  %}
 {% block body%}
 <div class="container-fluid">
-  <div class="row">
-    <div class="col-12">
-      <h1>{{title}}</h1>
+    <div class="row">
+        <div class="col-12">
+            <h1>{{title}}</h1>
 
-      <div class="text-zero top-right-button-container">
-        <a href="{% url 'orders:list-po'%}">
-          <button type="button" class="btn btn-primary btn-lg top-right-button mr-1">BACK TO LIST</button>
-        </a>
-      </div>
-      <div class="separator mb-5"></div>
-    </div>
-  </div>
-
-  <div class="card mb-4">
-
-      <form method="POST">
-        {% csrf_token %}
-        <div class="form-row">
-          <div class="form-group col-md-6">
-            <label>Supplier</label>
-            {{po_form.supplier}}
-          </div>
-          <div class="form-group col-md-6">
-            <label>Name</label>
-            {{po_form.order_name}}
-          </div>
-          <div class="form-group col-md-6">
-            <label>Date</label>
-            {{po_form.date}}
-          </div>
-          <div class="form-group col-md-6">
-            <label>Grand Total</label>
-
-            {{po_form.total_price}}
-          </div>
-        </div>
-                <div class="separator mb-5"></div>
-
-      <div class="row" style="margin-left:0px;">
-        <div class="col-md-12">
-          <div class="bgc-white bd bdrs-3 p-20 mB-20">
-            <div id="purchase_set">
-            <div class="form-row">
-               <div class="form-group col-md-4 text-center">
-                   <label>{% trans "Item" %}</label>
-               </div>
-               <div class="form-group col-md-1">
-                   <label>{% trans "Quantity" %}</label>
-               </div>
-               <div class="form-group col-md-1">
-                   <label>{% trans "Unit" %}</label>
-               </div>
-               <div class="form-group col-md-3 text-center">
-                   <label>{% trans "Price per unit" %}</label>
-               </div>
-                 <div class="form-group col-md-3 text-center">
-                   <label>{% trans "Total Price" %}</label>
-               </div>
+            <div class="text-zero top-right-button-container">
+                <a href="{% url 'orders:list-po'%}">
+                    <button type="button" class="btn btn-primary btn-lg top-right-button mr-1">BACK TO LIST</button>
+                </a>
             </div>
-        {{ po_transaction_inlineformset.management_form }}
-       {% for form in po_transaction_inlineformset %}
-            {{ form.id }}
-            {{ form.media }}
-           <div class="form-row">
-             <div class="form-group col-md-4">
-              {{form.item}}
-             </div>
-             <div class="form-group col-md-1">
-               {{ form.quantity}}
-             </div>
-             <div class="form-group col-md-1">
-               {{form.temp_uom}}
-             </div>
-             <div class="form-group col-md-3">
-             {{form.price_per_unit}}
-             </div>
-             <div class="form-group col-md-3">
-
-               {{form.total_price}}
-             </div>
-           </div>
-           {% endfor %}
-          </div>
+            <div class="separator mb-5"></div>
         </div>
-      </div>
+    </div>
 
-
-      </div>
-
-
-        <button type="button" id="add_item" class="btn cur-p btn-success">{% trans "Add Inventory Item"%}</button>
-          <div id="empty_form" style="display:none">
-                  <table class='no_error'>
+    <div class="card mb-4">
+        <div class="card">
+            <div class="card-body">
+                <form method="POST" id="myform">
+                    {% csrf_token %}
                     <div class="form-row">
-                        {{ po_transaction_inlineformset.empty_form.media }}
-                      <div class="form-group col-md-4">
-                        {{ po_transaction_inlineformset.empty_form.item}}
-                      </div>
-                      <div class="form-group col-md-1">
-                        {{ po_transaction_inlineformset.empty_form.quantity}}
-                      </div>
-                      <div class="form-group col-md-1">
-                        {{ po_transaction_inlineformset.empty_form.temp_uom}}
-                      </div>
-                      <div class="form-group col-md-3">
-                        {{ po_transaction_inlineformset.empty_form.price_per_unit }}
-                      </div>
-                      <div class="form-group col-md-3 text-center">
-                        {{ po_transaction_inlineformset.empty_form.total_price}}
-                      </div>
+                        <div class="form-group col-md-4">
+                            <label>Supplier</label>
+                            {{po_form.supplier}}
+                        </div>
+                        <div class="form-group col-md-4">
+                            <label>Name</label>
+                            {{po_form.order_name}}
+                        </div>
+                        <div class="form-group col-md-4">
+                            <label>Date</label>
+                            {{po_form.date}}
+                        </div>
+                         <div class="form-group col-md-3">
+                            <label>Grand Total (EGP)</label>
+                            {{po_form.global_price}}
+                        </div>
+                        <div class="form-group col-md-3">
+                            <label>Global price after discount (EGP)</label>
+                             {{po_form.my_total_price_after_discount}}
+                        </div>
+                         <div class="form-group col-md-2">
+                            <label>Discount</label>
+                            {{po_form.discount}}
+                        </div>
+                         <div class="form-group col-md-2">
+                            <label>Discount Type</label>
+                            {{po_form.discount_type}}
+                        </div>
+                         <button class="btn btn-lg col-md-2" type="button" onclick="calculate()">Apply Discount</button>
 
                     </div>
-                  </table>
-                </div>
+                    <div class="separator mb-5"></div>
 
-        <div class="submit-row">
-          <button type="submit" class="btn btn-primary btn-lg mt-3" name='Save'>Save</button>
-          <button type="submit" class="btn btn-primary btn-lg mt-3" name='Save and exit'>Save and Exit
-          </button>
+                    <div class="row" style="margin-left:0px;">
+                        <div class="col-md-12">
+                            <div class="bgc-white bd bdrs-3 p-20 mB-20">
+                                <div id="purchase_set">
+                                    <div class="form-row">
+                                        <div class="form-group col-md-4">
+                                            <label>{% trans "Item" %}</label>
+                                        </div>
+                                        <div class="form-group col-md-1">
+                                            <label>{% trans "Quantity" %}</label>
+                                        </div>
+                                        <div class="form-group col-md-1">
+                                            <label>{% trans "Unit" %}</label>
+                                        </div>
+                                        <div class="form-group col-md-2">
+                                            <label>{% trans "Price per unit (EGP)" %}</label>
+                                        </div>
+                                        <div class="form-group col-md-2">
+                                            <label>{% trans "Total Price (EGP)" %}</label>
+                                        </div>
+                                        <div class="form-group col-md-2" >
+                                            <label>Total after discount (EGP)</label>
+                                        </div>
+                                    </div>
+                                    {{ po_transaction_inlineformset.management_form }}
+                                    {% for form in po_transaction_inlineformset %}
+                                    {{ form.id }}
+                                    {{ form.media }}
+                                    <div class="form-row">
+                                        <div class="form-group col-md-4">
+                                            {{form.item}}
+                                        </div>
+                                        <div class="form-group col-md-1">
+                                            {{ form.quantity}}
+                                        </div>
+                                        <div class="form-group col-md-1">
+                                            {{form.temp_uom}}
+                                        </div>
+                                        <div class="form-group col-md-2">
+                                            {{form.price_per_unit}}
+                                        </div>
+                                        <div class="form-group col-md-2">
+
+                                            {{ form.total_price }}
+                                        </div>
+                                        <div class="form-group col-md-2">
+                                            {{ form.after_discount }}
+                                        </div>
+                                    </div>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                        </div>
+
+
+                    </div>
+                    <div class="separator mb-5"></div>
+                    <button type="button" id="add_item" class="btn cur-p btn-success">{% trans "Add Inventory Item"%}
+                    </button>
+                    <div id="empty_form" style="display:none">
+                        <table class='no_error'>
+                            <div class="form-row">
+                                {{ po_transaction_inlineformset.empty_form.media }}
+                                <div class="form-group col-md-4">
+                                    {{ po_transaction_inlineformset.empty_form.item}}
+                                </div>
+                                <div class="form-group col-md-1">
+                                    {{ po_transaction_inlineformset.empty_form.quantity}}
+                                </div>
+                                <div class="form-group col-md-1">
+                                    {{ po_transaction_inlineformset.empty_form.temp_uom}}
+                                </div>
+                                <div class="form-group col-md-2">
+                                    {{ po_transaction_inlineformset.empty_form.price_per_unit }}
+                                </div>
+                                <div class="form-group col-md-2">
+                                    {{ po_transaction_inlineformset.empty_form.total_price}}
+                                </div>
+                                <div class="form-group col-md-2">
+                                    {{ po_transaction_inlineformset.empty_form.after_discount}}
+                                </div>
+
+                            </div>
+                        </table>
+                    </div>
+
+                    <div class="submit-row">
+                        <button type="submit" class="btn btn-primary btn-lg mt-3" name='Save'>Save</button>
+                        <button type="submit" class="btn btn-primary btn-lg mt-3" name='Save and exit'>Save and Exit</button>
+                        <button type="submit" class="btn btn-primary btn-lg mt-3" name='Save as draft'>Save as Draft </button>
+                    </div>
+                </form>
+            </div>
         </div>
-      </form>
     </div>
 </div>
 {% endblock body %}
 
 {% block js %}
 <script>
-    $(document).ready(function() {
-
-    });
+   $('#myform').on('submit', function() {
+for (i = 0; i < $('#id_purchasetransaction_set-TOTAL_FORMS').val(); i++) {
+    $('#id_purchasetransaction_set-'+i+'-total_price').prop('disabled', false);
+     $('#id_purchasetransaction_set-'+i+'-after_discount').prop('disabled', false);
+    }
+ $('#id_global_price').prop('disabled', false);
+ $('#id_my_total_price_after_discount').prop('disabled', false);
+});
 </script>
-
 <script>
     function myAction(object) {
            console.log("HIIIIIIIIIIIIIIIIIIIIIIII")
@@ -165,7 +195,7 @@
                 var res= str.split("-")
                 var id_prefix = res[0]+'-'+res[1]
                 uom_id = id_prefix+'-'+'temp_uom'
-                price_id = id_prefix+'-'+'price_per_unit_0'
+                price_id = id_prefix+'-'+'price_per_unit'
                 quantity_id =  id_prefix+'-'+'quantity'
                 $.ajax({
                 type: "get",
@@ -188,19 +218,19 @@
             };
 
     };
-</script>
 
+</script>
 <script>
 function myFunction(object) {
-
     console.log("Byyeeee")
-
     var str = object.id;
     var res= str.split("-");
     var id_prefix = res[0]+'-'+res[1];
     item_id = id_prefix+'-'+'item';
-    price_id = id_prefix+'-'+'price_per_unit_0';
-    total_price_id = id_prefix+'-'+'total_price_0';
+    price_id = id_prefix+'-'+'price_per_unit';
+    total_price_id = id_prefix+'-'+'total_price';
+    console.log("JJJJJJJJJJJJJJJJJJ")
+    console.log(total_price_id)
     quantity_id = id_prefix+'-'+'quantity';
     quantity = document.getElementById(quantity_id).value;
     item =  document.getElementById(item_id).value;
@@ -216,8 +246,8 @@ function myFunction(object) {
         };
 
 };
-</script>
 
+</script>
 <script>
 function grandTotal(){
     var x = document.getElementsByClassName("unique-class");
@@ -229,9 +259,10 @@ function grandTotal(){
         };
      };
      console.log(grand_total)
-    document.getElementById("id_total_price_0").value = grand_total;
+    document.getElementById("id_global_price").value = grand_total;
 
 }
+
 </script>
 <script>
   $('#add_item').click(function() {
@@ -245,5 +276,47 @@ function grandTotal(){
 
 
   });
+
 </script>
+<script>
+    function calculate() {
+        console.log("This is my lap");
+        discount_percentage = document.getElementById('id_discount').value;
+        grand_total =  document.getElementById("id_global_price").value;
+        discount_type = document.getElementById("id_discount_type").value;
+        var x = document.getElementsByClassName("unique-class");
+        if (discount_percentage>=0){
+            if (discount_type == 'percentage'){
+                discount_amount = discount_percentage*grand_total/100;
+            }
+            else{
+                discount_amount = discount_percentage
+             };
+            console.log(discount_amount)
+            for (i = 0; i < x.length; i++) {
+                 if (x[i].value){
+                    var str = x[i].id;
+                    var res= str.split("-");
+                    var id_prefix = res[0]+'-'+res[1];
+                    price_id = id_prefix+'-'+'price_per_unit'
+                    quantity_id = id_prefix+'-'+'quantity'
+                    item_total_afer_discount_id = id_prefix+'-'+'after_discount';
+                    unit_price = document.getElementById(price_id).value
+                    quantity = document.getElementById(quantity_id).value
+                    total_price = unit_price * quantity
+                    item_total_discount_amount = discount_percentage * total_price/100;
+                    item_total_afer_discount = total_price- item_total_discount_amount;
+                    document.getElementById(item_total_afer_discount_id).value = item_total_afer_discount;
+                    };
+            };
+            document.getElementById('id_my_total_price_after_discount').value = grand_total-discount_amount;
+
+
+
+
+                    };
+            };
+
+</script>
+
 {% endblock js %}

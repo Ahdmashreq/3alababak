@@ -25,13 +25,12 @@
               <div class="col-sm-12">
               </div>
             </div>
-            <table class="data-table data-table-feature6 dataTable no-footer" id="DataTables_Table_0" role="grid" aria-describedby="DataTables_Table_0_info">
+            <table class="data-table data-table-feature5 dataTable no-footer" id="DataTables_Table_0" role="grid" aria-describedby="DataTables_Table_0_info">
               <thead>
                 <tr role="row">
-                  <th class="sorting_asc" tabindex="0" aria-controls="DataTables_Table_0" rowspan="1" colspan="1" aria-sort="ascending" aria-label="Name: activate to sort column descending" style="width: 155.4px;">Order ID</th>
-                  <th class="sorting" tabindex="0" aria-controls="DataTables_Table_0" rowspan="1" colspan="1" aria-label="Position: activate to sort column ascending" style="width: 263.4px;">{% trans "Code" %}</th>
-                  <th class="sorting" tabindex="0" aria-controls="DataTables_Table_0" rowspan="1" colspan="1" aria-label="Office: activate to sort column ascending" style="width: 105.8px;">{% trans "Customer" %}</th>
-                  <th class="sorting" tabindex="0" aria-controls="DataTables_Table_0" rowspan="1" colspan="1" aria-label="Age: activate to sort column ascending" style="width: 61.8px;">{% trans "Total Price" %}</th>
+                  <th class="sorting_asc" tabindex="0" aria-controls="DataTables_Table_0" rowspan="1" colspan="1" aria-sort="ascending" aria-label="Name: activate to sort column descending" style="width: 155.4px;">#</th>
+                  <th class="sorting" tabindex="0" aria-controls="DataTables_Table_0" rowspan="1" colspan="1" aria-label="Position: activate to sort column ascending" style="width: 263.4px;">{% trans "Name" %}</th>
+                  <th class="sorting" tabindex="0" aria-controls="DataTables_Table_0" rowspan="1" colspan="1" aria-label="Office: activate to sort column ascending" style="width: 105.8px;">{% trans "Date" %}</th>
                   <th class="sorting" tabindex="0" aria-controls="DataTables_Table_0" rowspan="1" colspan="1" aria-label="Start date: activate to sort column ascending" style="width: 122.6px;">{% trans "Status" %}</th>
                   <th class="sorting" tabindex="0" aria-controls="DataTables_Table_0" rowspan="1" colspan="1" aria-label="Salary: activate to sort column ascending" style="width: 86.6px;">{% trans "Actions" %}</th>
                 </tr>
@@ -40,9 +39,8 @@
                 {% for order in sale_orders_list %}
                 <tr role="row" class="odd">
                   <td class="sorting_1">{{ forloop.counter }}</td>
-                  <td>{{ order.code }}</td>
-                  <td>{{ order.customer }}</td>
-                  <td>{{ order.total_price }}</td>
+                  <td>{{ order.order_name }}</td>
+                  <td>{{ order.date }}</td>
                   <td>{{ order.status }}</td>
                    <td>
                     <div class="dropdown d-inline-block">
