@@ -15,5 +15,41 @@
       <div class="separator mb-5"></div>
     </div>
   </div>
+  <div class="row mb-4">
+    <div class="col-12 mb-4">
+      <div class="card">
+        <div class="card-body">
+          <div id="DataTables_Table_0_wrapper" class="dataTables_wrapper container-fluid dt-bootstrap4 no-footer">
+            <div class="row view-filter">
+              <div class="col-sm-12">
+              </div>
+            </div>
+            <table class="data-table data-table-feature3 dataTable no-footer" id="DataTables_Table_0" role="grid" aria-describedby="DataTables_Table_0_info">
+              <thead>
+                <tr role="row">
+                  <th class="sorting_asc" tabindex="0" aria-controls="DataTables_Table_0" rowspan="1" colspan="1" aria-sort="ascending" aria-label="Name: activate to sort column descending" style="width: 155.4px;">#</th>
+                  <th class="sorting" tabindex="0" aria-controls="DataTables_Table_0" rowspan="1" colspan="1" aria-label="Position: activate to sort column ascending" style="width: 263.4px;">{% trans "Transaction code" %}</th>
+                  <th class="sorting" tabindex="0" aria-controls="DataTables_Table_0" rowspan="1" colspan="1" aria-label="Office: activate to sort column ascending" style="width: 105.8px;">{% trans "Date" %}</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for order in purchase_orders_list %}
+                <tr role="row" class="odd">
+                  <td class="sorting_1">{{ forloop.counter }}</td>
+                  <td><a href = "{% url 'orders:list-receiving' id=order.id %}">{{ order.transaction_code }}</a></td>
+                  <td>{{ order.date }}</td>
+                </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
 </div>
-{% endblock body %}
+
+
+
+{% endblock body%}
+

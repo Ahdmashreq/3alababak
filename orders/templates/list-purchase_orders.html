@@ -25,7 +25,11 @@
               <div class="col-sm-12">
               </div>
             </div>
+            {% if receiving %}
+            <table class="data-table data-table-feature dataTable no-footer" id="DataTables_Table_1" role="grid" aria-describedby="DataTables_Table_0_info">
+            {% else %}
             <table class="data-table data-table-feature5 dataTable no-footer" id="DataTables_Table_0" role="grid" aria-describedby="DataTables_Table_0_info">
+            {% endif %}
               <thead>
                 <tr role="row">
                   <th class="sorting_asc" tabindex="0" aria-controls="DataTables_Table_0" rowspan="1" colspan="1" aria-sort="ascending" aria-label="Name: activate to sort column descending" style="width: 155.4px;">#</th>

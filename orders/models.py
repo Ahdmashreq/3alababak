@@ -5,6 +5,8 @@ from inventory.models import Item
 from django.conf import settings
 from moneyed import Money, EGP
 from currencies.models import Currency
+from inventory.models import StokeTake
+from location.models import Location
 
 
 # import django_filters
@@ -38,9 +40,9 @@ class PurchaseOder(models.Model):
     def global_price_after_discount(self):
         if self.discount_type == 'percentage':
             discount_amount = self.global_price / 100 * self.discount
-            return round(self.global_price - discount_amount,2)
+            return round(self.global_price - discount_amount, 2)
         elif self.discount_type == 'amount':
-            return round(self.global_price - self.discount,2)
+            return round(self.global_price - self.discount, 2)
 
 
 class SalesOrder(models.Model):
@@ -66,27 +68,27 @@ class PurchaseTransaction(models.Model):
     purchase_order = models.ForeignKey(PurchaseOder, on_delete=models.CASCADE, )
     item = models.ForeignKey(Item, on_delete=models.CASCADE, )
     quantity = models.IntegerField()
-    price_per_unit = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True,)
-    total_price = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True,)
-    currency = models.ForeignKey(Currency, on_delete=models.CASCADE, null=True, blank=True,default='EGP' )
+    price_per_unit = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True, )
+    total_price = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True, )
+    currency = models.ForeignKey(Currency, on_delete=models.CASCADE, null=True, blank=True, default='EGP')
     discount_percentage = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True, default=0)
     status = models.CharField(max_length=8,
                               choices=[('closed', 'Closed'), ('open', 'Open')], default='open')
     created_at = models.DateField(auto_now_add=True, null=True)
-    balance = models.IntegerField(help_text='The remaining quantities to be received for this item', default=0,
-                                  blank=True)
+    balance = models.IntegerField(help_text='The remaining quantities to be received for this item',
+                                  blank=True, null=True)
     last_updated_at = models.DateField(null=True, auto_now=True, auto_now_add=False)
     created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, null=True,
                                    related_name="purchase_transation_created_by")
     last_updated_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, null=True)
 
     def __str__(self):
-        return self.item
+        return str(self.item)
 
     @property
     def total_price_after_discount(self):
         discount_amount = self.total_price / 100 * self.discount_percentage
-        return round(self.total_price - discount_amount,2)
+        return round(self.total_price - discount_amount, 2)
 
 
 class SalesTransaction(models.Model):
@@ -110,21 +112,23 @@ class SalesTransaction(models.Model):
 #         model = PurchaseTransaction
 #         fields = ['item']
 
-class ReceivingTransaction(models.Model):
-    po_transaction = models.ForeignKey(PurchaseTransaction, on_delete=models.CASCADE, )
-    purchase_order = models.ForeignKey(PurchaseOder, on_delete=models.CASCADE, )
+class MaterialTransaction(models.Model):
+    transaction_code = models.IntegerField(help_text='code number of a transaction')
+    sale_order = models.ForeignKey(SalesOrder, on_delete=models.CASCADE, blank=True, null=True)
+    purchase_order = models.ForeignKey(PurchaseOder, on_delete=models.CASCADE, blank=True, null=True)
+    stoke_take = models.ForeignKey(StokeTake, on_delete=models.CASCADE, blank=True, null=True)
     date = models.DateField(null=True, blank=True)
-    received_quantity = models.IntegerField()
+    quantity = models.IntegerField()
+    location = models.ForeignKey(Location, on_delete=models.CASCADE, blank=True, null=True)
+    item = models.ForeignKey(Item, on_delete=models.CASCADE, blank=True, null=True)
+    transaction_type = models.CharField(max_length=4,
+                                        choices=[('in', 'in'), ('out', 'out')])
     created_at = models.DateField(auto_now_add=True, null=True)
     last_updated_at = models.DateField(null=True, auto_now=True, auto_now_add=False)
     created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, null=True,
-                                   related_name="receiving_transaction_created_by")
-    last_updated_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, null=True)
+                                   related_name="transaction_created_by")
+    last_updated_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, null=True,
+                                        related_name="transaction_last_updated_by")
 
     def __str__(self):
-        return self.po_transaction
-
-
-class PoReceiving(models.Model):
-    receiving_transaction = models.ForeignKey(ReceivingTransaction, on_delete=models.CASCADE, )
-    po_transaction = models.ForeignKey(PurchaseTransaction, on_delete=models.CASCADE, )
+        return self.transaction_code

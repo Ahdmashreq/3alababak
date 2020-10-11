@@ -4,7 +4,7 @@
 {% load l10n %}
 {% load i18n %}
 
-{% block body%}
+{% block body %}
 <div class="container-fluid">
   <div class="row">
     <div class="col-12">
@@ -19,60 +19,146 @@
     </div>
   </div>
   <div class="card mb-4">
-      <div class="form-row">
-          <div class="form-group col-md-6">
-            <b>Supplier: </b>
-            {{po.supplier}}
-          </div>
-          <div class="form-group col-md-6">
-            <b>Name: </b>
-            {{po.order_name}}
-          </div>
-          <div class="form-group col-md-6">
-            <b>Date:</b>
-            {{po.date}}
-          </div>
-          <div class="form-group col-md-6">
-            <b>Grand Total: </b>
-            {{po.total_price}}
-          </div>
-        </div>
-          <div class="separator mb-5"></div>
-    </div>
-       <div class="card mb-4">
+        <div class="card-body">
+         <form method="POST" id="myform">
+         {% csrf_token %}
+          <div class="form-row">
+              <div class="col-md-6">
+                <b>Supplier: </b>
+                {{po.supplier}}
+              </div>
+              <div class="col-md-6">
+                <b>Name: </b>
+                {{po.order_name}}
+              </div>
+              <div class="form-group col-md-6">
+                <b>Date:</b>
+                {{po.date}}
+              </div>
+              <div class="form-group col-md-6">
+                <b>Grand Total After Discount: </b>
+                {{po.global_price_after_discount}}
+              </div>
+            </div>
+        <div class="separator mb-5"></div>
+        <div class="row" style="margin-left:0px;">
+            <div class="col-md-12">
+                <div class="bgc-white bd bdrs-3 p-20 mB-20">
+                    <div id="purchase_set">
+                        <div class="form-row">
+                            <div class="form-group col-md-3">
+                                <label>{% trans "Item" %}</label>
+                            </div>
+                            <div class="form-group col-md-2">
+                                <label>{% trans "Location" %}</label>
+                            </div>
+                            <div class="form-group col-md-1">
+                                <label>{% trans "Received Quantity" %}</label>
+                            </div>
+                            <div class="form-group col-md-1">
+                                <label>{% trans "Remaining Quantity" %}</label>
+                            </div>
+                            <div class="form-group col-md-2">
+                                <label>{% trans "Date" %}</label>
+                            </div>
+                        </div>
+                        {{ receiving_form.management_form }}
+                        {% for form in receiving_form %}
+                        {{ form.id }}
+                        {{ form.media }}
+                            <div class="form-row">
+                                <div class="form-group col-md-3">
+                                    {{form.item}}
+                                </div>
+                                <div class="form-group col-md-2">
+                                    {{ form.location}}
+                                </div>
+                                <div class="form-group col-md-1">
+                                    {{form.quantity}}
+                                </div>
+                                <div class="form-group col-md-1">
+                                    {{ form.remaining }}
+                                </div>
+                                <div class="form-group col-md-2">
+                                    {{ form.date }}
+                                </div>
 
-     <table class="table table-bordered" id="DataTables_Table_0" role="grid" aria-describedby="DataTables_Table_0_info">
+                            </div>
+                        {% endfor %}
+                          <div id="empty_form" style="display:none">
+                            <table class='no_error'>
+                                <div class="form-row">
+                                    {{receiving_form.empty_form.media }}
+                                    <div class="form-group col-md-3">
+                                        {{ receiving_form.empty_form.item}}
+                                    </div>
+                                    <div class="form-group col-md-2">
+                                        {{ receiving_form.empty_form.location}}
+                                    </div>
+                                    <div class="form-group col-md-1">
+                                        {{ receiving_form.empty_form.quantity}}
+                                    </div>
+                                    <div class="form-group col-md-1">
+                                        {{ receiving_form.empty_form.remaining }}
+                                    </div>
+                                    <div class="form-group col-md-2">
+                                        {{ receiving_form.empty_form.date}}
+                                    </div>
+                                </div>
+                            </table>
+                            </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                                       <button type="button" id="add_item" class="btn cur-p btn-success">{% trans "Add Receiving"%}</button>
 
-                  {{ receiving_formset.management_form }}
-                  {% for form in receiving_formset %}
-                  {{ form.id }}
-                  {% if forloop.first %}
-                  <thead>
-                    <tr role="row">
-                      <th class="sorting_asc" tabindex="0" aria-controls="DataTables_Table_0" rowspan="1" colspan="1" aria-sort="ascending">#</th>
-                      <th class="sorting" tabindex="0" aria-controls="DataTables_Table_0" rowspan="1" colspan="1">{% trans "Item" %}</th>
-                        <th class="sorting" tabindex="0" aria-controls="DataTables_Table_0" rowspan="1" colspan="1">{% trans "Requested Quantity" %}</th>
-                      <th class="sorting" tabindex="0" aria-controls="DataTables_Table_0" rowspan="1" colspan="1">{% trans "Requested Quantity" %}</th>
-                      <th class="sorting" tabindex="0" aria-controls="DataTables_Table_0" rowspan="1" colspan="1">{% trans "Received Quantity" %}</th>
-                      <th class="sorting" tabindex="0" aria-controls="DataTables_Table_0" rowspan="1" colspan="1">{% trans "Remaining" %}</th>
+                <div class="submit-row">
+                    <button type="submit" class="btn btn-primary btn-lg mt-3" name='Save'>Save</button>
+                    <button type="submit" class="btn btn-primary btn-lg mt-3" name='Save and exit'>Save and Exit</button>
+                    <button type="submit" class="btn btn-primary btn-lg mt-3" name='Save as draft'>Save as Draft </button>
+                </div>
+         </form>
+     </div>
+  </div>
+</div>
 
-                    </tr>
-                  </thead>
-                  {% endif %}
-                  <tbody>
-                      <tr role="row">
-                          <td class="sorting_1">{{ forloop.counter }}</td>
-                          <td>{{ form.instance.po_transaction.location }}</td>
-                          <td>{{ form.instance.item.product.category }}</td>
-                          <td>{{ form.instance.item.product }}</td>
-                          <td>{{ form.item }}</td>
-                          {% if approval_mode %}
-                          <td>{{form.item.quantity}}</td>
-                          {% endif %}
-                          <td>{{ form.quantity }}</td>
-                      </tr>
-                      {% endfor %}
-                  </table>
+<script>
+  $('#add_item').click(function() {
+    console.log("ooooops")
+    var form_idx = $('#id_materialtransaction_set-TOTAL_FORMS').val();
+    $('#purchase_set').append($('#empty_form').html().replace(/__prefix__/g, form_idx));
+    $('#id_materialtransaction_set-TOTAL_FORMS').val(parseInt(form_idx) + 1);
+    var current_indx = Number(form_idx);
 
 
+  });
+
+</script>
+<script>
+    function myFunction(object){
+        console.log("Heloooooooo");
+       var str = object.id;
+        var res= str.split("-");
+        var id_prefix = res[0]+'-'+res[1];
+        item_id = id_prefix+'-'+'item';
+        remaining_id =  id_prefix+'-'+'remaining'
+        if ( document.getElementById(item_id).value){
+                {% for purchase in purchase_lines %}
+                        console.log("hie")
+
+                myitem = document.getElementById(item_id).value
+                console.log(myitem)
+                console.log("{{ purchase.id }}")
+                if ({{purchase.id}} == myitem) {
+                    console.log("in")
+                    document.getElementById(remaining_id).value = {{purchase.balance}} - object.value;
+}
+                {% endfor %}
+
+
+        }
+        }
+
+</script>
 {% endblock body %}

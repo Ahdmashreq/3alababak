@@ -1,10 +1,10 @@
 from django.shortcuts import render, redirect
 from orders.forms import (PurchaseTransactionCreationForm,
-                          PurchaseOrderCreationForm,
+                          PurchaseOrderCreationForm, ReceivingTransactionCreation_formset,
                           purchase_transaction_formset,
                           sale_transaction_formset,
-                          SaleOrderCreationForm, ReceivingTransactionCreation_formset)
-from orders.models import PurchaseOder, SalesOrder, PurchaseTransaction
+                          SaleOrderCreationForm, )
+from orders.models import PurchaseOder, SalesOrder, MaterialTransaction, PurchaseTransaction
 from inventory.models import Item, Uom
 from django.contrib import messages
 from json import dumps
@@ -269,8 +269,30 @@ class ItemAutocomplete(autocomplete.Select2QuerySetView):
         return qs
 
 
+class PoItemAutocomplete(autocomplete.Select2QuerySetView):
+    print("inside ItemAutocomplete")
+
+    def get_queryset(self):
+        print("inside get_queryset ItemAutocomplete")
+        print("HIIIIIIIIIII")
+        if not self.request.user.is_authenticated:
+            return Item.objects.none()
+        qs = Item.objects.all()
+        po = self.forwarded.get('purchase_order', None)
+        print(po)
+        # items = PurchaseTransaction.objects.filter(purchase_order=po, status='open').values(['item'])
+        # #print("HIIIIIIIIIII")
+        # print(items)
+        # items = [po.item for po in purchase_transactions]
+
+        # qs = items
+        if self.q:
+            qs = qs.filter(name__istartswith=self.q)
+        return qs
+
+
 def list_purchases_for_receiving(request):
-    purchase_orders = PurchaseOder.objects.all()
+    purchase_orders = PurchaseOder.objects.filter(status='open')
     subcontext = {
         'purchase_orders_list': purchase_orders,
         'receiving': True,
@@ -280,25 +302,35 @@ def list_purchases_for_receiving(request):
 
 
 def list_receiving(request, id):
-    purchase_items = PurchaseTransaction.objects.filter(purchase_order__id=id)
+    receivings = MaterialTransaction.objects.filter(purchase_order__id=id)
     subcontext = {
         'pk': id,
+        'receivings': receivings,
 
     }
     return render(request, 'list-receiving.html', context=subcontext)
 
 
 def create_receiving(request, id):
-    receiving_formset = ReceivingTransactionCreation_formset()
-    purchase_items = PurchaseTransaction.objects.filter(purchase_order__id=id)
+    receiving_formset = ReceivingTransactionCreation_formset(form_kwargs={'id': id})
+
+    receivings = MaterialTransaction.objects.filter(purchase_order__id=id)
+    purchase_lines = PurchaseTransaction.objects.filter(purchase_order__id=id)
     purchase_order = PurchaseOder.objects.get(id=id)
 
     if request.method == 'POST':
-        pass
-
+        receiving_formset = ReceivingTransactionCreation_formset(form_kwargs={'id': id})
     subcontext = {
         'po': purchase_order,
-        'receiving_form': receiving_formset
+        'receiving_form': receiving_formset,
+        'receivings': receivings,
+        'purchase_lines':purchase_lines,
 
     }
     return render(request, 'create-receiving.html', context=subcontext)
+
+
+def get_remaining_quantity(request, item):
+    item = PurchaseTransaction.objects.select_related().get(pk=id)
+    serialized = ItemSerializer(item)
+    return JSONResponse(serialized.data, content_type='application/json')

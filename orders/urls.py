@@ -17,5 +17,6 @@ urlpatterns = [
     path('list/receivings/<int:id>', views.list_receiving, name='list-receiving', ),
     path('create/receiving-transactions/<int:id>', views.create_receiving, name='create-receiving', ),
     path('list/purchases-for-receiving/', views.list_purchases_for_receiving, name='list-po-for-receiving'),
+    path('po_transaction/autocomplete/', views.PoItemAutocomplete.as_view(), name='receive-item', ),
 
 ]
