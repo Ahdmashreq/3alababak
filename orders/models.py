@@ -19,7 +19,7 @@ class PurchaseOder(models.Model):
     order_name = models.CharField(max_length=10)
     global_price = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True, default=0)
     currency = models.ForeignKey(Currency, on_delete=models.CASCADE, null=True, blank=True, default='EGP')
-    status = models.CharField(max_length=8,
+    status = models.CharField(max_length=20,
                               choices=[('drafted', 'Drafted'), ('Partial_receive', 'Partially Received'),
                                        ('closed', 'Closed'), ('open', 'Open')], default='open')
     date = models.DateField(null=True, blank=True)
@@ -112,8 +112,43 @@ class SalesTransaction(models.Model):
 #         model = PurchaseTransaction
 #         fields = ['item']
 
+class MaterialTransaction1(models.Model):
+    transaction_code = models.CharField(max_length=100, help_text='code number of a transaction')
+    sale_order = models.ForeignKey(SalesOrder, on_delete=models.CASCADE, blank=True, null=True)
+    purchase_order = models.ForeignKey(PurchaseOder, on_delete=models.CASCADE, blank=True, null=True)
+    stoke_take = models.ForeignKey(StokeTake, on_delete=models.CASCADE, blank=True, null=True)
+    date = models.DateField(null=True, blank=True)
+    created_at = models.DateField(auto_now_add=True, null=True)
+    last_updated_at = models.DateField(null=True, auto_now=True, auto_now_add=False)
+    created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, null=True,
+                                   related_name="transaction1_created_by")
+    last_updated_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, null=True,
+                                        related_name="transaction1_last_updated_by")
+
+    def __str__(self):
+        return self.transaction_code
+
+
+class MaterialTransactionLines(models.Model):
+    material_transaction = models.ForeignKey(MaterialTransaction1, on_delete=models.CASCADE, blank=True, null=True)
+    quantity = models.IntegerField()
+    location = models.ForeignKey(Location, on_delete=models.CASCADE, blank=True, null=True)
+    item = models.ForeignKey(Item, on_delete=models.CASCADE, blank=True, null=True)
+    transaction_type = models.CharField(max_length=4,
+                                        choices=[('in', 'in'), ('out', 'out')])
+    created_at = models.DateField(auto_now_add=True, null=True)
+    last_updated_at = models.DateField(null=True, auto_now=True, auto_now_add=False)
+    created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, null=True,
+                                   related_name="line_created_by")
+    last_updated_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, null=True,
+                                        related_name="line_last_updated_by")
+
+    def __str__(self):
+        return self.item.name
+
+
 class MaterialTransaction(models.Model):
-    transaction_code = models.IntegerField(help_text='code number of a transaction')
+    transaction_code = models.CharField(max_length=100, help_text='code number of a transaction')
     sale_order = models.ForeignKey(SalesOrder, on_delete=models.CASCADE, blank=True, null=True)
     purchase_order = models.ForeignKey(PurchaseOder, on_delete=models.CASCADE, blank=True, null=True)
     stoke_take = models.ForeignKey(StokeTake, on_delete=models.CASCADE, blank=True, null=True)

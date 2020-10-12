@@ -1,6 +1,7 @@
 from django import forms
 from djmoney.forms import MoneyWidget
 
+from inventory.models import Item
 from orders.models import PurchaseOder
 from django.forms import inlineformset_factory, modelformset_factory
 from orders.models import PurchaseOder, PurchaseTransaction, SalesOrder, SalesTransaction, MaterialTransaction
@@ -158,7 +159,7 @@ class ReceivingTransactionCreationForm(forms.ModelForm):
 
     class Meta:
         model = MaterialTransaction
-        exclude = ('transaction_type', 'stoke_take', 'sale_order', 'created_at', 'last_updated_at', 'created_by',
+        exclude = ('transaction_code','transaction_type', 'stoke_take', 'sale_order', 'created_at', 'last_updated_at', 'created_by',
                    'last_updated_by')
         widgets = {
             'date': forms.DateInput(attrs={'class': 'form-control tm', 'type': 'date', }),
@@ -170,10 +171,12 @@ class ReceivingTransactionCreationForm(forms.ModelForm):
         super(ReceivingTransactionCreationForm, self).__init__(*args, **kwargs)
         po_transactions = PurchaseTransaction.objects.select_related('item').filter(purchase_order__id=id,
                                                                               status='open')
-        print(po_transactions)
+        print("Hiiiiiiiiiiiiii",po_transactions)
+        items = Item.objects.filter(name__in = list(po_transactions))
+        print(items)
         for field in self.fields:
             self.fields[field].widget.attrs['class'] = 'form-control'
-            self.fields['item'].queryset = po_transactions
+            self.fields['item'].queryset = items
 
 purchase_transaction_formset = inlineformset_factory(PurchaseOder, PurchaseTransaction,
                                                      form=PurchaseTransactionCreationForm, extra=0, can_delete=True)

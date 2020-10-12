@@ -8,10 +8,16 @@
   <div class="row">
     <div class="col-12">
       <h1>Receivings</h1>
-
+      {% if status != 'closed' %}
       <div class="text-zero top-right-button-container">
         <a href="{% url 'orders:create-receiving' id=pk %}"><button type="button" class="btn btn-primary btn-lg top-right-button mr-1">ADD NEW</button></a>
       </div>
+      {% endif %}
+       <div class="text-zero top-right-button-container">
+          <a href="{% url 'orders:list-po-for-receiving'%}">
+              <button type="button" class="btn btn-secondary btn-lg top-right-button mr-1">BACK TO LIST</button>
+          </a>
+        </div>
       <div class="separator mb-5"></div>
     </div>
   </div>
@@ -33,11 +39,11 @@
                 </tr>
               </thead>
               <tbody>
-                {% for order in purchase_orders_list %}
+                {% for receiving in receivings %}
                 <tr role="row" class="odd">
                   <td class="sorting_1">{{ forloop.counter }}</td>
-                  <td><a href = "{% url 'orders:list-receiving' id=order.id %}">{{ order.transaction_code }}</a></td>
-                  <td>{{ order.date }}</td>
+                  <td>{{ receiving.transaction_code }}</td>
+                  <td>{{ receiving.date }}</td>
                 </tr>
                 {% endfor %}
               </tbody>

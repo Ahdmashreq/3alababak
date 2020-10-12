@@ -23,11 +23,11 @@
          <form method="POST" id="myform">
          {% csrf_token %}
           <div class="form-row">
-              <div class="col-md-6">
+              <div class="form-group col-md-6">
                 <b>Supplier: </b>
                 {{po.supplier}}
               </div>
-              <div class="col-md-6">
+              <div class="form-group col-md-6">
                 <b>Name: </b>
                 {{po.order_name}}
               </div>
@@ -46,10 +46,10 @@
                 <div class="bgc-white bd bdrs-3 p-20 mB-20">
                     <div id="purchase_set">
                         <div class="form-row">
-                            <div class="form-group col-md-3">
+                            <div class="form-group col-md-4">
                                 <label>{% trans "Item" %}</label>
                             </div>
-                            <div class="form-group col-md-2">
+                            <div class="form-group col-md-3">
                                 <label>{% trans "Location" %}</label>
                             </div>
                             <div class="form-group col-md-1">
@@ -58,7 +58,7 @@
                             <div class="form-group col-md-1">
                                 <label>{% trans "Remaining Quantity" %}</label>
                             </div>
-                            <div class="form-group col-md-2">
+                            <div class="form-group col-md-3">
                                 <label>{% trans "Date" %}</label>
                             </div>
                         </div>
@@ -67,10 +67,10 @@
                         {{ form.id }}
                         {{ form.media }}
                             <div class="form-row">
-                                <div class="form-group col-md-3">
+                                <div class="form-group col-md-4">
                                     {{form.item}}
                                 </div>
-                                <div class="form-group col-md-2">
+                                <div class="form-group col-md-3">
                                     {{ form.location}}
                                 </div>
                                 <div class="form-group col-md-1">
@@ -79,7 +79,7 @@
                                 <div class="form-group col-md-1">
                                     {{ form.remaining }}
                                 </div>
-                                <div class="form-group col-md-2">
+                                <div class="form-group col-md-3">
                                     {{ form.date }}
                                 </div>
 
@@ -89,10 +89,10 @@
                             <table class='no_error'>
                                 <div class="form-row">
                                     {{receiving_form.empty_form.media }}
-                                    <div class="form-group col-md-3">
+                                    <div class="form-group col-md-4">
                                         {{ receiving_form.empty_form.item}}
                                     </div>
-                                    <div class="form-group col-md-2">
+                                    <div class="form-group col-md-3">
                                         {{ receiving_form.empty_form.location}}
                                     </div>
                                     <div class="form-group col-md-1">
@@ -101,7 +101,7 @@
                                     <div class="form-group col-md-1">
                                         {{ receiving_form.empty_form.remaining }}
                                     </div>
-                                    <div class="form-group col-md-2">
+                                    <div class="form-group col-md-3">
                                         {{ receiving_form.empty_form.date}}
                                     </div>
                                 </div>
@@ -116,7 +116,6 @@
                 <div class="submit-row">
                     <button type="submit" class="btn btn-primary btn-lg mt-3" name='Save'>Save</button>
                     <button type="submit" class="btn btn-primary btn-lg mt-3" name='Save and exit'>Save and Exit</button>
-                    <button type="submit" class="btn btn-primary btn-lg mt-3" name='Save as draft'>Save as Draft </button>
                 </div>
          </form>
      </div>
@@ -136,8 +135,8 @@
 
 </script>
 <script>
-    function myFunction(object){
-        console.log("Heloooooooo");
+function myFunction(object){
+        console.log("Boom");
        var str = object.id;
         var res= str.split("-");
         var id_prefix = res[0]+'-'+res[1];
@@ -145,17 +144,15 @@
         remaining_id =  id_prefix+'-'+'remaining'
         if ( document.getElementById(item_id).value){
                 {% for purchase in purchase_lines %}
-                        console.log("hie")
 
                 myitem = document.getElementById(item_id).value
+                console.log("{{ purchase.item.id }}")
                 console.log(myitem)
-                console.log("{{ purchase.id }}")
-                if ({{purchase.id}} == myitem) {
-                    console.log("in")
-                    document.getElementById(remaining_id).value = {{purchase.balance}} - object.value;
-}
-                {% endfor %}
+                if ({{purchase.item.id}} == myitem) {
+                     console.log("in");
+                    document.getElementById(remaining_id).value = {{purchase.balance}} - object.value;}
 
+                {% endfor %}
 
         }
         }

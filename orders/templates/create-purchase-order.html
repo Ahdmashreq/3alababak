@@ -177,7 +177,9 @@
 {% block js %}
 <script>
    $('#myform').on('submit', function() {
+       calculate() ;
 for (i = 0; i < $('#id_purchasetransaction_set-TOTAL_FORMS').val(); i++) {
+
     $('#id_purchasetransaction_set-'+i+'-total_price').prop('disabled', false);
      $('#id_purchasetransaction_set-'+i+'-after_discount').prop('disabled', false);
     }
