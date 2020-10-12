@@ -4,7 +4,8 @@ from djmoney.forms import MoneyWidget
 from inventory.models import Item
 from orders.models import PurchaseOder
 from django.forms import inlineformset_factory, modelformset_factory
-from orders.models import PurchaseOder, PurchaseTransaction, SalesOrder, SalesTransaction, MaterialTransaction
+from orders.models import PurchaseOder, PurchaseTransaction, SalesOrder, SalesTransaction, MaterialTransaction, \
+    MaterialTransaction1, MaterialTransactionLines
 from djmoney.models.fields import MoneyField
 from dal import autocomplete
 
@@ -159,7 +160,8 @@ class ReceivingTransactionCreationForm(forms.ModelForm):
 
     class Meta:
         model = MaterialTransaction
-        exclude = ('transaction_code','transaction_type', 'stoke_take', 'sale_order', 'created_at', 'last_updated_at', 'created_by',
+        exclude = ('transaction_code', 'transaction_type', 'stoke_take', 'sale_order', 'created_at', 'last_updated_at',
+                   'created_by',
                    'last_updated_by')
         widgets = {
             'date': forms.DateInput(attrs={'class': 'form-control tm', 'type': 'date', }),
@@ -170,13 +172,55 @@ class ReceivingTransactionCreationForm(forms.ModelForm):
         id = kwargs.pop('id')
         super(ReceivingTransactionCreationForm, self).__init__(*args, **kwargs)
         po_transactions = PurchaseTransaction.objects.select_related('item').filter(purchase_order__id=id,
-                                                                              status='open')
-        print("Hiiiiiiiiiiiiii",po_transactions)
-        items = Item.objects.filter(name__in = list(po_transactions))
+                                                                                    status='open')
+        print("Hiiiiiiiiiiiiii", po_transactions)
+        items = Item.objects.filter(name__in=list(po_transactions))
         print(items)
         for field in self.fields:
             self.fields[field].widget.attrs['class'] = 'form-control'
             self.fields['item'].queryset = items
+
+
+class MaterialTransactionCreationForm(forms.ModelForm):
+    class Meta:
+        model = MaterialTransaction1
+        exclude = ('transaction_type', 'stoke_take', 'sale_order', 'created_at', 'last_updated_at',
+                   'created_by', 'last_updated_by')
+        widgets = {
+            'date': forms.DateInput(attrs={'class': 'form-control tm', 'type': 'date', }),
+        }
+
+    def __init__(self, *args, **kwargs):
+        super(MaterialTransactionCreationForm, self).__init__(*args, **kwargs)
+        self.fields['transaction_code'].widget.attrs['readonly'] = True
+        #self.fields['transaction_code'].widget.attrs['disabled'] = True
+        for field in self.fields:
+            self.fields[field].widget.attrs['class'] = 'form-control'
+
+
+class MaterialTransactionLinesCreationForm(forms.ModelForm):
+    remaining = forms.IntegerField()
+
+    class Meta:
+        model = MaterialTransactionLines
+        exclude = ('transaction_type', 'created_at', 'last_updated_at', 'created_by',
+                   'last_updated_by')
+        widgets = {
+            'quantity': forms.TextInput(attrs={'onchange': 'myFunction(this)'}),
+        }
+
+    def __init__(self, *args, **kwargs):
+        id = kwargs.pop('id')
+        super(MaterialTransactionLinesCreationForm, self).__init__(*args, **kwargs)
+        po_transactions = PurchaseTransaction.objects.select_related('item').filter(purchase_order__id=id,
+                                                                                    status='open')
+        print("Hiiiiiiiiiiiiii", po_transactions)
+        items = Item.objects.filter(name__in=list(po_transactions))
+        print(items)
+        for field in self.fields:
+            self.fields[field].widget.attrs['class'] = 'form-control'
+            self.fields['item'].queryset = items
+
 
 purchase_transaction_formset = inlineformset_factory(PurchaseOder, PurchaseTransaction,
                                                      form=PurchaseTransactionCreationForm, extra=0, can_delete=True)
@@ -187,6 +231,10 @@ sale_transaction_formset = inlineformset_factory(SalesOrder, SalesTransaction,
 ReceivingTransactionCreation_formset = inlineformset_factory(PurchaseOder, MaterialTransaction,
                                                              form=ReceivingTransactionCreationForm, extra=1,
                                                              can_delete=True)
+
+MaterialTransactionCreation_formset = inlineformset_factory(MaterialTransaction1, MaterialTransactionLines,
+                                                            form=MaterialTransactionLinesCreationForm, extra=1,
+                                                            can_delete=True)
 
 # ReceivingTransactionCreation_formset = modelformset_factory(MaterialTransaction,
 # form=ReceivingTransactionCreationForm, extra=1,

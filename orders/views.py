@@ -6,8 +6,10 @@ from orders.forms import (PurchaseTransactionCreationForm,
                           PurchaseOrderCreationForm, ReceivingTransactionCreation_formset,
                           purchase_transaction_formset,
                           sale_transaction_formset,
-                          SaleOrderCreationForm, )
-from orders.models import PurchaseOder, SalesOrder, MaterialTransaction, PurchaseTransaction
+                          SaleOrderCreationForm, MaterialTransactionCreationForm, MaterialTransactionLinesCreationForm,
+                          MaterialTransactionCreation_formset)
+from orders.models import PurchaseOder, SalesOrder, MaterialTransaction, PurchaseTransaction, MaterialTransactionLines, \
+    MaterialTransaction1
 from inventory.models import Item, Uom
 from django.contrib import messages
 from json import dumps
@@ -20,6 +22,7 @@ import json
 from dal import autocomplete
 from moneyed import Money, EGP
 import random
+
 
 def create_purchase_order_view(request):
     po_form = PurchaseOrderCreationForm()
@@ -297,7 +300,6 @@ class PoItemAutocomplete(autocomplete.Select2QuerySetView):
 
 
 def list_purchases_for_receiving(request):
-
     purchase_orders = PurchaseOder.objects.filter(~Q(status='drafted'))
     subcontext = {
         'purchase_orders_list': purchase_orders,
@@ -309,13 +311,13 @@ def list_purchases_for_receiving(request):
 
 
 def list_receiving(request, id):
-    receivings = MaterialTransaction.objects.filter(purchase_order__id=id)
+    receivings = MaterialTransaction1.objects.filter(purchase_order__id=id)
     po = PurchaseOder.objects.get(id=id)
     status = po.status
     subcontext = {
         'pk': id,
         'receivings': receivings,
-        'status':status,
+        'status': status,
 
     }
     return render(request, 'list-receiving.html', context=subcontext)
@@ -331,16 +333,17 @@ def create_receiving(request, id):
                                                                  form_kwargs={'id': id})
         if receiving_formset.is_valid():
             receiving_objs = receiving_formset.save(commit=False)
-            transaction_code = "REC-"+str(date.today())+"-"+str(random.randint(0,5000))
+            transaction_code = "REC-" + str(date.today()) + "-" + str(random.randint(0, 5000))
             for obj in receiving_objs:
                 obj.created_by = request.user
                 obj.transaction_type = 'in'
-                obj.transaction_code=transaction_code
+                obj.transaction_code = transaction_code
                 obj.save()
                 po_line = PurchaseTransaction.objects.filter(purchase_order__id=id, item=obj.item)
                 new_balance = po_line[0].balance - obj.quantity
                 if new_balance == 0:
-                    PurchaseTransaction.objects.filter(purchase_order__id=id, item=obj.item).update(balance=new_balance, status='closed')
+                    PurchaseTransaction.objects.filter(purchase_order__id=id, item=obj.item).update(balance=new_balance,
+                                                                                                    status='closed')
                 else:
                     PurchaseTransaction.objects.filter(purchase_order__id=id, item=obj.item).update(balance=new_balance)
             purchase_lines = PurchaseTransaction.objects.filter(purchase_order__id=id)
@@ -354,7 +357,7 @@ def create_receiving(request, id):
             else:
                 PurchaseOder.objects.filter(id=id).update(status='Partially Received')
             if 'Save and exit' in request.POST:
-                return redirect('orders:list-receiving',id=id)
+                return redirect('orders:list-receiving', id=id)
         else:
             print(receiving_formset.errors)
 
@@ -367,7 +370,57 @@ def create_receiving(request, id):
     return render(request, 'create-receiving.html', context=subcontext)
 
 
-def get_remaining_quantity(request, item):
-    item = PurchaseTransaction.objects.select_related().get(pk=id)
-    serialized = ItemSerializer(item)
-    return JSONResponse(serialized.data, content_type='application/json')
+def create_receiving2(request, id):
+    material_form = MaterialTransactionCreationForm()
+    material_lines_formset = MaterialTransactionCreation_formset(form_kwargs={'id': id})
+    purchase_lines = PurchaseTransaction.objects.filter(purchase_order__id=id)
+    purchase_order = PurchaseOder.objects.get(id=id)
+    transaction_code = "REC-" + str(date.today()) + "-" + str(random.randint(0, 5000))
+    material_form.fields["transaction_code"].initial = transaction_code
+
+    if request.method == 'POST':
+        material_form = MaterialTransactionCreationForm(request.POST)
+        if material_form.is_valid():
+            material_obj = material_form.save(commit=False)
+            material_obj.purchase_order = purchase_order
+            material_obj.transaction_code = transaction_code
+            material_obj.created_by = request.user
+            material_obj.save()
+            material_lines_formset = MaterialTransactionCreation_formset(request.POST,instance = material_obj,form_kwargs={'id': id})
+        if material_lines_formset.is_valid():
+            receiving_objs = material_lines_formset.save(commit=False)
+            for obj in receiving_objs:
+                obj.created_by = request.user
+                obj.transaction_type = 'in'
+                obj.save()
+                po_line = PurchaseTransaction.objects.filter(purchase_order__id=id, item=obj.item)
+                new_balance = po_line[0].balance - obj.quantity
+                if new_balance == 0:
+                    PurchaseTransaction.objects.filter(purchase_order__id=id, item=obj.item).update(balance=new_balance,
+                                                                                                    status='closed')
+                else:
+                    PurchaseTransaction.objects.filter(purchase_order__id=id, item=obj.item).update(balance=new_balance)
+            purchase_lines = PurchaseTransaction.objects.filter(purchase_order__id=id)
+            flag = False
+            for line in purchase_lines:
+                if line.status == 'open' or line.status == 'Partial_receive':
+                    flag = True
+                    break
+            if not flag:
+                PurchaseOder.objects.filter(id=id).update(status='closed')
+            else:
+                PurchaseOder.objects.filter(id=id).update(status='Partially Received')
+            if 'Save and exit' in request.POST:
+                return redirect('orders:list-receiving', id=id)
+        else:
+            print(material_form.errors)
+            print(material_lines_formset.errors)
+
+    subcontext = {
+        'po': purchase_order,
+        'transaction_form': material_form,
+        'transaction_lines_form': material_lines_formset,
+        'purchase_lines': purchase_lines,
+
+    }
+    return render(request, 'create-receiving_test.html', context=subcontext)

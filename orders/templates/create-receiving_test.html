@@ -1,0 +1,173 @@
+{% extends 'master.html' %}
+{% load static %}
+{% load djmoney %}
+{% load l10n %}
+{% load i18n %}
+
+{% block body %}
+<div class="container-fluid">
+  <div class="row">
+    <div class="col-12">
+      <h1>Create receiving</h1>
+
+      <div class="text-zero top-right-button-container">
+        <a href="{% url 'orders:list-receiving' id=po.id %}">
+          <button type="button" class="btn btn-primary btn-lg top-right-button mr-1">BACK TO LIST</button>
+        </a>
+      </div>
+      <div class="separator mb-5"></div>
+    </div>
+  </div>
+  <div class="card mb-4">
+        <div class="card-body">
+         <form method="POST" id="myform">
+         {% csrf_token %}
+             <div class="row">
+                 <div class="col-12">
+             <h2> Purchase Order Details</h2>
+                      <div class="separator mb-5"></div>
+                 </div>
+             </div>
+          <div class="form-row">
+              <div class="form-group col-md-6">
+                <b>Supplier: </b>
+                {{po.supplier}}
+              </div>
+              <div class="form-group col-md-6">
+                <b>Name: </b>
+                {{po.order_name}}
+              </div>
+              <div class="form-group col-md-6">
+                <b>Date of PO:</b>
+                {{po.date}}
+              </div>
+              <div class="form-group col-md-6">
+                <b>Grand Total After Discount: </b>
+                {{po.global_price_after_discount}}
+              </div>
+                <div class="col-12">
+                 <h3> Receipt Details</h3>
+                 <div class="separator mb-5"></div>
+             </div>
+            </div>
+           <div class="form-row">
+             <div class="form-group col-md-6">
+                <b>Date of Receipt: </b>
+                {{transaction_form.date}}
+              </div>
+              <div class="form-group col-md-6">
+                <b>Receipt Code: </b>
+                {{transaction_form.transaction_code}}
+              </div>
+           </div>
+
+        <div class="row" style="margin-left:0px;">
+            <div class="col-md-12">
+                <div class="bgc-white bd bdrs-3 p-20 mB-20">
+                    <div id="purchase_set">
+                        <div class="form-row">
+                            <div class="form-group col-md-4">
+                                <label>{% trans "Item" %}</label>
+                            </div>
+                            <div class="form-group col-md-4">
+                                <label>{% trans "Location" %}</label>
+                            </div>
+                            <div class="form-group col-md-2">
+                                <label>{% trans "Received Quantity" %}</label>
+                            </div>
+                            <div class="form-group col-md-2">
+                                <label>{% trans "Remaining Quantity" %}</label>
+                            </div>
+                        </div>
+                        {{ transaction_lines_form.management_form }}
+                        {% for form in transaction_lines_form %}
+                        {{ form.id }}
+                        {{ form.media }}
+                            <div class="form-row">
+                                <div class="form-group col-md-4">
+                                    {{form.item}}
+                                </div>
+                                <div class="form-group col-md-4">
+                                    {{ form.location}}
+                                </div>
+                                <div class="form-group col-md-2">
+                                    {{form.quantity}}
+                                </div>
+                                <div class="form-group col-md-2">
+                                    {{ form.remaining }}
+                                </div>
+
+                            </div>
+                        {% endfor %}
+                          <div id="empty_form" style="display:none">
+                            <table class='no_error'>
+                                <div class="form-row">
+                                    {{transaction_lines_form.empty_form.media }}
+                                    <div class="form-group col-md-4">
+                                        {{ transaction_lines_form.empty_form.item}}
+                                    </div>
+                                    <div class="form-group col-md-4">
+                                        {{ transaction_lines_form.empty_form.location}}
+                                    </div>
+                                    <div class="form-group col-md-2">
+                                        {{ transaction_lines_form.empty_form.quantity}}
+                                    </div>
+                                    <div class="form-group col-md-2">
+                                        {{ transaction_lines_form.empty_form.remaining }}
+                                    </div>
+
+                                </div>
+                            </table>
+                            </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+               <button type="button" id="add_item" class="btn cur-p btn-success">{% trans "Add Receiving"%}</button>
+
+                <div class="submit-row">
+                    <button type="submit" class="btn btn-primary top-right-button btn-lg mt-3" name='Save'>Save</button>
+                    <button type="submit" class="btn btn-primary btn-lg mt-3" name='Save and exit'>Save and Exit</button>
+                </div>
+         </form>
+     </div>
+  </div>
+</div>
+
+<script>
+  $('#add_item').click(function() {
+    console.log("ooooops")
+    var form_idx = $('#id_materialtransaction_set-TOTAL_FORMS').val();
+    $('#purchase_set').append($('#empty_form').html().replace(/__prefix__/g, form_idx));
+    $('#id_materialtransaction_set-TOTAL_FORMS').val(parseInt(form_idx) + 1);
+    var current_indx = Number(form_idx);
+
+
+  });
+
+</script>
+<script>
+function myFunction(object){
+        console.log("Boom");
+       var str = object.id;
+        var res= str.split("-");
+        var id_prefix = res[0]+'-'+res[1];
+        item_id = id_prefix+'-'+'item';
+        remaining_id =  id_prefix+'-'+'remaining'
+        if ( document.getElementById(item_id).value){
+                {% for purchase in purchase_lines %}
+
+                myitem = document.getElementById(item_id).value
+                console.log("{{ purchase.item.id }}")
+                console.log(myitem)
+                if ({{purchase.item.id}} == myitem) {
+                     console.log("in");
+                    document.getElementById(remaining_id).value = {{purchase.balance}} - object.value;}
+
+                {% endfor %}
+
+        }
+        }
+
+</script>
+{% endblock body %}
