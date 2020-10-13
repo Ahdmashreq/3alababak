@@ -76,8 +76,8 @@ class Product(models.Model):
     brand = models.ForeignKey(Brand, on_delete=models.CASCADE, blank=True, null=True)
     category = TreeForeignKey(Category, on_delete=models.CASCADE, null=True, blank=True,
                               related_name='product_category')
-    name = models.CharField(max_length=30)
-    description = models.CharField(max_length=30, blank=True, null=True)
+    # name = models.CharField(max_length=30)
+    # description = models.CharField(max_length=30, blank=True, null=True)
 
     created_at = models.DateField(auto_now_add=True, null=True)
     last_updated_at = models.DateField(null=True, auto_now=True, auto_now_add=False)
@@ -86,7 +86,7 @@ class Product(models.Model):
     last_updated_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, null=True,blank=True)
 
     def __str__(self):
-        return self.name
+        return self.category.name
 
 
 class Attribute(models.Model):
@@ -118,11 +118,9 @@ class ProductAttribute(models.Model):
 
 class Item(models.Model):
     product = models.ForeignKey(Product, on_delete=models.CASCADE, )
-    location = models.ForeignKey(Location, on_delete=models.CASCADE, )
     uom = models.ForeignKey(Uom, on_delete=models.CASCADE, blank=True, null=True, related_name='uom')
     name = models.CharField(max_length=30)
     description = models.CharField(max_length=30, blank=True, null=True)
-    quantity = models.IntegerField()
     avg_cost = MoneyField(max_digits=14, decimal_places=2, default_currency='EGP')
     selling_price = MoneyField(max_digits=14, decimal_places=2, default_currency='EGP')
     sku = models.CharField(max_length=30)

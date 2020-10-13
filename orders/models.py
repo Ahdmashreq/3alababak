@@ -1,4 +1,9 @@
 from django.db import models
+from django.db.models.signals import pre_save, post_save
+from django.dispatch import receiver
+from datetime import datetime, date
+from django.utils.translation import ugettext_lazy as _
+from decimal import Decimal
 from djmoney.models.fields import MoneyField
 from account.models import Supplier, Customer, Company
 from inventory.models import Item
@@ -7,6 +12,7 @@ from moneyed import Money, EGP
 from currencies.models import Currency
 from inventory.models import StokeTake
 from location.models import Location
+from decimal import Decimal
 
 
 # import django_filters
@@ -16,7 +22,7 @@ from location.models import Location
 class PurchaseOder(models.Model):
     company = models.ForeignKey(Company, on_delete=models.CASCADE)
     supplier = models.ForeignKey(Supplier, on_delete=models.CASCADE, )
-    order_name = models.CharField(max_length=10)
+    order_name = models.CharField(max_length=250)
     purchase_code = models.CharField(max_length=100, help_text='code number of a po',null=True, blank=True, )
     global_price = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True, default=0)
     currency = models.ForeignKey(Currency, on_delete=models.CASCADE, null=True, blank=True, default='EGP')
@@ -149,6 +155,29 @@ class MaterialTransactionLines(models.Model):
     def __str__(self):
         return self.item.name
 
+@receiver(post_save, sender=MaterialTransactionLines)
+def create_or_update_inventory_balance(sender, instance, *args, **kwargs):
+    po_unit_cost = PurchaseTransaction.objects.get(purchase_order=instance.material_transaction.purchase_order)
+    try:
+        inventory_item_obj = Inventory_Balance.objects.get(item=instance.item, location=instance.location)
+        inventory_item_obj.qnt += instance.quantity
+        new_item_recieved_value = instance.quantity * po_unit_cost.price_per_unit
+        inventory_item_obj.unit_cost = (inventory_item_obj.value + new_item_recieved_value)/inventory_item_obj.qnt
+        new_value = inventory_item_obj.qnt * inventory_item_obj.unit_cost
+        print(new_value)
+        inventory_item_obj.value = new_value
+        inventory_item_obj.save()
+    except Inventory_Balance.DoesNotExist:
+        inventory_item_obj = Inventory_Balance(
+                                           item = instance.item,
+                                           location = instance.location,
+                                           unit_cost = po_unit_cost.price_per_unit,
+                                           qnt = instance.quantity,
+                                           value = instance.quantity * po_unit_cost.price_per_unit,
+        )
+        inventory_item_obj.save()
+
+
 
 class MaterialTransaction(models.Model):
     transaction_code = models.CharField(max_length=100, help_text='code number of a transaction')
@@ -170,3 +199,16 @@ class MaterialTransaction(models.Model):
 
     def __str__(self):
         return self.transaction_code
+
+
+class Inventory_Balance(models.Model):
+    class Meta:
+        unique_together = ['item', 'location']
+    item = models.ForeignKey(Item, on_delete=models.CASCADE,)
+    location = models.ForeignKey(Location, on_delete=models.CASCADE)
+    unit_cost = models.DecimalField(max_digits=9, decimal_places=2)
+    qnt = models.IntegerField(default=0)
+    value = models.DecimalField(max_digits=9, decimal_places=2)
+
+    def __str__(self):
+        return self.item.name +' '+ str(self.value)

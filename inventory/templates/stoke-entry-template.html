@@ -12,75 +12,75 @@
   </div>
   <div class="row">
     <div class="col-12">
-        <h6>{{name}},</h6>
-        <div class="text-zero top-right-button-container">
-          <a href="{% url 'inventory:list-stokes' %}">
-              <button type="button" class="btn btn-primary btn-lg top-right-button mr-1">BACK TO LIST</button>
-          </a>
-          <a onclick="window.print(); return false;" class="btn btn-primary btn-lg top-right-button mr-1" href="#">Print</a>
-        </div>
+      <h6>{{name}},</h6>
+      <div class="text-zero top-right-button-container">
+        <a href="{% url 'inventory:list-stokes' %}">
+          <button type="button" class="btn btn-primary btn-lg top-right-button mr-1">BACK TO LIST</button>
+        </a>
+        <a onclick="window.print(); return false;" class="btn btn-primary btn-lg top-right-button mr-1" href="#">Print</a>
+      </div>
       <h6>{{date}}</h6>
-       <h6>Type:&emsp;{{type|capfirst}}</h6>
-        <h6>Location:&emsp;{{location|capfirst}}</h6>
+      <h6>Type:&emsp;{{type|capfirst}}</h6>
+      <h6>Location:&emsp;{{location|capfirst}}</h6>
       {% if category %}
-        <h6>Category:&emsp;{{category|capfirst}}</h6>
+      <h6>Category:&emsp;{{category|capfirst}}</h6>
       {% endif %}
-     <div class="mb-2">
+      <div class="mb-2">
         <div class="separator mb-5"></div>
       </div>
     </div>
+  </div>
 </div>
-</div>
 
-  <div class="row mb-4">
-    <div class="col-12 mb-4">
-      <div class="card">
-        <div class="card-body">
-          <div id="DataTables_Table_0_wrapper" class="table">
-            <table class="table table-bordered" id="DataTables_Table_0" role="grid" aria-describedby="DataTables_Table_0_info">
-              <thead>
-                <tr role="row">
-                  <th class="sorting_asc" tabindex="0" aria-controls="DataTables_Table_0" rowspan="1" colspan="1" aria-sort="ascending">#</th>
-                  {% if not location %}
-                    <th class="sorting" tabindex="0" aria-controls="DataTables_Table_0" rowspan="1" colspan="1">{% trans "Location" %}</th>
-                  {% endif %}
-                   {% if not category %}
-                    <th class="sorting" tabindex="0" aria-controls="DataTables_Table_0" rowspan="1" colspan="1">{% trans "Category" %}</th>
-                  {% endif %}
-                  <th class="sorting" tabindex="0" aria-controls="DataTables_Table_0" rowspan="1" colspan="1">{% trans "Product" %}</th>
-                  <th class="sorting" tabindex="0" aria-controls="DataTables_Table_0" rowspan="1" colspan="1">{% trans "Item" %}</th>
-                  <th class="sorting" tabindex="0" aria-controls="DataTables_Table_0" rowspan="1" colspan="1">{% trans "Uom" %}</th>
+<div class="row mb-4">
+  <div class="col-12 mb-4">
+    <div class="card">
+      <div class="card-body">
+        <div id="DataTables_Table_0_wrapper" class="table">
+          <table class="table table-bordered" id="DataTables_Table_0" role="grid" aria-describedby="DataTables_Table_0_info">
+            <thead>
+              <tr role="row">
+                <th class="sorting_asc" tabindex="0" aria-controls="DataTables_Table_0" rowspan="1" colspan="1" aria-sort="ascending">#</th>
+                {% if not location %}
+                <th class="sorting" tabindex="0" aria-controls="DataTables_Table_0" rowspan="1" colspan="1">{% trans "Location" %}</th>
+                {% endif %}
+                {% if not category %}
+                <th class="sorting" tabindex="0" aria-controls="DataTables_Table_0" rowspan="1" colspan="1">{% trans "Category" %}</th>
+                {% endif %}
+                <th class="sorting" tabindex="0" aria-controls="DataTables_Table_0" rowspan="1" colspan="1">{% trans "Product" %}</th>
+                <th class="sorting" tabindex="0" aria-controls="DataTables_Table_0" rowspan="1" colspan="1">{% trans "Item" %}</th>
+                <th class="sorting" tabindex="0" aria-controls="DataTables_Table_0" rowspan="1" colspan="1">{% trans "Uom" %}</th>
 
-                  <th class="sorting" tabindex="0" aria-controls="DataTables_Table_0" rowspan="1" colspan="1">{% trans "Quantity" %}</th>
+                <th class="sorting" tabindex="0" aria-controls="DataTables_Table_0" rowspan="1" colspan="1">{% trans "Quantity" %}</th>
 
 
-                </tr>
-              </thead>
-              <tbody>
-                {% for item in items %}
-                <tr role="row">
-                  <td class="sorting_1">{{ forloop.counter }}</td>
-                   {% if not location %}
-                    <td>{{item.location}} </td>
-                  {% endif %}
-                  {% if not category %}
-                    <td>{{item.product.category}} </td>
-                  {% endif %}
-                  <td>{{item.product}} </td>
-                  <td>{{ item }}</td>
-                  <td>{{ item.uom }}</td>
-                  <td></td>
+              </tr>
+            </thead>
+            <tbody>
+              {% for item in items %}
+              <tr role="row">
+                <td class="sorting_1">{{ forloop.counter }}</td>
+                {% if not location %}
+                <td>{{item.location}} </td>
+                {% endif %}
+                {% if not category %}
+                <td>{{item.product.category}} </td>
+                {% endif %}
+                <td>{{item.product}} </td>
+                <td>{{ item }}</td>
+                <td>{{ item.uom }}</td>
+                <td></td>
 
-                </tr>
+              </tr>
 
-                {% endfor %}
-              </tbody>
-            </table>
-          </div>
+              {% endfor %}
+            </tbody>
+          </table>
         </div>
       </div>
     </div>
   </div>
+</div>
 </div>
 
 {% endblock body%}
