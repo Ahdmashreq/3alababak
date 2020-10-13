@@ -1,0 +1,83 @@
+{% extends 'master.html' %}
+{% load static %}
+{% load l10n %}
+{% load i18n %}
+
+{% block body %}
+<div class="container-fluid">
+  <div class="row">
+    <div class="col-12">
+      <h1>View Receiving</h1>
+
+      <div class="text-zero top-right-button-container">
+        <a href="{% url 'orders:list-receiving' id=po.id %}">
+          <button type="button" class="btn btn-primary btn-lg top-right-button mr-1">BACK TO LIST</button>
+        </a>
+      </div>
+      <div class="separator mb-5"></div>
+    </div>
+  </div>
+  <div class="card mb-4">
+        <div class="card-body">
+             <div class="row">
+                 <div class="col-12">
+             <h2> Purchase Order Details</h2>
+                      <div class="separator mb-5"></div>
+                 </div>
+             </div>
+          <div class="form-row">
+              <div class="form-group col-md-6">
+                <b>Supplier: </b>
+                {{po.supplier}}
+              </div>
+              <div class="form-group col-md-6">
+                <b>Name: </b>
+                {{po.order_name}}
+              </div>
+              <div class="form-group col-md-6">
+                <b>Date of PO:</b>
+                {{po.date}}
+              </div>
+              <div class="form-group col-md-6">
+                <b>Grand Total After Discount: </b>
+                {{po.global_price_after_discount}}
+              </div>
+                <div class="col-12">
+                 <h3> Receipt Details</h3>
+                 <div class="separator mb-5"></div>
+             </div>
+            </div>
+           <div class="form-row">
+             <div class="form-group col-md-6">
+                <b>Date of Receipt: </b>
+                {{material_transaction.date}}
+              </div>
+              <div class="form-group col-md-6">
+                <b>Receipt Code: </b>
+                {{material_transaction.transaction_code}}
+              </div>
+           </div>
+          <table class="table table-bordered" id="DataTables_Table_0" role="grid" aria-describedby="DataTables_Table_0_info">
+              <thead>
+                <tr role="row">
+                  <th class="sorting_asc" tabindex="0" aria-controls="DataTables_Table_0" rowspan="1" colspan="1" aria-sort="ascending" aria-label="Name: activate to sort column descending" style="width: 155.4px;">{% trans "Item" %}</th>
+                  <th class="sorting" tabindex="0" aria-controls="DataTables_Table_0" rowspan="1" colspan="1" aria-label="Position: activate to sort column ascending" style="width: 263.4px;">{% trans "Location" %}</th>
+                  <th class="sorting" tabindex="0" aria-controls="DataTables_Table_0" rowspan="1" colspan="1" aria-label="Position: activate to sort column ascending" style="width: 263.4px;">{% trans "Received Quantity" %}</th>
+                </tr>
+              </thead>
+              <tbody>
+              {% for receiving_line in receiving_lines %}
+                <tr role="row" class="odd">
+                  <td class="sorting_1">{{ receiving_line.item}}</td>
+                  <td>{{ receiving_line.location }}</td>
+                  <td>{{ receiving_line.quantity }}</td>
+                </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+
+
+     </div>
+  </div>
+</div>
+{% endblock body %}

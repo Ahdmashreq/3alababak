@@ -30,12 +30,13 @@
               <div class="col-sm-12">
               </div>
             </div>
-            <table class="data-table data-table-feature3 dataTable no-footer" id="DataTables_Table_0" role="grid" aria-describedby="DataTables_Table_0_info">
+            <table class="data-table data-table-feature4 dataTable no-footer" id="DataTables_Table_0" role="grid" aria-describedby="DataTables_Table_0_info">
               <thead>
                 <tr role="row">
                   <th class="sorting_asc" tabindex="0" aria-controls="DataTables_Table_0" rowspan="1" colspan="1" aria-sort="ascending" aria-label="Name: activate to sort column descending" style="width: 155.4px;">#</th>
                   <th class="sorting" tabindex="0" aria-controls="DataTables_Table_0" rowspan="1" colspan="1" aria-label="Position: activate to sort column ascending" style="width: 263.4px;">{% trans "Transaction code" %}</th>
                   <th class="sorting" tabindex="0" aria-controls="DataTables_Table_0" rowspan="1" colspan="1" aria-label="Office: activate to sort column ascending" style="width: 105.8px;">{% trans "Date" %}</th>
+                  <th class="sorting" tabindex="0" aria-controls="DataTables_Table_0" rowspan="1" colspan="1" aria-label="Salary: activate to sort column ascending" style="width: 86.6px;">{% trans "Actions" %}</th>
                 </tr>
               </thead>
               <tbody>
@@ -44,6 +45,11 @@
                   <td class="sorting_1">{{ forloop.counter }}</td>
                   <td>{{ receiving.transaction_code }}</td>
                   <td>{{ receiving.date }}</td>
+                  <td>
+                     <div class="d-inline-block">
+                      <a class="btn btn-outline-primary mb-1" href="{% url 'orders:view-rec' id=receiving.id %}" role="button">View</a>
+                    </div>
+                  </td>
                 </tr>
                 {% endfor %}
               </tbody>

@@ -137,9 +137,9 @@
 <script>
   $('#add_item').click(function() {
     console.log("ooooops")
-    var form_idx = $('#id_materialtransaction_set-TOTAL_FORMS').val();
+    var form_idx = $('#id_materialtransactionlines_set-TOTAL_FORMS').val();
     $('#purchase_set').append($('#empty_form').html().replace(/__prefix__/g, form_idx));
-    $('#id_materialtransaction_set-TOTAL_FORMS').val(parseInt(form_idx) + 1);
+    $('#id_materialtransactionlines_set-TOTAL_FORMS').val(parseInt(form_idx) + 1);
     var current_indx = Number(form_idx);
 
 

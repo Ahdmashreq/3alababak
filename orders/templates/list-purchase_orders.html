@@ -47,7 +47,7 @@
                 <tr role="row" class="odd">
                   <td class="sorting_1">{{ forloop.counter }}</td>
                   {% if receiving %}
-                  <td><a href = "{% url 'orders:list-receiving' id=order.id %}">{{ order.order_name }}</a></td>
+                  <td><a href = "{% url 'orders:view-po' id=order.id flag=True %}">{{ order.order_name }}</a></td>
                   {% else %}
                   <td>{{order.order_name}}</td>
                   {% endif %}
@@ -66,7 +66,17 @@
                     </div>
                   </td>
                   {% else %}
-                  <td></td>
+                  <td>
+                  {% if receiving %}
+                    <div class="d-inline-block">
+                      <a class="btn btn-outline-primary mb-1" href="{% url 'orders:list-receiving' id=order.id %}" role="button">View Receivings</a>
+                    </div>
+                  {% else %}
+                    <div class="d-inline-block">
+                      <a class="btn btn-outline-primary mb-1" href="{% url 'orders:view-po' id=order.id  flag=False %}" role="button">View</a>
+                    </div>
+                  </td>
+                  {% endif %}
                   {% endif %}
 
 

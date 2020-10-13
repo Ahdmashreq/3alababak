@@ -17,6 +17,7 @@ class PurchaseOder(models.Model):
     company = models.ForeignKey(Company, on_delete=models.CASCADE)
     supplier = models.ForeignKey(Supplier, on_delete=models.CASCADE, )
     order_name = models.CharField(max_length=10)
+    purchase_code = models.CharField(max_length=100, help_text='code number of a po',null=True, blank=True, )
     global_price = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True, default=0)
     currency = models.ForeignKey(Currency, on_delete=models.CASCADE, null=True, blank=True, default='EGP')
     status = models.CharField(max_length=20,
@@ -49,7 +50,9 @@ class SalesOrder(models.Model):
     company = models.ForeignKey(Company, on_delete=models.CASCADE)
     customer = models.ForeignKey(Customer, on_delete=models.CASCADE, )
     order_name = models.CharField(max_length=10)
+    sale_code = models.CharField(max_length=100, help_text='code number of a so',null=True, blank=True, )
     total_price = MoneyField(max_digits=14, decimal_places=2, default_currency='EGP')
+    currency = models.ForeignKey(Currency, on_delete=models.CASCADE, null=True, blank=True, default='EGP')
     status = models.CharField(max_length=8,
                               choices=[('received', 'Received'), ('returned', 'Returned'), ('shipping', 'Shipping')],
                               default='drafted')

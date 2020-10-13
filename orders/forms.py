@@ -24,6 +24,7 @@ class PurchaseOrderCreationForm(forms.ModelForm):
 
     def __init__(self, *args, **kwargs):
         super(PurchaseOrderCreationForm, self).__init__(*args, **kwargs)
+        self.fields['purchase_code'].widget.attrs['readonly'] = True
         self.fields['global_price'].widget.attrs['readonly'] = True
         self.fields['global_price'].widget.attrs['disabled'] = True
         self.fields['my_total_price_after_discount'].widget.attrs['readonly'] = True

@@ -24,9 +24,19 @@ from moneyed import Money, EGP
 import random
 
 
+
+def get_seq(n):
+    if n < 1:
+        return str(1).zfill(5)
+    else:
+        return str(n + 1).zfill(5)
+
 def create_purchase_order_view(request):
     po_form = PurchaseOrderCreationForm()
     po_transaction_inlineformset = purchase_transaction_formset()
+    rows_number = PurchaseOder.objects.all().count()
+    po_code = "PO-" + str(date.today()) + "-" + get_seq(rows_number)
+    po_form.fields['purchase_code'].initial = po_code
     if request.method == 'POST':
         po_form = PurchaseOrderCreationForm(request.POST)
         po_transaction_inlineformset = purchase_transaction_formset(request.POST)
@@ -35,6 +45,7 @@ def create_purchase_order_view(request):
             # po_obj.global_price = Money(str(po_form.cleaned_data['my_global_price']), EGP)
             po_obj.created_by = request.user
             po_obj.company = request.user.company
+            po_obj.purchase_code = po_code
             if 'Save as draft' in request.POST:
                 po_obj.status = "drafted"
             po_obj.save()
@@ -370,12 +381,15 @@ def create_receiving(request, id):
     return render(request, 'create-receiving.html', context=subcontext)
 
 
+
+
 def create_receiving2(request, id):
     material_form = MaterialTransactionCreationForm()
     material_lines_formset = MaterialTransactionCreation_formset(form_kwargs={'id': id})
     purchase_lines = PurchaseTransaction.objects.filter(purchase_order__id=id)
     purchase_order = PurchaseOder.objects.get(id=id)
-    transaction_code = "REC-" + str(date.today()) + "-" + str(random.randint(0, 5000))
+    rows_number = MaterialTransaction1.objects.all().count()
+    transaction_code = "REC-" + str(date.today()) + "-" + get_seq(rows_number)
     material_form.fields["transaction_code"].initial = transaction_code
 
     if request.method == 'POST':
@@ -386,7 +400,8 @@ def create_receiving2(request, id):
             material_obj.transaction_code = transaction_code
             material_obj.created_by = request.user
             material_obj.save()
-            material_lines_formset = MaterialTransactionCreation_formset(request.POST,instance = material_obj,form_kwargs={'id': id})
+            material_lines_formset = MaterialTransactionCreation_formset(request.POST, instance=material_obj,
+                                                                         form_kwargs={'id': id})
         if material_lines_formset.is_valid():
             receiving_objs = material_lines_formset.save(commit=False)
             for obj in receiving_objs:
@@ -424,3 +439,30 @@ def create_receiving2(request, id):
 
     }
     return render(request, 'create-receiving_test.html', context=subcontext)
+
+
+def view_received(request, id):
+    material_transaction = MaterialTransaction1.objects.get(id=id)
+    receiving_lines = MaterialTransactionLines.objects.filter(material_transaction=material_transaction)
+    purchase_order = material_transaction.purchase_order
+
+    subcontext = {
+        'po': purchase_order,
+        'material_transaction': material_transaction,
+        'receiving_lines': receiving_lines,
+
+    }
+    return render(request, 'view-receiving.html', context=subcontext)
+
+
+def view_purchase_order(request, id,flag):
+    purchase_order = PurchaseOder.objects.get(id=id)
+    purchase_lines = PurchaseTransaction.objects.filter(purchase_order__id=id)
+    print("HERE IS MY FLag",flag)
+    subcontext = {
+        'po': purchase_order,
+        'po_lines': purchase_lines,
+        'flag':flag,
+
+    }
+    return render(request, 'view-po.html', context=subcontext)

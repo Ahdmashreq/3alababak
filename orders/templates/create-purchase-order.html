@@ -43,15 +43,19 @@
                 <form method="POST" id="myform">
                     {% csrf_token %}
                     <div class="form-row">
-                        <div class="form-group col-md-4">
+                        <div class="form-group col-md-3">
                             <label>Supplier</label>
                             {{po_form.supplier}}
                         </div>
-                        <div class="form-group col-md-4">
+                        <div class="form-group col-md-3">
                             <label>Name</label>
                             {{po_form.order_name}}
                         </div>
-                        <div class="form-group col-md-4">
+                        <div class="form-group col-md-3">
+                            <label>Code</label>
+                            {{po_form.purchase_code}}
+                        </div>
+                        <div class="form-group col-md-3">
                             <label>Date</label>
                             {{po_form.date}}
                         </div>

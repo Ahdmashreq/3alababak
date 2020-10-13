@@ -1,0 +1,93 @@
+{% extends 'master.html' %}
+{% load static %}
+{% load l10n %}
+{% load i18n %}
+
+{% block body %}
+<div class="container-fluid">
+  <div class="row">
+    <div class="col-12">
+      <h1>View Purchase Order</h1>
+
+      <div class="text-zero top-right-button-container">
+          {% if flag == 'True' %}
+              <a href="{% url 'orders:list-po-for-receiving'%}"><button type="button" class="btn btn-primary btn-lg top-right-button mr-1">BACK TO LIST</button></a>
+          {% elif flag == 'False' %}
+              <a href="{% url 'orders:list-po'%}"><button type="button" class="btn btn-primary btn-lg top-right-button mr-1">BACK TO LIST</button></a>
+          {% endif %}
+      </div>
+      <div class="separator mb-5"></div>
+    </div>
+  </div>
+  <div class="card mb-4">
+        <div class="card-body">
+             <div class="row">
+                 <div class="col-12">
+             <h2> Purchase Order Details</h2>
+                      <div class="separator mb-5"></div>
+                 </div>
+             </div>
+          <div class="form-row">
+              <div class="form-group col-md-3">
+                <b>Supplier: </b>
+                {{po.supplier}}
+              </div>
+              <div class="form-group col-md-3">
+                <b>Name: </b>
+                {{po.order_name}}
+              </div>
+               <div class="form-group col-md-3">
+                <b>Code: </b>
+                {{po.purchase_code}}
+              </div>
+              <div class="form-group col-md-3">
+                <b>Date of PO:</b>
+                {{po.date}}
+              </div>
+              <div class="form-group col-md-4">
+                <b>Grand Total Before Discount (EGP): </b>
+                {{po.global_price}}
+              </div>
+              <div class="form-group col-md-4">
+                <b>Discount: </b>
+                {{po.discount}} {{po.discount_type}}
+              </div>
+              <div class="form-group col-md-4">
+                <b>Grand Total After Discount (EGP): </b>
+                {{po.global_price_after_discount}}
+              </div>
+
+            </div>
+                               <div class="separator mb-5"></div>
+
+          <table class="table table-bordered" id="DataTables_Table_0" role="grid" aria-describedby="DataTables_Table_0_info">
+              <thead>
+                <tr role="row">
+                  <th class="sorting_asc" tabindex="0" aria-controls="DataTables_Table_0" rowspan="1" colspan="1" aria-sort="ascending" aria-label="Name: activate to sort column descending" style="width: 155.4px;">{% trans "Item" %}</th>
+                  <th class="sorting" tabindex="0" aria-controls="DataTables_Table_0" rowspan="1" colspan="1" aria-label="Position: activate to sort column ascending" style="width: 263.4px;">{% trans "Quantity" %}</th>
+                  <th class="sorting" tabindex="0" aria-controls="DataTables_Table_0" rowspan="1" colspan="1" aria-label="Position: activate to sort column ascending" style="width: 263.4px;">{% trans "Unit" %}</th>
+                  <th class="sorting" tabindex="0" aria-controls="DataTables_Table_0" rowspan="1" colspan="1" aria-label="Position: activate to sort column ascending" style="width: 263.4px;">{% trans "Price Per Unit (EGP)" %}</th>
+                  <th class="sorting" tabindex="0" aria-controls="DataTables_Table_0" rowspan="1" colspan="1" aria-label="Position: activate to sort column ascending" style="width: 263.4px;">{% trans "Total Price (EGP)" %}</th>
+                  <th class="sorting" tabindex="0" aria-controls="DataTables_Table_0" rowspan="1" colspan="1" aria-label="Position: activate to sort column ascending" style="width: 263.4px;">{% trans "Total After Discount (EGP)" %}</th>
+
+                </tr>
+              </thead>
+              <tbody>
+              {% for po_line in po_lines %}
+                <tr role="row" class="odd">
+                  <td class="sorting_1">{{ po_line.item}}</td>
+                  <td>{{ po_line.quantity }}</td>
+                  <td>{{ po_line.item.uom }}</td>
+                  <td>{{ po_line.price_per_unit }}</td>
+                  <td>{{ po_line.total_price }}</td>
+                  <td>{{ po_line.total_price_after_discount }}</td>
+                </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+
+
+     </div>
+  </div>
+</div>
+{% endblock body %}
