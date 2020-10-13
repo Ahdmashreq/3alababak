@@ -230,22 +230,22 @@ def create_stoketake_view(request):
             stoke_context['location'] = location
             if type == 'location':
                 inventory_balance = Inventory_Balance.objects.filter(location=location)
-                for item in inventory_balance:
-                    items.append(item.item) 
-
+                for record in inventory_balance:
+                    items.append(record.item)
             elif type == 'category':
                 category = stoke_obj.category
                 descendants = Category.objects.get(name=category).get_descendants(include_self=True)
                 products = Product.objects.filter(Q(category__parent__in=descendants) | Q(category__in=descendants))
-                inventory_balance = Inventory_Balance.objects.filter(location=location)
-                for item in inventory_balance:
-                    items.append(item.item)
+                myitems = Item.objects.filter(product__in=products)
+                inventory_balance = Inventory_Balance.objects.filter(location=location, item__in=myitems)
+                for record in inventory_balance:
+                    items.append(record.item)
                 stoke_context['category'] = category
             elif type == 'random':
                 inventory_balance = Inventory_Balance.objects.filter(location=location)
                 items_set = set()
-                for item in inventory_balance:
-                    items_set = item.item
+                for record in inventory_balance:
+                    items_set = record.item
 
                 number_of_items = stoke_form.cleaned_data['random_number']
                 items = random.sample(list(items_set), number_of_items)
@@ -431,7 +431,7 @@ def approve_stoke_view(request, id):
         return redirect('inventory:list-stokes-for-approval')
 
     sub_context = {'title': "Approve Stoke", 'stoke_entry_inlineformset': stoke_entry_inline_formset,
-                   'stoke_form': stoke_take_form,'status':status}
+                   'stoke_form': stoke_take_form, 'status': status}
     return render(request, 'approve-stoke.html', context=sub_context)
 
 

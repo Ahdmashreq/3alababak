@@ -55,6 +55,9 @@
                   <td>{{ order.status }}</td>
                   {% if not receiving and order.status == 'drafted' %}
                   <td>
+                    <div class="d-inline-block">
+                      <a class="btn btn-outline-primary mb-1" href="{% url 'orders:view-po' id=order.id  flag=False %}" role="button">View</a>
+                    </div>
                     <div class="dropdown d-inline-block">
                       <a class="btn btn-outline-primary dropdown-toggle mb-1" href="#" role="button" id="dropdownMenuLink" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                         Actions
