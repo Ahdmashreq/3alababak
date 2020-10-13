@@ -1,6 +1,7 @@
 from django import forms
 from django.forms import inlineformset_factory, modelformset_factory
 from inventory.models import (Category, Brand, Attribute, Uom, Item, Product, StokeTake, StokeEntry, Uom, UomCategory)
+from orders.models import Inventory_Balance
 from mptt.forms import TreeNodeChoiceField
 
 
@@ -137,11 +138,11 @@ class StokeTakeForm(forms.ModelForm):
 
     def clean(self):
         cleaned_data = super(StokeTakeForm, self).clean()
-        item_length = len(Item.objects.filter(location = cleaned_data['location'] ))
+        item_length = len(Inventory_Balance.objects.filter(location = cleaned_data['location'] ))
         if cleaned_data['location'] is None:
             self.add_error('location', 'Location is required')
         else:
-            item_length = len(Item.objects.filter(location=cleaned_data['location']))
+            item_length = len(Inventory_Balance.objects.filter(location=cleaned_data['location']))
         if cleaned_data['type'] == 'category':
             if cleaned_data['category'] is None:
                 self.add_error('category', 'category is required')
@@ -150,9 +151,6 @@ class StokeTakeForm(forms.ModelForm):
                 self.add_error('random_number', 'Number of items is required')
             elif cleaned_data['random_number'] > item_length:
                 self.add_error('random_number', 'Number greater than existing number of items')
-
-
-
         return cleaned_data
 
 

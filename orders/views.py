@@ -35,8 +35,8 @@ def create_purchase_order_view(request):
             # po_obj.global_price = Money(str(po_form.cleaned_data['my_global_price']), EGP)
             po_obj.created_by = request.user
             po_obj.company = request.user.company
-            if 'Save as draft' in request.POST:
-                po_obj.status = "drafted"
+            # if 'Save as draft' in request.POST:
+            #     po_obj.status = "drafted"
             po_obj.save()
             po_transaction_inlineformset = purchase_transaction_formset(request.POST, instance=po_obj)
             if po_transaction_inlineformset.is_valid():

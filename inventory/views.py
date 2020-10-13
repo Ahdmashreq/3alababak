@@ -5,6 +5,7 @@ from inventory.models import (Category, Brand, Product, Attribute, Item, Uom, St
 from inventory.forms import (CategoryForm, category_model_formset, BrandForm, brand_model_formset,
                              AttributeForm, attribute_model_formset, ProductForm, product_item_inlineformset,
                              uom_formset, StokeTakeForm, UOMForm, stoke_entry_formset, StokeEntryForm, UomCategoryForm)
+from orders.models import Inventory_Balance
 import random
 
 
@@ -215,9 +216,7 @@ def create_stoketake_view(request):
     items = []
     if request.method == 'POST':
         stoke_form = StokeTakeForm(request.POST, update=False)
-        print("************")
         if stoke_form.is_valid():
-            print("&&&&&&&&&&&&&&&&&")
             stoke_obj = stoke_form.save(commit=False)
             stoke_obj.created_by = request.user
             stoke_obj.company = request.user.company
@@ -230,16 +229,24 @@ def create_stoketake_view(request):
             stoke_context['type'] = type
             stoke_context['location'] = location
             if type == 'location':
-                items = Item.objects.filter(location=location)
+                inventory_balance = Inventory_Balance.objects.filter(location=location)
+                for item in inventory_balance:
+                    items.append(item.item) 
 
             elif type == 'category':
                 category = stoke_obj.category
                 descendants = Category.objects.get(name=category).get_descendants(include_self=True)
                 products = Product.objects.filter(Q(category__parent__in=descendants) | Q(category__in=descendants))
-                items = Item.objects.filter(product__in=products).filter(location=location)
+                inventory_balance = Inventory_Balance.objects.filter(location=location)
+                for item in inventory_balance:
+                    items.append(item.item)
                 stoke_context['category'] = category
             elif type == 'random':
-                items_set = Item.objects.filter(location=location)
+                inventory_balance = Inventory_Balance.objects.filter(location=location)
+                items_set = set()
+                for item in inventory_balance:
+                    items_set = item.item
+
                 number_of_items = stoke_form.cleaned_data['random_number']
                 items = random.sample(list(items_set), number_of_items)
 
@@ -258,7 +265,6 @@ def create_stoketake_view(request):
 
         else:
             messages.error(request, 'Form is not Valid')
-            print(stoke_form['location'].errors)
 
     stoke_context = {
         'stoke_form': stoke_form,
@@ -280,15 +286,15 @@ def update_stoke_take_view(request, id):
             location = stoke_obj.location
             if stoke_obj.type == 'location':
                 stoke_obj.category = None
-                items = Item.objects.filter(location=location)
+                items = Inventory_Balance.objects.filter(location=location)
             elif stoke_obj.type == 'category':
                 category = stoke_obj.category
                 descendants = Category.objects.get(name=category).get_descendants(include_self=True)
                 products = Product.objects.filter(Q(category__parent__in=descendants) | Q(category__in=descendants))
-                items = Item.objects.filter(product__in=products).filter(location=location)
+                items = Inventory_Balance.objects.filter(item__product__in=products).filter(location=location)
             elif stoke_obj.type == 'random':
                 stoke_obj.category = None
-                items_set = Item.objects.filter(location=location)
+                items_set = Inventory_Balance.objects.filter(location=location)
                 number_of_items = stoke_form.cleaned_data['random_number']
                 items = random.sample(list(items_set), number_of_items)
             stoke_obj.save()
@@ -380,15 +386,15 @@ def view_stoke(request, id):
 
     if type == 'location':
         location = stoke_obj.location
-        items = Item.objects.filter(location=location)
+        items = Inventory_Balance.objects.filter(location=location)
     elif type == 'category':
         category = stoke_obj.category
         descendants = Category.objects.get(name=category).get_descendants(include_self=True)
         products = Product.objects.filter(Q(category__parent__in=descendants) | Q(category__in=descendants))
-        items = Item.objects.filter(product__in=products)
+        items = Inventory_Balance.objects.filter(item__product__in=products)
         stoke_context['category'] = category
     elif type == 'all':
-        items = Item.objects.all()
+        items = Inventory_Balance.objects.all()
     elif type == 'random':
         stoke_entries = StokeEntry.objects.select_related().filter(stoke_take=stoke_obj)
         items = [stoke_entry.item for stoke_entry in stoke_entries]
@@ -412,14 +418,11 @@ def approve_stoke_view(request, id):
     if request.method == 'POST':
         if 'approve' in request.POST:
             item_quantity_list = StokeEntry.objects.values('item', 'quantity').filter(stoke_take=stoke_obj)
-            print(item_quantity_list)
             success = update_items_quantity(item_quantity_list)
             if success:
                 StokeTake.objects.filter(id=id).update(status='Approved')
                 messages.success(request, 'Stoke record is approved, Inventory is updated')
             else:
-                print("*************88")
-                print(success)
                 messages.error(request, 'Error in updating inventory')
 
         elif 'disapprove' in request.POST:

@@ -24,7 +24,7 @@ def create_location_view(request):
             if 'Save and exit' in request.POST:
                 return redirect('location:list-locations')
             elif 'Save and add' in request.POST:
-                return redirect('location:create-locations')
+                return redirect('location:create-location')
     else:
         location_form = LocationCreationForm()
     location_context = {
