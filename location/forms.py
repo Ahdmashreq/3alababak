@@ -6,7 +6,7 @@ class LocationCreationForm(forms.ModelForm):
     class Meta:
         model = Location
         fields = '__all__'
-        exclude = ('company', 'created_at', 'last_updated_at', 'created_by', 'last_updated_by')
+        exclude = ('number_of_products','type','code','company', 'created_at', 'last_updated_at', 'created_by', 'last_updated_by')
 
     def __init__(self, *args, **kwargs):
         super(LocationCreationForm, self).__init__(*args, **kwargs)

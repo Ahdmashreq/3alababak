@@ -209,7 +209,7 @@ for (i = 0; i < $('#id_purchasetransaction_set-TOTAL_FORMS').val(); i++) {
                 contentType: 'application/json',
                 success: function(data){
                       document.getElementById(uom_id).value=data['uom']
-                      document.getElementById(price_id).value=data['avg_cost']
+<!--                      document.getElementById(price_id).value=data['avg_cost']-->
                       if (document.getElementById(quantity_id).value){
                         myFunction(document.getElementById(quantity_id));
                       };

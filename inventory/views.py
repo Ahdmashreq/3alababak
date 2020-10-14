@@ -1,3 +1,5 @@
+from datetime import date
+
 from django.db.models import Q
 from django.shortcuts import render, redirect
 from django.contrib import messages
@@ -5,8 +7,9 @@ from inventory.models import (Category, Brand, Product, Attribute, Item, Uom, St
 from inventory.forms import (CategoryForm, category_model_formset, BrandForm, brand_model_formset,
                              AttributeForm, attribute_model_formset, ProductForm, product_item_inlineformset,
                              uom_formset, StokeTakeForm, UOMForm, stoke_entry_formset, StokeEntryForm, UomCategoryForm)
-from orders.models import Inventory_Balance
+from orders.models import Inventory_Balance, MaterialTransaction1, MaterialTransactionLines
 import random
+from orders.utils import get_seq
 
 
 def create_category_view(request):
@@ -243,13 +246,11 @@ def create_stoketake_view(request):
                 stoke_context['category'] = category
             elif type == 'random':
                 inventory_balance = Inventory_Balance.objects.filter(location=location)
-                items_set = set()
+                item_list = []
                 for record in inventory_balance:
-                    items_set = record.item
-
+                    item_list.append(record.item)
                 number_of_items = stoke_form.cleaned_data['random_number']
-                items = random.sample(list(items_set), number_of_items)
-
+                items = random.sample(item_list, number_of_items)
             stoke_obj.save()
             entry_list = []
             for item in items:
@@ -277,6 +278,7 @@ def create_stoketake_view(request):
 def update_stoke_take_view(request, id):
     stoke_inst = StokeTake.objects.get(id=id)
     stoke_form = StokeTakeForm(update=False, instance=stoke_inst)
+    items = []
 
     if request.method == 'POST':
         stoke_form = StokeTakeForm(request.POST, update=False, instance=stoke_inst)
@@ -286,17 +288,25 @@ def update_stoke_take_view(request, id):
             location = stoke_obj.location
             if stoke_obj.type == 'location':
                 stoke_obj.category = None
-                items = Inventory_Balance.objects.filter(location=location)
+                inventory_balance = Inventory_Balance.objects.filter(location=location)
+                for record in inventory_balance:
+                    items.append(record.item)
             elif stoke_obj.type == 'category':
                 category = stoke_obj.category
                 descendants = Category.objects.get(name=category).get_descendants(include_self=True)
                 products = Product.objects.filter(Q(category__parent__in=descendants) | Q(category__in=descendants))
-                items = Inventory_Balance.objects.filter(item__product__in=products).filter(location=location)
+                myitems = Item.objects.filter(product__in=products)
+                inventory_balance = Inventory_Balance.objects.filter(location=location, item__in=myitems)
+                for record in inventory_balance:
+                    items.append(record.item)
             elif stoke_obj.type == 'random':
                 stoke_obj.category = None
-                items_set = Inventory_Balance.objects.filter(location=location)
+                inventory_balance = Inventory_Balance.objects.filter(location=location)
+                item_list = []
+                for record in inventory_balance:
+                    item_list.append(record.item)
                 number_of_items = stoke_form.cleaned_data['random_number']
-                items = random.sample(list(items_set), number_of_items)
+                items = random.sample(item_list, number_of_items)
             stoke_obj.save()
             stoke_entry_instances = StokeEntry.objects.filter(stoke_take=stoke_obj)
             stoke_entry_instances.delete()
@@ -417,8 +427,7 @@ def approve_stoke_view(request, id):
 
     if request.method == 'POST':
         if 'approve' in request.POST:
-            item_quantity_list = StokeEntry.objects.values('item', 'quantity').filter(stoke_take=stoke_obj)
-            success = update_items_quantity(item_quantity_list)
+            success = create_stoke_transaction(stoke_obj, request.user)
             if success:
                 StokeTake.objects.filter(id=id).update(status='Approved')
                 messages.success(request, 'Stoke record is approved, Inventory is updated')
@@ -534,24 +543,64 @@ def update_uom(request, id):
         else:
             print(uom_from.errors)
     uom_context = {
-        'uom_from': uom_from,
-        'title': 'Update UOM',
-        'update': True,
+        'uom_from': uom_from, 'title': 'Update UOM', 'update': True,
 
     }
     return render(request, 'create-uom.html', context=uom_context)
 
 
-def update_items_quantity(item_quantity_list: list):
-    items = []
-    for item_quantity in item_quantity_list:
-        item = Item.objects.get(id=item_quantity['item'])
-        item.quantity = item_quantity['quantity']
-        items.append(item)
-    try:
-        Item.objects.bulk_update(items, ['quantity'])
-        success = True
-    except Exception as e:
-        print(e)
-        success = False
-    return success
+def check_balance_difference(stoke_take):
+    stoke_entries = StokeEntry.objects.filter(stoke_take=stoke_take)
+    result = []
+    for stoke_entry in stoke_entries:
+        item = stoke_entry.item
+        location = stoke_entry.stoke_take.location
+        on_hand_item = Inventory_Balance.objects.get(item=item, location=location)
+        on_hand_quantity = on_hand_item.qnt
+        stoked_quantity = stoke_entry.quantity
+        difference_quantity = on_hand_quantity - stoked_quantity
+        if difference_quantity > 0:
+            result.append({'item': item, 'type': 'out', 'quantity': abs(difference_quantity), 'location': location})
+        else:
+            result.append({'item': item, 'type': 'in', 'quantity': abs(difference_quantity), 'location': location})
+    return result
+
+
+def create_stoke_transaction(stoke_take, user):
+    result = check_balance_difference(stoke_take)
+    if result:
+        rows_number = MaterialTransaction1.objects.all().count()
+        transaction_code = "STK-" + str(date.today()) + "-" + get_seq(rows_number)
+        try:
+            stoke_transaction = MaterialTransaction1(transaction_code=transaction_code, stoke_take=stoke_take,
+                                                     date=date.today(), created_by=user)
+            stoke_transaction.save()
+
+            for record in result:
+                item = record['item']
+                t_type = record['type']
+                quantity = record['quantity']
+                location = record['location']
+                new_line = MaterialTransactionLines(material_transaction=stoke_transaction, item=item,
+                                                    transaction_type=t_type,
+                                                    quantity=quantity, location=location, created_by=user)
+                new_line.save()
+            return True
+        except BaseException as e:
+            print(e)
+            return False
+
+# def update_items_quantity(item_location_list: list):
+#     items = []
+#     for item_location in item_location_list:
+#         inventory_balance = Inventory_Balance.objects.get(item=item_location['item'])
+#         item = Item.objects.get(id=item_quantity['item'])
+#         item.inventory_balance = item_quantity['quantity']
+#         items.append(item)
+#     try:
+#         Item.objects.bulk_update(items, ['quantity'])
+#         success = True
+#     except Exception as e:
+#         print(e)
+#         success = False
+#     return success

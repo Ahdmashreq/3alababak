@@ -158,24 +158,35 @@ class MaterialTransactionLines(models.Model):
 
 @receiver(post_save, sender=MaterialTransactionLines)
 def create_or_update_inventory_balance(sender, instance, *args, **kwargs):
-    po_unit_cost = PurchaseTransaction.objects.get(purchase_order=instance.material_transaction.purchase_order)
-    try:
+    if instance.material_transaction.purchase_order is not None:
+        po_unit_cost = PurchaseTransaction.objects.get(purchase_order=instance.material_transaction.purchase_order)
+        try:
+            inventory_item_obj = Inventory_Balance.objects.get(item=instance.item, location=instance.location)
+            inventory_item_obj.qnt += instance.quantity
+            new_item_recieved_value = instance.quantity * po_unit_cost.price_per_unit
+            inventory_item_obj.unit_cost = (inventory_item_obj.value + new_item_recieved_value) / inventory_item_obj.qnt
+            new_value = inventory_item_obj.qnt * inventory_item_obj.unit_cost
+            print(new_value)
+            inventory_item_obj.value = new_value
+            inventory_item_obj.save()
+        except Inventory_Balance.DoesNotExist:
+            inventory_item_obj = Inventory_Balance(
+                item=instance.item,
+                location=instance.location,
+                unit_cost=po_unit_cost.price_per_unit,
+                qnt=instance.quantity,
+                value=instance.quantity * po_unit_cost.price_per_unit,
+            )
+            inventory_item_obj.save()
+
+    elif instance.material_transaction.stoke_take is not None:
         inventory_item_obj = Inventory_Balance.objects.get(item=instance.item, location=instance.location)
-        inventory_item_obj.qnt += instance.quantity
-        new_item_recieved_value = instance.quantity * po_unit_cost.price_per_unit
-        inventory_item_obj.unit_cost = (inventory_item_obj.value + new_item_recieved_value) / inventory_item_obj.qnt
+        if instance.transaction_type == 'in':
+            inventory_item_obj.qnt += instance.quantity
+        elif instance.transaction_type == 'out':
+            inventory_item_obj.qnt -= instance.quantity
         new_value = inventory_item_obj.qnt * inventory_item_obj.unit_cost
-        print(new_value)
         inventory_item_obj.value = new_value
-        inventory_item_obj.save()
-    except Inventory_Balance.DoesNotExist:
-        inventory_item_obj = Inventory_Balance(
-            item=instance.item,
-            location=instance.location,
-            unit_cost=po_unit_cost.price_per_unit,
-            qnt=instance.quantity,
-            value=instance.quantity * po_unit_cost.price_per_unit,
-        )
         inventory_item_obj.save()
 
 
@@ -205,11 +216,17 @@ class Inventory_Balance(models.Model):
     class Meta:
         unique_together = ['item', 'location']
 
-    item = models.ForeignKey(Item, on_delete=models.CASCADE, )
+    item = models.ForeignKey(Item, on_delete=models.CASCADE, related_name='balance')
     location = models.ForeignKey(Location, on_delete=models.CASCADE)
     unit_cost = models.DecimalField(max_digits=9, decimal_places=2)
     qnt = models.IntegerField(default=0)
     value = models.DecimalField(max_digits=9, decimal_places=2)
+    created_at = models.DateField(auto_now_add=True, null=True)
+    last_updated_at = models.DateField(null=True, auto_now=True, auto_now_add=False)
+    created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, null=True,
+                                   related_name="inventory_created_by")
+    last_updated_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, null=True,
+                                        related_name="inventory_last_updated_by")
 
     def __str__(self):
         return self.item.name + ' ' + str(self.value)

@@ -124,7 +124,7 @@ def list_customer_view(request):
 
 
 def update_customer_view(request, id):
-    customer = Customer.objects.get(pk=id)
+    customer = Customer.objects.get(id=id)
     customer_form = CustomerCreationForm(instance=customer)
     address_inlineformset = customer_address_formset(instance=customer)
     if request.method == 'POST':
@@ -146,7 +146,6 @@ def update_customer_view(request, id):
 
             else:
                 print("*************")
-                print(customer_form.errors)
                 print(address_inlineformset.errors)
         else:
             print("*)))))))))))))))000")

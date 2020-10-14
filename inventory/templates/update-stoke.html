@@ -70,14 +70,10 @@
           <thead>
             <tr role="row">
               <th class="sorting_asc" tabindex="0" aria-controls="DataTables_Table_0" rowspan="1" colspan="1" aria-sort="ascending">#</th>
-              <th class="sorting" tabindex="0" aria-controls="DataTables_Table_0" rowspan="1" colspan="1">{% trans "Location" %}</th>
               <th class="sorting" tabindex="0" aria-controls="DataTables_Table_0" rowspan="1" colspan="1">{% trans "Category" %}</th>
               <th class="sorting" tabindex="0" aria-controls="DataTables_Table_0" rowspan="1" colspan="1">{% trans "Product" %}</th>
               <th class="sorting" tabindex="0" aria-controls="DataTables_Table_0" rowspan="1" colspan="1">{% trans "Item" %}</th>
               <th class="sorting" tabindex="0" aria-controls="DataTables_Table_0" rowspan="1" colspan="1">{% trans "Uom" %}</th>
-              {% if approval_mode %}
-              <th class="sorting" tabindex="0" aria-controls="DataTables_Table_0" rowspan="1" colspan="1">{% trans "On Hand" %}</th>
-              {% endif %}
               <th class="sorting" tabindex="0" aria-controls="DataTables_Table_0" rowspan="1" colspan="1">{% trans "Stoked Quantity" %}</th>
 
             </tr>
@@ -86,14 +82,10 @@
           <tbody>
             <tr role="row">
               <td class="sorting_1">{{ forloop.counter }}</td>
-              <!-- <td>{{ form.instance.item.location }}</td> -->
               <td>{{ form.instance.item.product.category }}</td>
               <td>{{ form.instance.item.product }}</td>
               <td>{{ form.item }}</td>
               <td>{{ form.instance.item.uom }}</td>
-              {% if approval_mode %}
-              <td>{{form.item.quantity}}</td>
-              {% endif %}
               <td>{{ form.quantity }}</td>
             </tr>
             {% endfor %}

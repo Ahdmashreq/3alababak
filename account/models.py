@@ -53,7 +53,8 @@ class Address(models.Model):
     last_updated_at = models.DateField(null=True, auto_now=True, auto_now_add=False)
     created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, null=True,
                                    related_name="address_created_by")
-    last_updated_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, null=True)
+    last_updated_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE,
+                                        null=True, related_name= "address_last_updated_by")
 
     class Meta:
         verbose_name_plural = "Addresses"
