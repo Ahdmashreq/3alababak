@@ -35,6 +35,7 @@ class AddressCreationForm(forms.ModelForm):
     class Meta:
         model = Address
         exclude = ('created_at', 'last_updated_at', 'created_by', 'last_updated_by')
+
     def __init__(self, *args, **kwargs):
         super(AddressCreationForm, self).__init__(*args, **kwargs)
         for field in self.fields:

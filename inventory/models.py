@@ -1,6 +1,6 @@
 from django.db import models
 from django.conf import settings
-from djmoney.models.fields import MoneyField
+#from djmoney.models.fields import MoneyField
 from account.models import Company
 from location.models import Location
 from mptt.models import MPTTModel
@@ -47,7 +47,7 @@ class UomCategory(models.Model):
     last_updated_at = models.DateField(null=True, auto_now=True, auto_now_add=False)
     created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, null=True,
                                    related_name="uom_category_created_by")
-    last_updated_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, null=True,blank=True)
+    last_updated_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, null=True, blank=True)
 
     def __str__(self):
         return self.name
@@ -59,13 +59,14 @@ class Uom(models.Model):
     type = models.CharField(max_length=30, choices=[('reference', 'Reference Unit of Measure of this category'),
                                                     ('smaller', 'Smaller Than The Reference Unit of Measure '),
                                                     ('bigger', 'Bigger Than The Reference Unit of Measure')])
-    ratio = models.DecimalField(max_digits=14, decimal_places=2,null=True,blank=True, help_text="A content for this thing")
+    ratio = models.DecimalField(max_digits=14, decimal_places=2, null=True, blank=True,
+                                help_text="A content for this thing")
     category = models.ForeignKey(UomCategory, on_delete=models.CASCADE, )
     created_at = models.DateField(auto_now_add=True, null=True)
     last_updated_at = models.DateField(null=True, auto_now=True, auto_now_add=False)
     created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, null=True,
                                    related_name="uom_created_by")
-    last_updated_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, null=True,blank=True)
+    last_updated_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, null=True, blank=True)
 
     def __str__(self):
         return self.name
@@ -83,10 +84,10 @@ class Product(models.Model):
     last_updated_at = models.DateField(null=True, auto_now=True, auto_now_add=False)
     created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, null=True,
                                    related_name="product_created_by")
-    last_updated_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, null=True,blank=True)
+    last_updated_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, null=True, blank=True)
 
     def __str__(self):
-        return self.category.name
+        return self.brand.name
 
 
 class Attribute(models.Model):
@@ -97,7 +98,7 @@ class Attribute(models.Model):
     last_updated_at = models.DateField(null=True, auto_now=True, auto_now_add=False)
     created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, null=True,
                                    related_name="attribute_created_by")
-    last_updated_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, null=True,blank=True)
+    last_updated_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, null=True, blank=True)
 
     def __str__(self):
         return self.name
@@ -110,7 +111,7 @@ class ProductAttribute(models.Model):
     last_updated_at = models.DateField(null=True, auto_now=True, auto_now_add=False)
     created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, null=True,
                                    related_name="product_attribute_created_by")
-    last_updated_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, null=True,blank=True)
+    last_updated_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, null=True, blank=True)
 
     def __str__(self):
         return self.product.name + ' ' + self.attribute.name
@@ -121,8 +122,8 @@ class Item(models.Model):
     uom = models.ForeignKey(Uom, on_delete=models.CASCADE, blank=True, null=True, related_name='uom')
     name = models.CharField(max_length=30)
     description = models.CharField(max_length=30, blank=True, null=True)
-    avg_cost = MoneyField(max_digits=14, decimal_places=2, default_currency='EGP')
-    selling_price = MoneyField(max_digits=14, decimal_places=2, default_currency='EGP')
+    #avg_cost = MoneyField(max_digits=14, decimal_places=2, default_currency='EGP')
+    #selling_price = MoneyField(max_digits=14, decimal_places=2, default_currency='EGP')
     sku = models.CharField(max_length=30)
     barcode = models.CharField(max_length=30)
     tax = models.BooleanField(max_length=30)
@@ -131,7 +132,7 @@ class Item(models.Model):
     last_updated_at = models.DateField(null=True, auto_now=True, auto_now_add=False)
     created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, null=True,
                                    related_name="item_created_by")
-    last_updated_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, null=True,blank=True)
+    last_updated_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, null=True, blank=True)
 
     def __str__(self):
         return self.name
@@ -145,7 +146,7 @@ class ItemAttributeValue(models.Model):
     last_updated_at = models.DateField(null=True, auto_now=True, auto_now_add=False)
     created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, null=True,
                                    related_name="item_attribute_created_by")
-    last_updated_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, null=True,blank=True)
+    last_updated_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, null=True, blank=True)
 
     def __str__(self):
         return self.item.name + ' ' + self.attribute.name
@@ -170,7 +171,7 @@ class StokeTake(models.Model):
     last_updated_at = models.DateField(null=True, auto_now=True, auto_now_add=False)
     created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, null=True,
                                    related_name="stoketake_created_by")
-    last_updated_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, null=True,blank=True)
+    last_updated_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, null=True, blank=True)
 
     def __str__(self):
         return self.name
@@ -178,13 +179,13 @@ class StokeTake(models.Model):
 
 class StokeEntry(models.Model):
     stoke_take = models.ForeignKey(StokeTake, on_delete=models.CASCADE, )
-    item = models.ForeignKey(Item, on_delete=models.CASCADE,related_name="items" )
+    item = models.ForeignKey(Item, on_delete=models.CASCADE, related_name="stoke_entry")
     quantity = models.IntegerField(null=True, blank=True)
     created_at = models.DateField(auto_now_add=True, null=True)
     last_updated_at = models.DateField(null=True, auto_now=True, auto_now_add=False)
     created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, null=True,
                                    related_name="stoke_entry_created_by")
-    last_updated_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, null=True,blank=True)
+    last_updated_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, null=True, blank=True)
 
     def __str__(self):
         return self.item.name

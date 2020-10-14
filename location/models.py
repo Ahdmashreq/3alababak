@@ -7,7 +7,7 @@ from cities_light.models import Country, City
 # Create your models here.
 class Location(models.Model):
     company = models.ForeignKey(Company, on_delete=models.CASCADE, )
-    type = models.CharField(max_length=30)
+    type = models.CharField(max_length=30, choices=[('w', 'warehouse'), ('s', 'store')])
     code = models.CharField(max_length=30)
     name = models.CharField(max_length=30)
     address = models.CharField(max_length=30, null=True, blank=True)
@@ -16,7 +16,7 @@ class Location(models.Model):
     zip_code = models.CharField(max_length=30, null=True, blank=True)
     phone_number = models.CharField(max_length=30, null=True, blank=True)
     landline = models.CharField(max_length=30, null=True, blank=True)
-    number_of_products = models.IntegerField()
+    number_of_products = models.IntegerField(null=True, blank=True)
     manager_name = models.CharField(max_length=30)
     manager_mail = models.EmailField(null=True, blank=True)
     manager_phone_number = models.CharField(max_length=30)

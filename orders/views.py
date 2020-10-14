@@ -22,14 +22,8 @@ import json
 from dal import autocomplete
 from moneyed import Money, EGP
 import random
+from orders.utils import get_seq
 
-
-
-def get_seq(n):
-    if n < 1:
-        return str(1).zfill(5)
-    else:
-        return str(n + 1).zfill(5)
 
 def create_purchase_order_view(request):
     po_form = PurchaseOrderCreationForm()
@@ -266,7 +260,7 @@ class ItemSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Item
-        fields = ('avg_cost', 'uom',)
+        fields = ('uom',)
 
 
 def get_item(request, id):
