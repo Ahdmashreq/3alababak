@@ -95,62 +95,49 @@ class PurchaseTransactionCreationForm(forms.ModelForm):
 class SaleOrderCreationForm(forms.ModelForm):
     class Meta:
         model = SalesOrder
-        exclude = ('status', 'company', 'created_at', 'last_updated_at', 'created_by', 'last_updated_by')
+        exclude = ('currency', 'company', 'created_at', 'last_updated_at', 'created_by', 'last_updated_by')
         widgets = {
             'date': forms.DateInput(attrs={'class': 'form-control tm', 'type': 'date', })
         }
 
     def __init__(self, *args, **kwargs):
         super(SaleOrderCreationForm, self).__init__(*args, **kwargs)
-        amount, currency = self.fields['total_price'].fields
-        amount.widget.attrs['readonly'] = True
-        amount.widget.attrs['disabled'] = True
-        currency.widget.attrs['readonly'] = True
-        currency.widget.attrs['disabled'] = True
+        self.fields['sale_code'].widget.attrs['readonly'] = True
+        self.fields['global_price'].widget.attrs['readonly'] = True
+        self.fields['global_price'].widget.attrs['disabled'] = True
 
-        self.fields['total_price'].widget = CustomMoneyWidget(
-            amount_widget=amount.widget, currency_widget=currency.widget)
         for field in self.fields:
-            if field == 'total_price':
-                self.fields[field].widget.attrs['class'] = 'form-control'
-            else:
-                self.fields[field].widget.attrs['class'] = 'form-control'
+            self.fields[field].widget.attrs['class'] = 'form-control'
 
 
 class SaleTransactionCreationForm(forms.ModelForm):
     temp_uom = forms.CharField(max_length=30, required=False)
+    temp_unit_cost = forms.CharField(max_length=30, required=False)
 
     class Meta:
         model = SalesTransaction
-        exclude = ('created_at', 'last_updated_at', 'created_by', 'last_updated_by')
+        exclude = ('currency', 'created_at', 'last_updated_at', 'created_by', 'last_updated_by')
         widgets = {
             # 'item': forms.Select(attrs={'onchange': 'myAction(this)'}),
             'quantity': forms.TextInput(attrs={'onchange': 'myFunction(this)'}),
-            'item': autocomplete.ModelSelect2(url="orders:items_list",
+            'item': autocomplete.ModelSelect2(url="orders:sell-items",
                                               attrs={'onchange': 'myAction(this)'}),
+
         }
 
     def __init__(self, *args, **kwargs):
         super(SaleTransactionCreationForm, self).__init__(*args, **kwargs)
-        amount, currency = self.fields['total_price'].fields
-        amount2, currency2 = self.fields['price_per_unit'].fields
-        amount.widget.attrs['readonly'] = True
-        amount.widget.attrs['disabled'] = True
-        currency.widget.attrs['readonly'] = True
-        currency.widget.attrs['disabled'] = True
-
         self.fields['temp_uom'].widget.attrs['readonly'] = True
-        amount2.widget.attrs['onchange'] = 'myFunction(this)'
-        self.fields['price_per_unit'].widget = CustomMoneyWidget(
-            amount_widget=amount2.widget, currency_widget=currency2.widget)
-        self.fields['total_price'].widget = CustomMoneyWidget(
-            amount_widget=amount.widget, currency_widget=currency.widget)
+        self.fields['price_per_unit'].widget.attrs['onchange'] = 'myFunction(this)'
+        self.fields['location'].widget.attrs['onchange'] = 'inventory(this)'
+        self.fields['total_price'].widget.attrs['readonly'] = True
+        self.fields['total_price'].widget.attrs['disabled'] = True
+        self.fields['temp_unit_cost'].widget.attrs['readonly'] = True
+        self.fields['temp_unit_cost'].widget.attrs['disabled'] = True
+
         for field in self.fields:
             if field == 'total_price':
-                self.fields[field].fields[0].widget.attrs['class'] = 'unique-class form-control'
-                self.fields[field].fields[1].widget.attrs['class'] = 'form-control'
-            elif field == 'price_per_unit':
-                self.fields[field].widget.attrs['class'] = 'form-control'
+                self.fields['total_price'].widget.attrs['class'] = 'unique-class  form-control'
 
             else:
                 self.fields[field].widget.attrs['class'] = 'form-control'
@@ -194,7 +181,7 @@ class MaterialTransactionCreationForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         super(MaterialTransactionCreationForm, self).__init__(*args, **kwargs)
         self.fields['transaction_code'].widget.attrs['readonly'] = True
-        #self.fields['transaction_code'].widget.attrs['disabled'] = True
+        # self.fields['transaction_code'].widget.attrs['disabled'] = True
         for field in self.fields:
             self.fields[field].widget.attrs['class'] = 'form-control'
 

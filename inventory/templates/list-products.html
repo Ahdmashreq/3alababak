@@ -24,14 +24,12 @@
               <div class="col-sm-12">
               </div>
             </div>
-            <table class="data-table data-table-feature6 dataTable no-footer" id="DataTables_Table_0" role="grid" aria-describedby="DataTables_Table_0_info">
+            <table class="data-table data-table-feature4 dataTable no-footer" id="DataTables_Table_0" role="grid" aria-describedby="DataTables_Table_0_info">
               <thead>
                 <tr role="row">
                   <th class="sorting_asc" tabindex="0" aria-controls="DataTables_Table_0" rowspan="1" colspan="1" aria-sort="ascending">#</th>
                   <th class="sorting" tabindex="0" aria-controls="DataTables_Table_0" rowspan="1" colspan="1">{% trans "Brand Name" %}</th>
                   <th class="sorting" tabindex="0" aria-controls="DataTables_Table_0" rowspan="1" colspan="1">{% trans "Category Name" %}</th>
-                  <th class="sorting" tabindex="0" aria-controls="DataTables_Table_0" rowspan="1" colspan="1">{% trans "Product Name" %}</th>
-                  <th class="sorting" tabindex="0" aria-controls="DataTables_Table_0" rowspan="1" colspan="1">{% trans "Discription" %}</th>
                   <th class="sorting" tabindex="0" aria-controls="DataTables_Table_0" rowspan="1" colspan="1">{% trans "Actions" %}</th>
                 </tr>
               </thead>
@@ -41,8 +39,6 @@
                   <td class="sorting_1">{{ forloop.counter }}</td>
                   <td>{{ product.brand }}</td>
                   <td>{{ product.category }}</td>
-                  <td>{{ product.name }}</td>
-                  <td>{{ product.description }}</td>
                   <td>
                     <div class="dropdown d-inline-block">
                       <a class="btn btn-outline-primary dropdown-toggle mb-1" href="#" role="button" id="dropdownMenuLink" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">

@@ -20,6 +20,7 @@
     overflow: hidden;
   }
 
+
 </style>
 {% endblock style  %}
 {% block body%}
@@ -59,23 +60,23 @@
                             <label>Date</label>
                             {{po_form.date}}
                         </div>
-                         <div class="form-group col-md-3">
+                        <div class="form-group col-md-3">
                             <label>Grand Total (EGP)</label>
                             {{po_form.global_price}}
                         </div>
                         <div class="form-group col-md-3">
                             <label>Global price after discount (EGP)</label>
-                             {{po_form.my_total_price_after_discount}}
+                            {{po_form.my_total_price_after_discount}}
                         </div>
-                         <div class="form-group col-md-2">
+                        <div class="form-group col-md-2">
                             <label>Discount</label>
                             {{po_form.discount}}
                         </div>
-                         <div class="form-group col-md-2">
+                        <div class="form-group col-md-2">
                             <label>Discount Type</label>
                             {{po_form.discount_type}}
                         </div>
-                         <button class="btn btn-lg col-md-2" type="button" onclick="calculate()">Apply Discount</button>
+                        <button class="btn btn-lg col-md-2" type="button" onclick="calculate()">Apply Discount</button>
 
                     </div>
                     <div class="separator mb-5"></div>
@@ -100,7 +101,7 @@
                                         <div class="form-group col-md-2">
                                             <label>{% trans "Total Price (EGP)" %}</label>
                                         </div>
-                                        <div class="form-group col-md-2" >
+                                        <div class="form-group col-md-2">
                                             <label>Total after discount (EGP)</label>
                                         </div>
                                     </div>
@@ -168,8 +169,10 @@
 
                     <div class="submit-row">
                         <button type="submit" class="btn btn-primary btn-lg mt-3" name='Save'>Save</button>
-                        <button type="submit" class="btn btn-primary btn-lg mt-3" name='Save and exit'>Save and Exit</button>
-                        <button type="submit" class="btn btn-primary btn-lg mt-3" name='Save as draft'>Save as Draft </button>
+                        <button type="submit" class="btn btn-primary btn-lg mt-3" name='Save and exit'>Save and Exit
+                        </button>
+                        <button type="submit" class="btn btn-primary btn-lg mt-3" name='Save as draft'>Save as Draft
+                        </button>
                     </div>
                 </form>
             </div>
@@ -190,6 +193,7 @@ for (i = 0; i < $('#id_purchasetransaction_set-TOTAL_FORMS').val(); i++) {
  $('#id_global_price').prop('disabled', false);
  $('#id_my_total_price_after_discount').prop('disabled', false);
 });
+
 </script>
 <script>
     function myAction(object) {
@@ -225,6 +229,7 @@ for (i = 0; i < $('#id_purchasetransaction_set-TOTAL_FORMS').val(); i++) {
 
     };
 
+
 </script>
 <script>
 function myFunction(object) {
@@ -253,6 +258,7 @@ function myFunction(object) {
 
 };
 
+
 </script>
 <script>
 function grandTotal(){
@@ -269,6 +275,7 @@ function grandTotal(){
 
 }
 
+
 </script>
 <script>
   $('#add_item').click(function() {
@@ -282,6 +289,7 @@ function grandTotal(){
 
 
   });
+
 
 </script>
 <script>
@@ -322,6 +330,7 @@ function grandTotal(){
 
                     };
             };
+
 
 </script>
 

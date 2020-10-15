@@ -68,7 +68,7 @@ class Company(models.Model):
     created_at = models.DateField(auto_now_add=True, null=True)
     last_updated_at = models.DateField(null=True, auto_now=True, auto_now_add=False)
     created_by = models.IntegerField(null=True, blank=True)
-    last_updated_by = models.IntegerField(null=True)
+    last_updated_by = models.IntegerField(null=True, blank=True)
 
     def __str__(self):
         return self.name

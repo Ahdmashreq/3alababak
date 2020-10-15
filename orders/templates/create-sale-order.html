@@ -42,22 +42,26 @@
       <form method="POST" id="myform">
         {% csrf_token %}
         <div class="form-row">
-          <div class="form-group col-md-6">
-            <label>Customer</label>
-            {{so_form.customer}}
-          </div>
-          <div class="form-group col-md-6">
-            <label>Name</label>
-            {{so_form.order_name}}
-          </div>
-          <div class="form-group col-md-6">
-            <label>Date</label>
-            {{so_form.date}}
-          </div>
-          <div class="form-group col-md-6">
-            <label>Grand Total</label>
-            {{so_form.total_price}}
-          </div>
+            <div class="form-group col-md-3">
+                <label>Customer</label>
+                {{so_form.customer}}
+            </div>
+            <div class="form-group col-md-3">
+                <label>Name</label>
+                {{so_form.order_name}}
+            </div>
+            <div class="form-group col-md-3">
+                <label>Code</label>
+                {{so_form.sale_code}}
+            </div>
+            <div class="form-group col-md-3">
+                <label>Date</label>
+                {{so_form.date}}
+            </div>
+             <div class="form-group col-md-3">
+                <label>Grand Total (EGP)</label>
+                {{so_form.global_price}}
+            </div>
         </div>
       <div class="separator mb-5"></div>
       <div class="row" style="margin-left:0px;">
@@ -68,17 +72,23 @@
                <div class="form-group col-md-4">
                    <label>{% trans "Item" %}</label>
                </div>
+                <div class="form-group col-md-2">
+                   <label>{% trans "Location" %}</label>
+               </div>
                <div class="form-group col-md-1">
                    <label>{% trans "Quantity" %}</label>
                </div>
                <div class="form-group col-md-1">
                    <label>{% trans "Unit" %}</label>
                </div>
-               <div class="form-group col-md-3">
-                   <label>{% trans "Price per unit" %}</label>
+               <div class="form-group col-md-1">
+                   <label>{% trans "Cost per unit (EGP)" %}</label>
                </div>
-                 <div class="form-group col-md-3">
-                   <label>{% trans "Total Price" %}</label>
+                <div class="form-group col-md-1">
+                   <label>{% trans "Selling price per unit (EGP)" %}</label>
+               </div>
+                 <div class="form-group col-md-2">
+                   <label>{% trans "Total Price (EGP)" %}</label>
                </div>
 
             </div>
@@ -90,16 +100,22 @@
              <div class="form-group col-md-4">
               {{form.item}}
              </div>
+             <div class="form-group col-md-2">
+               {{ form.location}}
+             </div>
              <div class="form-group col-md-1">
                {{ form.quantity}}
              </div>
              <div class="form-group col-md-1">
                {{form.temp_uom}}
              </div>
-             <div class="form-group col-md-3">
+             <div class="form-group col-md-1">
+                 {{form.temp_unit_cost}}
+             </div>
+             <div class="form-group col-md-1">
                  {{form.price_per_unit}}
              </div>
-             <div class="form-group col-md-3">
+             <div class="form-group col-md-2">
                {{form.total_price}}
              </div>
 
@@ -121,16 +137,23 @@
                       <div class="form-group col-md-4">
                         {{ so_transaction_inlineformset.empty_form.item}}
                       </div>
+                      <div class="form-group col-md-2">
+                        {{ so_transaction_inlineformset.empty_form.location}}
+                      </div>
                       <div class="form-group col-md-1">
                         {{ so_transaction_inlineformset.empty_form.quantity}}
                       </div>
                       <div class="form-group col-md-1">
                         {{ so_transaction_inlineformset.empty_form.temp_uom}}
                       </div>
-                      <div class="form-group col-md-3">
-                        {{ so_transaction_inlineformset.empty_form.price_per_unit}}
+                      <div class="form-group col-md-1">
+                          {{ so_transaction_inlineformset.empty_form.temp_unit_cost }}
+
                       </div>
-                      <div class="form-group col-md-3">
+                     <div class="form-group col-md-1">
+                          {{ so_transaction_inlineformset.empty_form.price_per_unit }}
+                      </div>
+                      <div class="form-group col-md-2">
                         {{ so_transaction_inlineformset.empty_form.total_price}}
                       </div>
 
@@ -154,12 +177,10 @@
 <script>
    $('#myform').on('submit', function() {
 for (i = 0; i < $('#id_salestransaction_set-TOTAL_FORMS').val(); i++) {
-    $('#id_salestransaction_set-'+i+'-total_price_1').prop('disabled', false);
-    $('#id_salestransaction_setcd -'+i+'-total_price_0').prop('disabled', false);
+    $('#id_salestransaction_set-'+i+'-total_price').prop('disabled', false);
 
     }
-         $('#id_total_price_1').prop('disabled', false);
-         $('#id_total_price_0').prop('disabled', false);
+         $('#id_global_price').prop('disabled', false);
 });
 </script>
 <script>
@@ -171,7 +192,7 @@ for (i = 0; i < $('#id_salestransaction_set-TOTAL_FORMS').val(); i++) {
                 var res= str.split("-")
                 var id_prefix = res[0]+'-'+res[1]
                 uom_id = id_prefix+'-'+'temp_uom'
-                price_id = id_prefix+'-'+'price_per_unit_0'
+                price_id = id_prefix+'-'+'price_per_unit'
                 quantity_id =  id_prefix+'-'+'quantity'
                 $.ajax({
                 type: "get",
@@ -179,6 +200,7 @@ for (i = 0; i < $('#id_salestransaction_set-TOTAL_FORMS').val(); i++) {
                 contentType: 'application/json',
                 success: function(data){
                       document.getElementById(uom_id).value=data['uom']
+<!--                      document.getElementById("quantity_id").placeholder = "Type name here..";-->
                       document.getElementById(price_id).value=data['avg_cost']
                       if (document.getElementById(quantity_id).value){
                         myFunction(document.getElementById(quantity_id));
@@ -203,8 +225,8 @@ function myFunction(object) {
     var res= str.split("-");
     var id_prefix = res[0]+'-'+res[1];
     item_id = id_prefix+'-'+'item';
-    price_id = id_prefix+'-'+'price_per_unit_0';
-    total_price_id = id_prefix+'-'+'total_price_0';
+    price_id = id_prefix+'-'+'price_per_unit';
+    total_price_id = id_prefix+'-'+'total_price';
     quantity_id = id_prefix+'-'+'quantity';
     quantity = document.getElementById(quantity_id).value;
     item =  document.getElementById(item_id).value;
@@ -233,7 +255,7 @@ function grandTotal(){
         };
      };
      console.log(grand_total)
-    document.getElementById("id_total_price_0").value = grand_total;
+    document.getElementById("id_global_price").value = grand_total;
 
 }
 </script>
@@ -249,5 +271,42 @@ function grandTotal(){
 
 
   });
+</script>
+<script>
+function inventory(object) {
+    console.log("Iam not hereeeeeeeee")
+    var str = object.id;
+    var res= str.split("-");
+    var id_prefix = res[0]+'-'+res[1];
+    item_id = id_prefix+'-'+'item';
+    quantity_id =  id_prefix+'-'+'quantity'
+    price_id = id_prefix+'-'+'temp_unit_cost'
+    item = document.getElementById(item_id).value;
+
+     if (item !==""){
+        var endpoint = '{% url "orders:get-item" -1 %}'.replace('-1', item);
+       $.ajax({
+                type: "get",
+                url: endpoint,
+                contentType: 'application/json',
+                success: function(data){
+                      for (i = 0; i < data['balance'].length; i++) {
+                      if (object.value == data['balance'][i]['location']){
+                          document.getElementById(quantity_id).placeholder = data['balance'][i]['qnt'];
+                          document.getElementById(price_id).value=data['balance'][i]['unit_cost'];
+                      };
+                    };
+
+
+
+                },
+                error: function(){
+                    alert("error");
+                }
+                 });
+
+            };
+
+    };
 </script>
 {% endblock js %}

@@ -17,9 +17,10 @@ urlpatterns = [
     path('list/receivings/<int:id>', views.list_receiving, name='list-receiving', ),
     path('create/receiving-transactions/<int:id>', views.create_receiving, name='create-receiving', ),
     path('list/purchases-for-receiving/', views.list_purchases_for_receiving, name='list-po-for-receiving'),
-    path('po_transaction/autocomplete/', views.PoItemAutocomplete.as_view(), name='receive-item', ),
+    path('so_transaction/autocomplete/', views.SoItemAutocomplete.as_view(), name='sell-items', ),
     path('create/receiving-transactions2/<int:id>', views.create_receiving2, name='create-receiving2', ),
     path('po/receipt/<id>', views.view_received, name='view-rec'),
     path('po/view/<id>/<flag>', views.view_purchase_order, name='view-po'),
+    path('po/view/<id>', views.view_sale_order, name='view-so'),
 
 ]

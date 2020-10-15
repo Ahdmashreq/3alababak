@@ -1,6 +1,7 @@
 from datetime import date
 
 from django.db.models import Q
+from django.forms import model_to_dict
 from django.shortcuts import render, redirect
 from orders.forms import (PurchaseTransactionCreationForm,
                           PurchaseOrderCreationForm, ReceivingTransactionCreation_formset,
@@ -9,7 +10,7 @@ from orders.forms import (PurchaseTransactionCreationForm,
                           SaleOrderCreationForm, MaterialTransactionCreationForm, MaterialTransactionLinesCreationForm,
                           MaterialTransactionCreation_formset)
 from orders.models import PurchaseOder, SalesOrder, MaterialTransaction, PurchaseTransaction, MaterialTransactionLines, \
-    MaterialTransaction1
+    MaterialTransaction1, Inventory_Balance, SalesTransaction
 from inventory.models import Item, Uom
 from django.contrib import messages
 from json import dumps
@@ -156,6 +157,9 @@ def delete_purchase_order_view(request, id):
 def create_sales_order_view(request):
     so_form = SaleOrderCreationForm()
     so_transaction_inlineformset = sale_transaction_formset()
+    rows_number = SalesOrder.objects.all().count()
+    so_code = "SO-" + str(date.today()) + "-" + get_seq(rows_number)
+    so_form.fields['sale_code'].initial = so_code
     if request.method == 'POST':
         so_form = SaleOrderCreationForm(request.POST)
         so_transaction_inlineformset = sale_transaction_formset(request.POST)
@@ -163,6 +167,7 @@ def create_sales_order_view(request):
             so_obj = so_form.save(commit=False)
             so_obj.created_by = request.user
             so_obj.company = request.user.company
+            so_obj.sale_code = so_code
             so_obj.save()
             so_transaction_inlineformset = sale_transaction_formset(request.POST, instance=so_obj)
             if so_transaction_inlineformset.is_valid():
@@ -255,12 +260,18 @@ class JSONResponse(HttpResponse):
         super(JSONResponse, self).__init__(content, **kwargs)
 
 
+class balanceField(serializers.RelatedField):
+    def to_representation(self, data):
+        return model_to_dict(data)
+
+
 class ItemSerializer(serializers.ModelSerializer):
     uom = serializers.StringRelatedField(many=False)
+    balance = balanceField(many=True, read_only=True)
 
     class Meta:
         model = Item
-        fields = ('uom',)
+        fields = ('uom', 'balance',)
 
 
 def get_item(request, id):
@@ -282,23 +293,16 @@ class ItemAutocomplete(autocomplete.Select2QuerySetView):
         return qs
 
 
-class PoItemAutocomplete(autocomplete.Select2QuerySetView):
+class SoItemAutocomplete(autocomplete.Select2QuerySetView):
     print("inside ItemAutocomplete")
 
     def get_queryset(self):
         print("inside get_queryset ItemAutocomplete")
-        print("HIIIIIIIIIII")
         if not self.request.user.is_authenticated:
-            return Item.objects.none()
-        qs = Item.objects.all()
-        po = self.forwarded.get('purchase_order', None)
-        print(po)
-        # items = PurchaseTransaction.objects.filter(purchase_order=po, status='open').values(['item'])
-        # #print("HIIIIIIIIIII")
-        # print(items)
-        # items = [po.item for po in purchase_transactions]
-
-        # qs = items
+            return Inventory_Balance.objects.none()
+        inventory_items = Inventory_Balance.objects.values('item').distinct()
+        myids = [record['item'] for record in inventory_items]
+        qs = Item.objects.filter(id__in=myids)
         if self.q:
             qs = qs.filter(name__istartswith=self.q)
         return qs
@@ -375,8 +379,6 @@ def create_receiving(request, id):
     return render(request, 'create-receiving.html', context=subcontext)
 
 
-
-
 def create_receiving2(request, id):
     material_form = MaterialTransactionCreationForm()
     material_lines_formset = MaterialTransactionCreation_formset(form_kwargs={'id': id})
@@ -449,14 +451,25 @@ def view_received(request, id):
     return render(request, 'view-receiving.html', context=subcontext)
 
 
-def view_purchase_order(request, id,flag):
+def view_purchase_order(request, id, flag):
     purchase_order = PurchaseOder.objects.get(id=id)
     purchase_lines = PurchaseTransaction.objects.filter(purchase_order__id=id)
-    print("HERE IS MY FLag",flag)
+    print("HERE IS MY FLag", flag)
     subcontext = {
         'po': purchase_order,
         'po_lines': purchase_lines,
-        'flag':flag,
+        'flag': flag,
 
     }
     return render(request, 'view-po.html', context=subcontext)
+
+
+def view_sale_order(request, id):
+    sale_order = SalesOrder.objects.get(id=id)
+    sale_lines = SalesTransaction.objects.filter(sales_order__id=id)
+    subcontext = {
+        'so': sale_order,
+        'so_lines': sale_lines,
+
+    }
+    return render(request, 'view-so.html', context=subcontext)
