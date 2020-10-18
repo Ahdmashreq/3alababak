@@ -157,7 +157,7 @@ class MaterialTransactionLines(models.Model):
 @receiver(post_save, sender=MaterialTransactionLines)
 def create_or_update_inventory_balance(sender, instance, *args, **kwargs):
     if instance.material_transaction.purchase_order is not None:
-        po_unit_cost = PurchaseTransaction.objects.get(purchase_order=instance.material_transaction.purchase_order)
+        po_unit_cost = PurchaseTransaction.objects.filter(purchase_order=instance.material_transaction.purchase_order).get(item=instance.item)
         try:
             inventory_item_obj = Inventory_Balance.objects.get(item=instance.item, location=instance.location)
             inventory_item_obj.qnt += instance.quantity
