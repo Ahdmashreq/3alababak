@@ -1,6 +1,6 @@
 from datetime import date
 
-from django.db.models import Q
+from django.db.models import Q, ProtectedError
 from django.shortcuts import render, redirect
 from django.contrib import messages
 from inventory.models import (Category, Brand, Product, Attribute, Item, Uom, StokeTake, StokeEntry, UomCategory)
@@ -70,6 +70,38 @@ def create_brand_view(request):
 
     }
     return render(request, 'create-brand.html', context=categoryContext)
+
+
+def update_brand_view(request, brand_id):
+    required_brand = Brand.objects.get(id= brand_id)
+    brand_form = BrandForm(instance=required_brand)
+    if request.method == 'POST':
+        brand_form = BrandForm(request.POST, instance=required_brand)
+        if brand_form.is_valid():
+            brand_obj = brand_form.save(commit=False)
+            brand_obj.last_updated_by = request.user
+            brand_obj.save()
+            return redirect('inventory:list-brands')
+            if 'Save and exit' in request.POST:
+                return redirect('inventory:list-brands')
+            elif 'Save and add' in request.POST:
+                return redirect('inventory:create-brand')
+    categoryContext = {
+        'brand_form': brand_form,
+        'title': 'Update {}'.format(required_brand),
+        'update_flag':True,
+    }
+    return render(request, 'create-brand.html', context=categoryContext)
+
+
+def delete_brand_view(request, brand_id):
+    required_brand = Brand.objects.get(id= brand_id)
+    try:
+        required_brand.delete()
+    except ProtectedError:
+        error_message = "This object can't be deleted!!"
+        messages.error(request, error_message)
+    return redirect('inventory:list-brands')
 
 
 def list_attributes_view(request):
