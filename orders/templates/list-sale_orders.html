@@ -25,14 +25,14 @@
               <div class="col-sm-12">
               </div>
             </div>
-            <table class="data-table data-table-feature5 dataTable no-footer" id="DataTables_Table_0" role="grid" aria-describedby="DataTables_Table_0_info">
+
+            <table class="data-table data-table-feature4 dataTable no-footer" id="DataTables_Table_0" role="grid" aria-describedby="DataTables_Table_0_info">
               <thead>
                 <tr role="row">
                   <th class="sorting_asc" tabindex="0" aria-controls="DataTables_Table_0" rowspan="1" colspan="1" aria-sort="ascending" aria-label="Name: activate to sort column descending" style="width: 155.4px;">#</th>
                   <th class="sorting" tabindex="0" aria-controls="DataTables_Table_0" rowspan="1" colspan="1" aria-label="Position: activate to sort column ascending" style="width: 263.4px;">{% trans "Name" %}</th>
                   <th class="sorting" tabindex="0" aria-controls="DataTables_Table_0" rowspan="1" colspan="1" aria-label="Office: activate to sort column ascending" style="width: 105.8px;">{% trans "Date" %}</th>
-                  <th class="sorting" tabindex="0" aria-controls="DataTables_Table_0" rowspan="1" colspan="1" aria-label="Start date: activate to sort column ascending" style="width: 122.6px;">{% trans "Status" %}</th>
-                  <th class="sorting" tabindex="0" aria-controls="DataTables_Table_0" rowspan="1" colspan="1" aria-label="Salary: activate to sort column ascending" style="width: 86.6px;">{% trans "Actions" %}</th>
+                  <th class="sorting" tabindex="0" aria-controls="DataTables_Table_0" rowspan="1" colspan="1" aria-label="Salary: activate to sort column ascending" style="width: 350.75px;">{% trans "Actions" %}</th>
                 </tr>
               </thead>
               <tbody>
@@ -41,17 +41,20 @@
                   <td class="sorting_1">{{ forloop.counter }}</td>
                   <td>{{ order.order_name }}</td>
                   <td>{{ order.date }}</td>
-                  <td>{{ order.status }}</td>
                    <td>
+                   <div class="d-inline-block">
+                      <a class="btn btn-outline-primary mb-1" href="{% url 'orders:view-so' id=order.id %}" role="button">View</a>
+                    </div>
                     <div class="dropdown d-inline-block">
-                      <a class="btn btn-outline-primary dropdown-toggle mb-1" href="#" role="button" id="dropdownMenuLink" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                      <a class="btn btn-outline-secondary dropdown-toggle mb-1" href="#" role="button" id="dropdownMenuLink" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                         Actions
                       </a>
                       <div class="dropdown-menu" aria-labelledby="dropdownMenuLink" x-placement="top-start" style="position: absolute; will-change: transform; top: 0px; left: 0px; transform: translate3d(0px, -2px, 0px);">
-                        <a class="dropdown-item" href="{% url 'orders:update-so' id=order.pk %}">{% trans "Update" %}</a>
-                        <a class="dropdown-item" href="{% url 'orders:delete-so' id=order.pk %}" data-toggle="modal" data-target="#delete-modal{{order.pk}}">{% trans "Delete" %}</a>
+                        <a class="dropdown-item" href="#">{% trans "Update" %}</a>
+                        <a class="dropdown-item" href="#" data-toggle="modal" data-target="#delete-modal{{order.pk}}">{% trans "Delete" %}</a>
                       </div>
                     </div>
+
                   </td>
                 </tr>
                 <!-- Delete Modal -->

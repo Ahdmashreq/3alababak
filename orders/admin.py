@@ -11,10 +11,8 @@ class PurchaseOrderAdmin(admin.ModelAdmin):
 
     inlines = [
         PurchaseTransactionInline,
-
-
     ]
-    
+
 class SalesTransactionInline(admin.TabularInline):
     model = SalesTransaction
 
@@ -27,3 +25,7 @@ class SalesOrderAdmin(admin.ModelAdmin):
 
 
     ]
+
+@admin.register(Inventory_Balance)
+class Inventory_Balance_Admin(admin.ModelAdmin):
+    model = Inventory_Balance

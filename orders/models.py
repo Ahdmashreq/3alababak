@@ -57,11 +57,11 @@ class SalesOrder(models.Model):
     customer = models.ForeignKey(Customer, on_delete=models.CASCADE, )
     order_name = models.CharField(max_length=10)
     sale_code = models.CharField(max_length=100, help_text='code number of a so', null=True, blank=True, )
-    total_price = MoneyField(max_digits=14, decimal_places=2, default_currency='EGP')
-    currency = models.ForeignKey(Currency, on_delete=models.CASCADE, null=True, blank=True, default='EGP')
-    status = models.CharField(max_length=8,
-                              choices=[('received', 'Received'), ('returned', 'Returned'), ('shipping', 'Shipping')],
-                              default='drafted')
+    global_price = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True, default=0)
+    #currency = models.ForeignKey(Currency, on_delete=models.CASCADE, null=True, blank=True, default='EGP')
+    # status = models.CharField(max_length=8,
+    #                           choices=[('received', 'Received'), ('returned', 'Returned'), ('shipping', 'Shipping')],
+    #                           default='drafted')
     date = models.DateField(null=True, blank=True)
     created_at = models.DateField(auto_now_add=True, null=True)
     last_updated_at = models.DateField(null=True, auto_now=True, auto_now_add=False)
@@ -104,8 +104,10 @@ class SalesTransaction(models.Model):
     sales_order = models.ForeignKey(SalesOrder, on_delete=models.CASCADE, )
     item = models.ForeignKey(Item, on_delete=models.CASCADE, )
     quantity = models.IntegerField()
-    price_per_unit = MoneyField(max_digits=14, decimal_places=2, null=True, blank=True, default_currency='EGP')
-    total_price = MoneyField(max_digits=14, decimal_places=2, default_currency='EGP')
+    location = models.ForeignKey(Location, on_delete=models.CASCADE, blank=True, null=True)
+    price_per_unit = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True, )
+    total_price = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True, )
+    currency = models.ForeignKey(Currency, on_delete=models.CASCADE, null=True, blank=True, default='EGP')
     created_at = models.DateField(auto_now_add=True, null=True)
     last_updated_at = models.DateField(null=True, auto_now=True, auto_now_add=False)
     created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, null=True,
@@ -116,10 +118,6 @@ class SalesTransaction(models.Model):
         return self.sales_order.code + " Transaction"
 
 
-# class PoFilter(django_filters.FilterSet):
-#     class Meta:
-#         model = PurchaseTransaction
-#         fields = ['item']
 
 class MaterialTransaction1(models.Model):
     transaction_code = models.CharField(max_length=100, help_text='code number of a transaction')
@@ -159,7 +157,7 @@ class MaterialTransactionLines(models.Model):
 @receiver(post_save, sender=MaterialTransactionLines)
 def create_or_update_inventory_balance(sender, instance, *args, **kwargs):
     if instance.material_transaction.purchase_order is not None:
-        po_unit_cost = PurchaseTransaction.objects.get(purchase_order=instance.material_transaction.purchase_order)
+        po_unit_cost = PurchaseTransaction.objects.filter(purchase_order=instance.material_transaction.purchase_order).get(item=instance.item)
         try:
             inventory_item_obj = Inventory_Balance.objects.get(item=instance.item, location=instance.location)
             inventory_item_obj.qnt += instance.quantity
@@ -230,3 +228,6 @@ class Inventory_Balance(models.Model):
 
     def __str__(self):
         return self.item.name + ' ' + str(self.value)
+
+    def __unicode__(self):
+        return '%s: %s' % (self.item.name, str(self.value))
