@@ -11,7 +11,7 @@ db.sqlite3
 db.sqlite3-journal
 media/
 3alababak-env/
-migrations/
+
 # If your build process includes running collectstatic, then you probably don't need or want to include staticfiles/
 # in your Git repository. Update and uncomment the following line accordingly.
 # <django-project-name>/staticfiles/
@@ -124,3 +124,4 @@ db.sqlite3
 alababak/__pycache__/settings.cpython-37.pyc
 /custom_user/migrations/0001_initial.py
 /inventory/migrations/0001_initial.py
+*.pyc

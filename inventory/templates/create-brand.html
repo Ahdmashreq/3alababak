@@ -52,8 +52,10 @@
         </div>
         <div class="submit-row">
           <button type="submit" class="btn btn-primary btn-lg mt-3" name ='Save'>Save</button>
+          {% if not update_flag %}
           <button type="submit" class="btn btn-primary btn-lg mt-3" name ='Save and exit'>Save and Exit</button>
           <button type="submit" class="btn btn-primary btn-lg mt-3" name ='Save and add'>Save and Add</button>
+          {% endif %}
         </div>
       </form>
     </div>
