@@ -57,8 +57,8 @@ class SalesOrder(models.Model):
     customer = models.ForeignKey(Customer, on_delete=models.CASCADE, )
     order_name = models.CharField(max_length=10)
     sale_code = models.CharField(max_length=100, help_text='code number of a so', null=True, blank=True, )
-    global_price = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True, default=0)
-    #currency = models.ForeignKey(Currency, on_delete=models.CASCADE, null=True, blank=True, default='EGP')
+    subtotal_price = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True, default=0)
+    # currency = models.ForeignKey(Currency, on_delete=models.CASCADE, null=True, blank=True, default='EGP')
     # status = models.CharField(max_length=8,
     #                           choices=[('received', 'Received'), ('returned', 'Returned'), ('shipping', 'Shipping')],
     #                           default='drafted')
@@ -71,6 +71,13 @@ class SalesOrder(models.Model):
 
     def __str__(self):
         return self.order_name
+
+    @property
+    def global_price(self):
+        tax_percentage = Decimal(0.14)
+        tax = tax_percentage * self.subtotal_price
+
+        return round(self.subtotal_price - tax, 2)
 
 
 class PurchaseTransaction(models.Model):
@@ -116,7 +123,6 @@ class SalesTransaction(models.Model):
 
     def __str__(self):
         return self.sales_order.code + " Transaction"
-
 
 
 class MaterialTransaction1(models.Model):

@@ -10,10 +10,14 @@
       <h1>View Purchase Order</h1>
 
       <div class="text-zero top-right-button-container">
+
           {% if flag == 'True' %}
-              <a href="{% url 'orders:list-po-for-receiving'%}"><button type="button" class="btn btn-primary btn-lg top-right-button mr-1">BACK TO LIST</button></a>
+          <div class="d-inline-block">
+              <a class="btn btn-outline-primary btn-lg top-right-button mr-1" href="{% url 'orders:list-receiving' id=po.id return_to=return_to %}" role="button">View Receivings</a>
+            </div>
+              <a href="{% url 'orders:list-po-for-receiving'%}"><button type="button" class="btn btn-secondary btn-lg top-right-button mr-1">BACK TO LIST</button></a>
           {% elif flag == 'False' %}
-              <a href="{% url 'orders:list-po'%}"><button type="button" class="btn btn-primary btn-lg top-right-button mr-1">BACK TO LIST</button></a>
+              <a href="{% url 'orders:list-po'%}"><button type="button" class="btn btn-secondary btn-lg top-right-button mr-1">BACK TO LIST</button></a>
           {% endif %}
       </div>
       <div class="separator mb-5"></div>
@@ -44,18 +48,6 @@
                 <b>Date of PO:</b>
                 {{po.date}}
               </div>
-              <div class="form-group col-md-4">
-                <b>Grand Total Before Discount (EGP): </b>
-                {{po.global_price}}
-              </div>
-              <div class="form-group col-md-4">
-                <b>Discount: </b>
-                {{po.discount}} {{po.discount_type}}
-              </div>
-              <div class="form-group col-md-4">
-                <b>Grand Total After Discount (EGP): </b>
-                {{po.global_price_after_discount}}
-              </div>
 
             </div>
                                <div class="separator mb-5"></div>
@@ -84,6 +76,25 @@
                 </tr>
                 {% endfor %}
               </tbody>
+            </table>
+            <table style="width: 100%;">
+                <tbody>
+                    <tr>
+                        <td style="text-align: right; padding-top:0px; padding-bottom:0; vertical-align:middle; padding:30px; background-color: #f9f9f9; border-radius: 3px; border-left: 5px solid white;">
+                            <p style="color:#8f8f8f; font-size: 14px; padding: 0; line-height: 1.6; margin:0; ">
+                               <b>Total:</b>     {{po.global_price}} EGP
+                                <br>
+                                {% if po.discount_type == 'percentage' %}
+                                    <b>Discount: </b>   {{po.discount}} %
+                                {% else %}
+                                     <b>Discount: </b>   {{po.discount}} EGP
+                                {% endif %}
+                                <br>
+                                <b>Grand Total: </b> {{po.global_price_after_discount}} EGP
+                            </p>
+                        </td>
+                    </tr>
+                </tbody>
             </table>
 
 

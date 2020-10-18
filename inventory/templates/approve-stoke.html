@@ -26,30 +26,30 @@
                 {% csrf_token %}
                 <div class="form-row">
                     <div class="form-group col-md-6">
-                        <label>Name</label>
+                        <b>Name: </b>
                         {{stoke_form.name}}
                     </div>
                     <div class="form-group col-md-6" id="stoke-type">
-                        <label>Type</label>
+                        <b>Type: </b>
                         {{stoke_form.type}}
                     </div>
                     <div class="form-group col-md-6">
-                        <label>Date</label>
+                        <b>Date: </b>
                         {{stoke_form.date}}
                     </div>
                     <div class="form-group col-md-6" id="location">
-                        <label>{{stoke_form.location.label}}</label>
+                        <b>Location: </b>
                         {{stoke_form.location}}
                     </div>
-                    {% if stoke_form.category.value %}
+                    {% if stoke_form.category %}
                     <div class="form-group col-md-6" id="category">
-                        <label>{{stoke_form.category.label}}</label>
+                        <b>Category: </b>
                         {{stoke_form.category}}
                     </div>
                     {% endif %}
-                    {% if stoke_form.random_number.value %}
+                    {% if stoke_form.random_number %}
                     <div class="form-group col-md-6" id="random">
-                        <label>{{stoke_form.random_number.label}}</label>
+                        <b>Random Number: </b>
                         {{stoke_form.random_number}}
                     </div>
                     {% endif %}
@@ -60,10 +60,8 @@
 
                 <!-- Stoke entry part  -->
                 <table class="table table-bordered" id="DataTables_Table_0" role="grid" aria-describedby="DataTables_Table_0_info">
+                    {% for entry in stoke_entries %}
 
-                  {{ stoke_entry_inlineformset.management_form }}
-                  {% for form in stoke_entry_inlineformset %}
-                  {{ form.id }}
                   {% if forloop.first %}
                   <thead>
                     <tr role="row">
@@ -78,17 +76,19 @@
                     </tr>
                   </thead>
                   {% endif %}
-                  <tbody>
+
+                     <tbody>
                       <tr role="row">
                           <td class="sorting_1">{{ forloop.counter }}</td>
-                          <td>{{ form.instance.item.product.category }}</td>
-                          <td>{{ form.instance.item.product }}</td>
-                          <td>{{ form.item }}</td>
-                          <td>{{ form.instance.item.uom }}</td>
-                          <td>{{ form.instance.item.quantity }}</td>
-                          <td>{{ form.quantity }}</td>
+                          <td>{{ entry.category }}</td>
+                          <td>{{ entry.brand }}</td>
+                          <td>{{ entry.item }}</td>
+                          <td>{{ entry.uom }}</td>
+                          <td>{{ entry.on_hand }}</td>
+                          <td>{{ entry.quantity }}</td>
                       </tr>
                       {% endfor %}
+                  </tbody>
                   </table>
                 {% if status != 'Approved' %}
                  <div class="submit-row">

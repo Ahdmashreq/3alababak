@@ -24,21 +24,23 @@
               <div class="col-sm-12">
               </div>
             </div>
-            <table class="data-table data-table-feature4 dataTable no-footer" id="DataTables_Table_0" role="grid" aria-describedby="DataTables_Table_0_info">
+            <table class="data-table data-table-feature5 dataTable no-footer" id="DataTables_Table_0" role="grid" aria-describedby="DataTables_Table_0_info">
               <thead>
                 <tr role="row">
                   <th class="sorting_asc" tabindex="0" aria-controls="DataTables_Table_0" rowspan="1" colspan="1" aria-sort="ascending">#</th>
                   <th class="sorting" tabindex="0" aria-controls="DataTables_Table_0" rowspan="1" colspan="1">{% trans "Brand Name" %}</th>
                   <th class="sorting" tabindex="0" aria-controls="DataTables_Table_0" rowspan="1" colspan="1">{% trans "Category Name" %}</th>
+                  <th class="sorting" tabindex="0" aria-controls="DataTables_Table_0" rowspan="1" colspan="1">{% trans "Item Name" %}</th>
                   <th class="sorting" tabindex="0" aria-controls="DataTables_Table_0" rowspan="1" colspan="1">{% trans "Actions" %}</th>
                 </tr>
               </thead>
               <tbody>
-                {% for product in products_list %}
+                {% for item in products_list %}
                 <tr role="row">
                   <td class="sorting_1">{{ forloop.counter }}</td>
-                  <td>{{ product.brand }}</td>
-                  <td>{{ product.category }}</td>
+                  <td>{{ item.product.brand }}</td>
+                  <td>{{ item.product.category }}</td>
+                  <td>{{ item }}</td>
                   <td>
                     <div class="dropdown d-inline-block">
                       <a class="btn btn-outline-primary dropdown-toggle mb-1" href="#" role="button" id="dropdownMenuLink" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
@@ -46,12 +48,12 @@
                       </a>
                       <div class="dropdown-menu" aria-labelledby="dropdownMenuLink" x-placement="top-start" style="position: absolute; will-change: transform; top: 0px; left: 0px; transform: translate3d(0px, -2px, 0px);">
                         <a class="dropdown-item" href="#">{% trans "Update" %}</a>
-                        <a class="dropdown-item" href="#" data-toggle="modal" data-target="#delete-modal{{product.pk}}">{% trans "Delete" %}</a>
+                        <a class="dropdown-item" href="#" data-toggle="modal" data-target="#delete-modal{{item.pk}}">{% trans "Delete" %}</a>
                       </div>
                     </div>
                   </td>
                 </tr>
-                <div class="modal fade" id="delete-modal{{product.pk}}" tabindex="-1" role="dialog" aria-hidden="true" style="display: none;">
+                <div class="modal fade" id="delete-modal{{item.pk}}" tabindex="-1" role="dialog" aria-hidden="true" style="display: none;">
                   <div class="modal-dialog" role="document">
                     <div class="modal-content">
                       <div class="modal-body">

@@ -319,7 +319,7 @@ def list_purchases_for_receiving(request):
     return render(request, 'list-purchase_orders.html', context=subcontext)
 
 
-def list_receiving(request, id):
+def list_receiving(request, id, return_to):
     receivings = MaterialTransaction1.objects.filter(purchase_order__id=id)
     po = PurchaseOder.objects.get(id=id)
     status = po.status
@@ -327,6 +327,7 @@ def list_receiving(request, id):
         'pk': id,
         'receivings': receivings,
         'status': status,
+        'return_to': return_to,
 
     }
     return render(request, 'list-receiving.html', context=subcontext)
@@ -366,7 +367,7 @@ def create_receiving(request, id):
             else:
                 PurchaseOder.objects.filter(id=id).update(status='Partially Received')
             if 'Save and exit' in request.POST:
-                return redirect('orders:list-receiving', id=id)
+                return redirect('orders:list-receiving', id=id, return_to=None)
         else:
             print(receiving_formset.errors)
 
@@ -422,7 +423,7 @@ def create_receiving2(request, id):
             else:
                 PurchaseOder.objects.filter(id=id).update(status='Partially Received')
             if 'Save and exit' in request.POST:
-                return redirect('orders:list-receiving', id=id)
+                return redirect('orders:list-receiving', id=id, return_to=None)
         else:
             print(material_form.errors)
             print(material_lines_formset.errors)
@@ -451,7 +452,8 @@ def view_received(request, id):
     return render(request, 'view-receiving.html', context=subcontext)
 
 
-def view_purchase_order(request, id, flag):
+def view_purchase_order(request, id, flag, return_to):
+    # flag parameter is used to determine if the request if from purchase order screen or transactions screen
     purchase_order = PurchaseOder.objects.get(id=id)
     purchase_lines = PurchaseTransaction.objects.filter(purchase_order__id=id)
     print("HERE IS MY FLag", flag)
@@ -459,6 +461,7 @@ def view_purchase_order(request, id, flag):
         'po': purchase_order,
         'po_lines': purchase_lines,
         'flag': flag,
+        'return_to': return_to,
 
     }
     return render(request, 'view-po.html', context=subcontext)

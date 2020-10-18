@@ -199,9 +199,18 @@ for (i = 0; i < $('#id_salestransaction_set-TOTAL_FORMS').val(); i++) {
                 url: endpoint,
                 contentType: 'application/json',
                 success: function(data){
-                      document.getElementById(uom_id).value=data['uom']
-<!--                      document.getElementById("quantity_id").placeholder = "Type name here..";-->
-                      document.getElementById(price_id).value=data['avg_cost']
+                console.log("HEYYYYYYYYY")
+                  document.getElementById(uom_id).value=data['uom']
+                  if (location !== ""){
+                 for (i = 0; i < data['balance'].length; i++) {
+                      if (object.value == data['balance'][i]['item'] && location == data['balance'][i]['location'] ){
+                          document.getElementById(quantity_id).placeholder = data['balance'][i]['qnt'];
+                      };
+                    };
+                    }
+                     else {
+                    document.getElementById(quantity_id).placeholder = "";
+        }
                       if (document.getElementById(quantity_id).value){
                         myFunction(document.getElementById(quantity_id));
                       };
@@ -274,8 +283,7 @@ function grandTotal(){
 </script>
 <script>
 function inventory(object) {
-    console.log("Iam not hereeeeeeeee")
-    var str = object.id;
+=    var str = object.id;
     var res= str.split("-");
     var id_prefix = res[0]+'-'+res[1];
     item_id = id_prefix+'-'+'item';
@@ -293,7 +301,8 @@ function inventory(object) {
                       for (i = 0; i < data['balance'].length; i++) {
                       if (object.value == data['balance'][i]['location']){
                           document.getElementById(quantity_id).placeholder = data['balance'][i]['qnt'];
-                          document.getElementById(price_id).value=data['balance'][i]['unit_cost'];
+                        document.getElementById(price_id).value = data['balance'][i]['unit_cost'];
+
                       };
                     };
 
@@ -309,4 +318,5 @@ function inventory(object) {
 
     };
 </script>
+
 {% endblock js %}

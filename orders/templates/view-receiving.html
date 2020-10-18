@@ -10,7 +10,7 @@
       <h1>View Receiving</h1>
 
       <div class="text-zero top-right-button-container">
-        <a href="{% url 'orders:list-receiving' id=po.id %}">
+        <a href="{% url 'orders:list-receiving' id=po.id return_to='list' %}">
           <button type="button" class="btn btn-primary btn-lg top-right-button mr-1">BACK TO LIST</button>
         </a>
       </div>

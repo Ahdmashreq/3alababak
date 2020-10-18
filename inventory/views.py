@@ -103,7 +103,7 @@ def create_attribute_view(request):
 
 
 def list_products_view(request):
-    products_list = Product.objects.all()
+    products_list = Item.objects.all()
     productsContext = {
         'products_list': products_list
     }
@@ -421,8 +421,16 @@ def list_stoketake_approvals(request):
 
 def approve_stoke_view(request, id):
     stoke_obj = StokeTake.objects.get(id=id)
-    stoke_take_form = StokeTakeForm(update=True, instance=stoke_obj)
-    stoke_entry_inline_formset = stoke_entry_formset(instance=stoke_obj, form_kwargs={'approve': True})
+    stoke_entries = StokeEntry.objects.filter(stoke_take=stoke_obj)
+    entries = []
+    for stoke_entry in stoke_entries:
+        inventory = Inventory_Balance.objects.filter(item=stoke_entry.item, location=stoke_obj.location)
+        on_hand = inventory[0].qnt
+        category = stoke_entry.item.product.category
+        entries.append({'category': category, 'brand': stoke_entry.item.product.brand,
+                        'item': stoke_entry.item, 'uom': stoke_entry.item.uom, 'on_hand': on_hand,
+                        'quantity': stoke_entry.quantity})
+
     status = stoke_obj.status
 
     if request.method == 'POST':
@@ -439,8 +447,8 @@ def approve_stoke_view(request, id):
             messages.success(request, 'Stoke record sent back to stoke entry page')
         return redirect('inventory:list-stokes-for-approval')
 
-    sub_context = {'title': "Approve Stoke", 'stoke_entry_inlineformset': stoke_entry_inline_formset,
-                   'stoke_form': stoke_take_form, 'status': status}
+    sub_context = {'title': "Approve Stoke",
+                   'stoke_form': stoke_obj, 'status': status, 'stoke_entries': entries}
     return render(request, 'approve-stoke.html', context=sub_context)
 
 
@@ -561,8 +569,9 @@ def check_balance_difference(stoke_take):
         difference_quantity = on_hand_quantity - stoked_quantity
         if difference_quantity > 0:
             result.append({'item': item, 'type': 'out', 'quantity': abs(difference_quantity), 'location': location})
-        else:
+        elif difference_quantity < 0:
             result.append({'item': item, 'type': 'in', 'quantity': abs(difference_quantity), 'location': location})
+
     return result
 
 

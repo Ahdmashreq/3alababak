@@ -17,9 +17,9 @@ class Location(models.Model):
     phone_number = models.CharField(max_length=30, null=True, blank=True)
     landline = models.CharField(max_length=30, null=True, blank=True)
     number_of_products = models.IntegerField(null=True, blank=True)
-    manager_name = models.CharField(max_length=30)
+    manager_name = models.CharField(max_length=30,null=True, blank=True)
     manager_mail = models.EmailField(null=True, blank=True)
-    manager_phone_number = models.CharField(max_length=30)
+    manager_phone_number = models.CharField(max_length=30,null=True, blank=True)
 
     created_at = models.DateField(auto_now_add=True, null=True)
     last_updated_at = models.DateField(null=True, auto_now=True, auto_now_add=False)
