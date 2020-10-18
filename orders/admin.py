@@ -6,6 +6,11 @@ from orders.models import *
 class PurchaseTransactionInline(admin.TabularInline):
     model = PurchaseTransaction
 
+
+class MaterialTransactionLinesInline(admin.TabularInline):
+    model = MaterialTransactionLines
+
+
 @admin.register(PurchaseOder)
 class PurchaseOrderAdmin(admin.ModelAdmin):
 
@@ -29,3 +34,10 @@ class SalesOrderAdmin(admin.ModelAdmin):
 @admin.register(Inventory_Balance)
 class Inventory_Balance_Admin(admin.ModelAdmin):
     model = Inventory_Balance
+
+@admin.register(MaterialTransaction1)
+class MaterialTransaction1Admin(admin.ModelAdmin):
+    model = MaterialTransaction1
+    inlines = [
+        MaterialTransactionLinesInline,
+    ]
