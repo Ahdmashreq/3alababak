@@ -19,76 +19,178 @@
     text-align: right;
     overflow: hidden;
 }
+
 </style>
 {% endblock style  %}
 {% block body%}
 <div class="container-fluid">
-  <div class="row">
-    <div class="col-12">
-      <h1>{{title}}</h1>
-      <div class="text-zero top-right-button-container">
-        <a href="{% url 'inventory:list-products'%}"><button type="button" class="btn btn-primary btn-lg top-right-button mr-1">{% trans "BACK TO LIST" %}</button></a>
-      </div>
-      <div class="separator mb-5"></div>
-    </div>
-  </div>
-
-  <div class="card mb-12">
-    <div class="card-body">
-
-      <form method="POST">
-        {% csrf_token %}
-        <div class="form-row">
-          <div class="form-group col-md-6">
-            <label>Brand</label>
-            {{product_form.brand}}
-          </div>
-          <div class="form-group col-md-6">
-            <label>Category</label>
-            {{product_form.category}}
-          </div>
+    <div class="row">
+        <div class="col-12">
+            <h1>{{title}}</h1>
+            <div class="text-zero top-right-button-container">
+                <a href="{% url 'inventory:list-products'%}">
+                    <button type="button" class="btn btn-primary btn-lg top-right-button mr-1">{% trans "BACK TO LIST" %}</button>
+                </a>
+            </div>
+            <div class="separator mb-5"></div>
         </div>
-
-
-        <table class="data-table-scrollable">
-          {{ item_formset.management_form }}
-          {% for form in item_formset %}
-          {{ form.id }}
-          {% if forloop.first %}
-          <thead>
-            <tr>
-              {% for field in form.visible_fields %}
-              <th>{{ field.label|capfirst }}</th>
-              {% endfor %}
-            </tr>
-          </thead>
-          {% endif %}
-          <tr>
-            {% for field in form.visible_fields %}
-            <td>
-              {# exclude the hidden fields in the form #}
-              {% if forloop.first %}
-              {% for hidden in form.hidden_fields %}
-              {{ hidden }}
-              {% endfor %}
-              {% endif %}
-              {{ field.errors.as_ul }}
-              {{ field }}
-            </td>
-            {% endfor %}
-          </tr>
-          <br>
-          {% endfor %}
-        </table>
-         <div class="submit-row">
-          <button type="submit" class="btn btn-primary btn-lg mt-3" name ='Save'>Save</button>
-          <button type="submit" class="btn btn-primary btn-lg mt-3" name ='Save and exit'>Save and Exit</button>
-          <button type="submit" class="btn btn-primary btn-lg mt-3" name ='Save and add'>Save and Add</button>
-        </div>
-      </form>
     </div>
-  </div>
+
+    <div class="card mb-12">
+        <div class="card-body">
+            <h2>Item Info</h2>
+            <div class="separator mb-5"></div>
+
+            <form method="POST">
+                {% csrf_token %}
+                <div class="form-row">
+                    <div class="form-group col-md-6">
+                        <label>Brand</label>
+                        {{product_form.brand}}
+                    </div>
+                    <div class="form-group col-md-6">
+                        <label>Category</label>
+                        {{product_form.category}}
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group col-md-12">
+                        <label>Item Name</label>
+                        {{item_form.name}}
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group col-md-6">
+                        <label>SKU</label>
+                        {{item_form.sku}}
+                    </div>
+                    <div class="form-group col-md-6">
+                        <label>Barcode</label>
+                        {{item_form.barcode}}
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group col-md-6">
+                        <label>UOM</label>
+                        {{item_form.uom}}
+                    </div>
+                </div>
+                <div class="separator mb-5"></div>
+
+                <h2>Item Attributes</h2>
+                <div class="separator mb-5"></div>
+
+                <div class="row" style="margin-left:0px;">
+                    <div class="col-md-12">
+                        <div class="bgc-white bd bdrs-3 p-20 mB-20">
+                            <div id="attribute_set">
+                                <div class="form-row">
+                                    <div class="form-group col-md-4">
+                                        <label>{% trans "Attribute" %}</label>
+                                    </div>
+                                    <div class="form-group col-md-1">
+                                        <label>{% trans "Value" %}</label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {{ item_attribute_formset.management_form }}
+                {% for form in item_attribute_formset %}
+                {{ form.id }}
+                <!--            {{ form.media }}-->
+                <div class="form-row" >
+                    <div class="form-group col-md-4">
+                        {{form.attribute}}
+                    </div>
+                    <div class="form-group col-md-1">
+                        {{ form.value}}
+                    </div>
+                </div>
+                {% endfor %}
+                <div id="empty_form" style="display:none">
+                    <table class='no_error'>
+                        <div class="form-row">
+                            <!--                {{ item_attribute_formset.empty_form.media }}-->
+
+                            <div class="form-group col-md-4">
+                                {{ item_attribute_formset.empty_form.attribute}}
+                            </div>
+                            <div class="form-group col-md-1" style="display:block">
+                                <input type="text" name="text_value" maxlength="30" class="form-control" id="id_{{item_attribute_formset.empty_form.prefix}}_text">
+                            </div>
+                            <div class="form-group col-md-1" style="display:block">
+                                <input type="number" name="number_value" maxlength="30" class="form-control" id="id_{{item_attribute_formset.empty_form.prefix}}_number">
+                            </div>
+                            <div class="custom-switch-primary-inverse custom-switch-small pl-1" data-placement="left" title="" data-original-title="Dark Mode" style="display:block">
+                                <input class="custom-switch-input" id="id_{{item_attribute_formset.empty_form.prefix}}_bool" type="checkbox" checked="checked">
+<!--                                <label class="custom-switch-btn" for="switchDark"></label>-->
+                            </div>
+
+                </div>
+                    </table>
+                </div>
+
+                <button type="button" id="add_item" class="btn cur-p btn-success">{% trans "Add Attribute "%}
+                </button>
+
+                <div class="submit-row">
+                    <button type="submit" class="btn btn-primary btn-lg mt-3" name='Save'>Save</button>
+                    <button type="submit" class="btn btn-primary btn-lg mt-3" name='Save and exit'>Save and Exit
+                    </button>
+                    <button type="submit" class="btn btn-primary btn-lg mt-3" name='Save and add'>Save and Add</button>
+                </div>
+            </form>
+        </div>
+    </div>
 
 </div>
 
 {% endblock body%}
+{% block js %}
+
+<script>
+  $('#add_item').click(function() {
+  console.log("heloool")
+    var form_idx = $('#id_itemattributevalue_set-TOTAL_FORMS').val();
+    $('#attribute_set').append($('#empty_form').html().replace(/__prefix__/g, form_idx));
+    $('#id_itemattributevalue_set-TOTAL_FORMS').val(parseInt(form_idx) + 1);
+    var current_indx = Number(form_idx)
+
+
+
+
+
+  });
+
+</script>
+<script>
+function myFunction(object) {
+    console.log("Byyeeee")
+    var str = object.id
+    var res= str.split("-")
+    number_id = res[0]+'-'+res[1]+'_number'
+    text_id =  res[0]+'-'+res[1]+'_text'
+    bool_id =  res[0]+'-'+res[1]+'_bool'
+    type = 'text'
+    if (type =='text'){
+
+      document.getElementById(number_id).style.display = 'none';
+            document.getElementById(bool_id).style.display = 'none';
+
+
+    }
+    else {
+          document.getElementById(text_id).style.display = 'none';
+
+    }
+
+
+};
+
+
+
+</script>
+
+{% endblock js %}

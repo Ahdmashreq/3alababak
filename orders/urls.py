@@ -22,5 +22,7 @@ urlpatterns = [
     path('po/receipt/<id>', views.view_received, name='view-rec'),
     path('po/view/<id>/<flag>/<return_to>', views.view_purchase_order, name='view-po'),
     path('po/view/<id>', views.view_sale_order, name='view-so'),
+    path('transactions/list/all', views.list_all_transactions, name='list-transactions'),
+    path('transaction-lines/list/<int:id>', views.view_transaction_lines, name='list-transaction-lines'),
 
 ]

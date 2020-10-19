@@ -60,7 +60,7 @@
             </div>
              <div class="form-group col-md-3">
                 <label>Grand Total (EGP)</label>
-                {{so_form.global_price}}
+                {{so_form.subtotal_price}}
             </div>
         </div>
       <div class="separator mb-5"></div>
@@ -180,7 +180,7 @@ for (i = 0; i < $('#id_salestransaction_set-TOTAL_FORMS').val(); i++) {
     $('#id_salestransaction_set-'+i+'-total_price').prop('disabled', false);
 
     }
-         $('#id_global_price').prop('disabled', false);
+         $('#id_subtotal_price').prop('disabled', false);
 });
 </script>
 <script>
@@ -264,7 +264,7 @@ function grandTotal(){
         };
      };
      console.log(grand_total)
-    document.getElementById("id_global_price").value = grand_total;
+    document.getElementById("id_subtotal_price").value = grand_total;
 
 }
 </script>
@@ -283,7 +283,7 @@ function grandTotal(){
 </script>
 <script>
 function inventory(object) {
-=    var str = object.id;
+   var str = object.id;
     var res= str.split("-");
     var id_prefix = res[0]+'-'+res[1];
     item_id = id_prefix+'-'+'item';

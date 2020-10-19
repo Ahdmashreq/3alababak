@@ -1,6 +1,7 @@
 from django import forms
 from django.forms import inlineformset_factory, modelformset_factory
-from inventory.models import (Category, Brand, Attribute, Uom, Item, Product, StokeTake, StokeEntry, Uom, UomCategory)
+from inventory.models import (Category, Brand, Attribute, Uom, Item, Product, StokeTake, StokeEntry, Uom, UomCategory,
+                              ItemAttributeValue)
 from orders.models import Inventory_Balance
 from mptt.forms import TreeNodeChoiceField
 
@@ -56,7 +57,30 @@ class AttributeForm(forms.ModelForm):
                 self.fields[field].widget.attrs['class'] = 'form-control'
 
 
+class ItemAttributeForm(forms.ModelForm):
+    text_field = forms.CharField(max_length=100, required=False)
+    number_field = forms.DecimalField(max_digits=200, decimal_places=2)
+    date_field = forms.DateField(required=False)
+
+    class Meta:
+        model = ItemAttributeValue
+        fields = '__all__'
+        exclude = ('value', 'created_at', 'last_updated_at', 'created_by', 'last_updated_by')
+
+    def __init__(self, *args, **kwargs):
+        super(ItemAttributeForm, self).__init__(*args, **kwargs)
+        self.fields['attribute'].widget.attrs['onchange'] = 'myFunction(this)'
+
+        for field in self.fields:
+            if self.fields[field].widget.input_type == 'checkbox':
+                self.fields[field].widget.attrs['class'] = 'form-check-input'
+            else:
+                self.fields[field].widget.attrs['class'] = 'form-control'
+
+
 attribute_model_formset = modelformset_factory(Attribute, form=AttributeForm, extra=3, can_delete=False)
+item_attribute_model_formset = inlineformset_factory(Item, ItemAttributeValue, form=ItemAttributeForm, extra=0,
+                                                     can_delete=False)
 
 
 class UOMForm(forms.ModelForm):
@@ -100,13 +124,18 @@ class ItemForm(forms.ModelForm):
     class Meta:
         model = Item
         fields = '__all__'
-        exclude = ('company', 'created_at', 'last_updated_at', 'created_by', 'last_updated_by')
+        exclude = ('product', 'company', 'created_at', 'last_updated_at', 'created_by', 'last_updated_by')
 
     def __init__(self, *args, **kwargs):
         super(ItemForm, self).__init__(*args, **kwargs)
+        for field in self.fields:
+            if self.fields[field].widget.input_type == 'checkbox':
+                self.fields[field].widget.attrs['class'] = 'form-check-input'
+            else:
+                self.fields[field].widget.attrs['class'] = 'form-control'
 
 
-product_item_inlineformset = inlineformset_factory(Product, Item, form=ItemForm, extra=3, can_delete=False)
+# product_item_inlineformset = inlineformset_factory(Product, Item, form=ItemForm, extra=3, can_delete=False)
 
 
 class StokeTakeForm(forms.ModelForm):
@@ -138,7 +167,7 @@ class StokeTakeForm(forms.ModelForm):
 
     def clean(self):
         cleaned_data = super(StokeTakeForm, self).clean()
-        item_length = len(Inventory_Balance.objects.filter(location = cleaned_data['location'] ))
+        item_length = len(Inventory_Balance.objects.filter(location=cleaned_data['location']))
         if cleaned_data['location'] is None:
             self.add_error('location', 'Location is required')
         else:

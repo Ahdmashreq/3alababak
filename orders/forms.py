@@ -103,8 +103,8 @@ class SaleOrderCreationForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         super(SaleOrderCreationForm, self).__init__(*args, **kwargs)
         self.fields['sale_code'].widget.attrs['readonly'] = True
-        self.fields['global_price'].widget.attrs['readonly'] = True
-        self.fields['global_price'].widget.attrs['disabled'] = True
+        self.fields['subtotal_price'].widget.attrs['readonly'] = True
+        self.fields['subtotal_price'].widget.attrs['disabled'] = True
 
         for field in self.fields:
             self.fields[field].widget.attrs['class'] = 'form-control'

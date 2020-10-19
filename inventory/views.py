@@ -5,8 +5,9 @@ from django.shortcuts import render, redirect
 from django.contrib import messages
 from inventory.models import (Category, Brand, Product, Attribute, Item, Uom, StokeTake, StokeEntry, UomCategory)
 from inventory.forms import (CategoryForm, category_model_formset, BrandForm, brand_model_formset,
-                             AttributeForm, attribute_model_formset, ProductForm, product_item_inlineformset,
-                             uom_formset, StokeTakeForm, UOMForm, stoke_entry_formset, StokeEntryForm, UomCategoryForm)
+                             AttributeForm, attribute_model_formset, ProductForm,
+                             uom_formset, StokeTakeForm, UOMForm, stoke_entry_formset, StokeEntryForm, UomCategoryForm,
+                             ItemForm, item_attribute_model_formset)
 from orders.models import Inventory_Balance, MaterialTransaction1, MaterialTransactionLines
 import random
 from orders.utils import get_seq
@@ -73,7 +74,7 @@ def create_brand_view(request):
 
 
 def update_brand_view(request, brand_id):
-    required_brand = Brand.objects.get(id= brand_id)
+    required_brand = Brand.objects.get(id=brand_id)
     brand_form = BrandForm(instance=required_brand)
     if request.method == 'POST':
         brand_form = BrandForm(request.POST, instance=required_brand)
@@ -81,21 +82,19 @@ def update_brand_view(request, brand_id):
             brand_obj = brand_form.save(commit=False)
             brand_obj.last_updated_by = request.user
             brand_obj.save()
-            return redirect('inventory:list-brands')
             if 'Save and exit' in request.POST:
                 return redirect('inventory:list-brands')
-            elif 'Save and add' in request.POST:
-                return redirect('inventory:create-brand')
+
     categoryContext = {
         'brand_form': brand_form,
         'title': 'Update {}'.format(required_brand),
-        'update_flag':True,
+        'update_flag': True,
     }
     return render(request, 'create-brand.html', context=categoryContext)
 
 
 def delete_brand_view(request, brand_id):
-    required_brand = Brand.objects.get(id= brand_id)
+    required_brand = Brand.objects.get(id=brand_id)
     try:
         required_brand.delete()
     except ProtectedError:
@@ -144,16 +143,18 @@ def list_products_view(request):
 
 def create_product_item_view(request):
     product_form = ProductForm()
-    item_formset = product_item_inlineformset(queryset=Item.objects.none())
+    item_form = ItemForm()
+    item_attribute_form = item_attribute_model_formset()
+    print("^^^^^^^^^^^^^^^",item_attribute_form.empty_form.__dir__())
     if request.method == 'POST':
         product_form = ProductForm(request.POST)
-        item_formset = product_item_inlineformset(request.POST)
+        item_formset = item_attribute_form(request.POST)
         if product_form.is_valid() and item_formset.is_valid():
             product_obj = product_form.save(commit=False)
             product_obj.company = request.user.company
             product_obj.created_by = request.user
             product_obj.save()
-            item_formset = product_item_inlineformset(request.POST, instance=product_obj)
+            item_formset = item_attribute_form(request.POST, instance=product_obj)
             if item_formset.is_valid():
                 item_obj = item_formset.save(commit=False)
                 for form in item_obj:
@@ -164,8 +165,10 @@ def create_product_item_view(request):
                 elif 'Save and add' in request.POST:
                     return redirect('inventory:create-product')
     attributeContext = {
+        'title': "New Item",
         'product_form': product_form,
-        'item_formset': item_formset,
+        'item_form': item_form,
+        'item_attribute_formset':item_attribute_form,
 
     }
     return render(request, 'create-product-item.html', context=attributeContext)
@@ -243,6 +246,39 @@ def list_uom_view(request):
         'uom_list': uom_list
     }
     return render(request, 'list-uom.html', context=uom_context)
+
+
+def update_uom_view(request, id):
+    uom = Uom.objects.get(id=id)
+    uom_form = UOMForm(instance=uom)
+    if request.method == 'POST':
+        uom_form = UOMForm(request.POST, instance=uom)
+        if uom_form.is_valid():
+            uom_obj = uom_form.save(commit=False)
+            uom_obj.last_updated_by = request.user
+            uom_obj.save()
+            if 'Save and exit' in request.POST:
+                return redirect('inventory:list-uom')
+
+        else:
+            print(uom_form.errors)
+    uom_context = {
+        'uom_from': uom_form,
+        'title': 'Update UOM',
+        'update': True,
+
+    }
+    return render(request, 'create-uom.html', context=uom_context)
+
+
+def delete_uom_view(request, id):
+    required_uom = Uom.objects.get(id=id)
+    try:
+        required_uom.delete()
+    except ProtectedError:
+        error_message = "This object can't be deleted!!"
+        messages.error(request, error_message)
+    return redirect('inventory:list-uom')
 
 
 def create_stoketake_view(request):
@@ -630,6 +666,8 @@ def create_stoke_transaction(stoke_take, user):
         except BaseException as e:
             print(e)
             return False
+    else:
+        return True
 
 # def update_items_quantity(item_location_list: list):
 #     items = []

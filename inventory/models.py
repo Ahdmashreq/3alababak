@@ -1,6 +1,6 @@
 from django.db import models
 from django.conf import settings
-#from djmoney.models.fields import MoneyField
+# from djmoney.models.fields import MoneyField
 from account.models import Company
 from location.models import Location
 from mptt.models import MPTTModel
@@ -93,7 +93,8 @@ class Product(models.Model):
 class Attribute(models.Model):
     company = models.ForeignKey(Company, on_delete=models.CASCADE, )
     name = models.CharField(max_length=50)
-    display_name = models.CharField(max_length=50)
+    att_type = models.CharField(max_length=50,  null=True, blank=True,choices=[('text', 'text'), ('number', 'number'), ('date', 'date')])
+    display_name = models.CharField(max_length=50, null=True, blank=True)
     created_at = models.DateField(auto_now_add=True, null=True)
     last_updated_at = models.DateField(null=True, auto_now=True, auto_now_add=False)
     created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, null=True,
@@ -118,16 +119,13 @@ class ProductAttribute(models.Model):
 
 
 class Item(models.Model):
+    company = models.ForeignKey(Company, on_delete=models.CASCADE, blank=True, null=True, )
     product = models.ForeignKey(Product, on_delete=models.CASCADE, )
     uom = models.ForeignKey(Uom, on_delete=models.CASCADE, blank=True, null=True, related_name='uom')
     name = models.CharField(max_length=30)
     description = models.CharField(max_length=30, blank=True, null=True)
-    #avg_cost = MoneyField(max_digits=14, decimal_places=2, default_currency='EGP')
-    #selling_price = MoneyField(max_digits=14, decimal_places=2, default_currency='EGP')
-    sku = models.CharField(max_length=30)
-    barcode = models.CharField(max_length=30)
-    tax = models.BooleanField(max_length=30)
-
+    sku = models.CharField(max_length=30, blank=True, null=True)
+    barcode = models.CharField(max_length=30, blank=True, null=True)
     created_at = models.DateField(auto_now_add=True, null=True)
     last_updated_at = models.DateField(null=True, auto_now=True, auto_now_add=False)
     created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, null=True,

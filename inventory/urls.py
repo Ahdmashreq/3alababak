@@ -18,6 +18,8 @@ urlpatterns = [
                path('stoke/list/', views.list_stoketake_view, name='list-stokes'),
                path('stoke/create/', views.create_stoketake_view, name='create-stoke'),
                path('uom/create/', views.create_uom_view, name='create-uom'),
+               path('uom/update/<int:id>', views.update_uom_view, name='update-uom'),
+               path('uom/delete/<int:id>', views.delete_uom_view, name='delete-uom'),
                path('uom/list/', views.list_uom_view, name='list-uom'),
                path('uom-category/create/', views.create_uom_category, name='create-uom-category'),
                path('uom-category/list/', views.list_uom_category, name='list-uom-category'),
@@ -31,3 +33,4 @@ urlpatterns = [
                path('stoke_take/approval/list', views.list_stoketake_approvals, name='list-stokes-for-approval'),
                path('stoke_take/approve/<id>', views.approve_stoke_view, name='approve-stoke'),
 ]
+

@@ -1,0 +1,70 @@
+{% extends 'master.html' %}
+{% load static %}
+{% load l10n %}
+{% load i18n %}
+
+{% block body%}
+<div class="container-fluid">
+  <div class="row">
+    <div class="col-12">
+      <h1>All Transactions</h1>
+
+      <div class="separator mb-5"></div>
+    </div>
+  </div>
+
+  <div class="row mb-4">
+    <div class="col-12 mb-4">
+      <div class="card">
+        <div class="card-body">
+          <div id="DataTables_Table_0_wrapper" class="dataTables_wrapper container-fluid dt-bootstrap4 no-footer">
+            <div class="row view-filter">
+              <div class="col-sm-12">
+              </div>
+            </div>
+            <table class="data-table data-table-feature8 dataTable no-footer" id="DataTables_Table_0" role="grid" aria-describedby="DataTables_Table_0_info">
+              <thead>
+                <tr role="row">
+                  <th class="sorting_asc" tabindex="0" aria-controls="DataTables_Table_0" rowspan="1" colspan="1" aria-sort="ascending">#</th>
+                  <th class="sorting" tabindex="0" aria-controls="DataTables_Table_0" rowspan="1" colspan="1" style="width: 175.4px;" >{% trans "Transaction Code" %}</th>
+                  <th class="sorting" tabindex="0" aria-controls="DataTables_Table_0" rowspan="1" colspan="1" style="width: 160.4px;">{% trans "Date" %}</th>
+                  <th class="sorting" tabindex="0" aria-controls="DataTables_Table_0" rowspan="1" colspan="1" style="width: 170.4px;">{% trans "Transaction Type" %}</th>
+                  <th class="sorting_asc" tabindex="0" aria-controls="DataTables_Table_0" rowspan="1" colspan="1" aria-sort="ascending" aria-label="Name: activate to sort column descending" style="width: 175.4px;">{% trans "Item" %}</th>
+                  <th class="sorting" tabindex="0" aria-controls="DataTables_Table_0" rowspan="1" colspan="1" aria-label="Position: activate to sort column ascending" style="width: 263.4px;">{% trans "Location" %}</th>
+                  <th class="sorting" tabindex="0" aria-controls="DataTables_Table_0" rowspan="1" colspan="1" aria-label="Position: activate to sort column ascending" style="width: 200.4px;">{% trans "Quantity" %}</th>
+                  <th class="sorting" tabindex="0" aria-controls="DataTables_Table_0" rowspan="1" colspan="1" aria-label="Position: activate to sort column ascending" style="width: 200.4px;">{% trans "Direction" %}</th>
+
+
+                </tr>
+              </thead>
+              <tbody>
+                {% for transaction in transactions %}
+                <tr role="row" class="odd">
+                  <td class="sorting_1">{{ forloop.counter }}</td>
+                  <td><a href="{% url 'orders:list-transaction-lines' id=transaction.material_transaction.id %}">{{ transaction.material_transaction.transaction_code }}</a></td>
+                  <td>{{ transaction.material_transaction.date }}</td>
+                  {% if transaction.material_transaction.purchase_order %}
+                    <td>Purchase Order</td>
+                  {% elif transaction.material_transaction.sale_order %}
+                    <td>Sale Order</td>
+                  {% elif transaction.material_transaction.stoke_take %}
+                    <td>Stoke Take</td>
+                  {% endif %}
+                  <td class="sorting_1">{{ transaction.item}}</td>
+                  <td>{{ transaction.location }}</td>
+                  <td>{{ transaction.quantity }}</td>
+                  <td>{{ transaction.transaction_type }}</td>
+
+                </tr>
+
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+{% endblock body%}

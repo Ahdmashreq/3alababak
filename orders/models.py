@@ -141,6 +141,17 @@ class MaterialTransaction1(models.Model):
     def __str__(self):
         return self.transaction_code
 
+    @property
+    def transaction_type(self):
+        t_type = ''
+        if self.purchase_order:
+            t_type = 'Receiving PO'
+        elif self.stoke_take:
+            t_type = 'Stoke take'
+        elif self.sale_order:
+            t_type = 'Sale Order'
+        return t_type
+
 
 class MaterialTransactionLines(models.Model):
     material_transaction = models.ForeignKey(MaterialTransaction1, on_delete=models.CASCADE, blank=True, null=True)
@@ -163,7 +174,8 @@ class MaterialTransactionLines(models.Model):
 @receiver(post_save, sender=MaterialTransactionLines)
 def create_or_update_inventory_balance(sender, instance, *args, **kwargs):
     if instance.material_transaction.purchase_order is not None:
-        po_unit_cost = PurchaseTransaction.objects.filter(purchase_order=instance.material_transaction.purchase_order).get(item=instance.item)
+        po_unit_cost = PurchaseTransaction.objects.filter(
+            purchase_order=instance.material_transaction.purchase_order).get(item=instance.item)
         try:
             inventory_item_obj = Inventory_Balance.objects.get(item=instance.item, location=instance.location)
             inventory_item_obj.qnt += instance.quantity

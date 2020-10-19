@@ -367,7 +367,7 @@ def create_receiving(request, id):
             else:
                 PurchaseOder.objects.filter(id=id).update(status='Partially Received')
             if 'Save and exit' in request.POST:
-                return redirect('orders:list-receiving', id=id, return_to=None)
+                return redirect('orders:list-receiving', id=id, return_to='list')
         else:
             print(receiving_formset.errors)
 
@@ -423,7 +423,7 @@ def create_receiving2(request, id):
             else:
                 PurchaseOder.objects.filter(id=id).update(status='Partially Received')
             if 'Save and exit' in request.POST:
-                return redirect('orders:list-receiving', id=id, return_to=None)
+                return redirect('orders:list-receiving', id=id, return_to='list')
         else:
             print(material_form.errors)
             print(material_lines_formset.errors)
@@ -476,3 +476,23 @@ def view_sale_order(request, id):
 
     }
     return render(request, 'view-so.html', context=subcontext)
+
+
+def list_all_transactions(request):
+    transactions = MaterialTransaction1.objects.all()
+    transaction_lines = MaterialTransactionLines.objects.all()
+
+    context = {
+        'transactions': transaction_lines,
+    }
+    return render(request, 'list-transactions.html', context=context)
+
+
+def view_transaction_lines(request, id):
+    transaction_lines = MaterialTransactionLines.objects.filter(material_transaction=id)
+    transaction = MaterialTransaction1.objects.get(id=id)
+    context = {
+        'transactions_line': transaction_lines,
+        'transaction': transaction,
+    }
+    return render(request, 'list-transactions-lines.html', context=context)

@@ -9,7 +9,7 @@
     <div class="col-12">
       <h1>Units of Measurement</h1>
       <div class="text-zero top-right-button-container">
-        <a href="{% url 'inventory:create-uom'%}"><button type="button" class="btn btn-primary btn-lg top-right-button mr-1">{% trans "ADD NEW" %}</button></a>
+        <a href="{% url 'inventory:create-uom' %}"><button type="button" class="btn btn-primary btn-lg top-right-button mr-1">{% trans "ADD NEW" %}</button></a>
       </div>
       <div class="separator mb-5"></div>
     </div>
@@ -47,7 +47,7 @@
                         Actions
                       </a>
                       <div class="dropdown-menu" aria-labelledby="dropdownMenuLink" x-placement="top-start" style="position: absolute; will-change: transform; top: 0px; left: 0px; transform: translate3d(0px, -2px, 0px);">
-                        <a class="dropdown-item" href="#">{% trans "Update" %}</a>
+                        <a class="dropdown-item" href="{% url 'inventory:update-uom' id=uom.id %}">{% trans "Update" %}</a>
                         <a class="dropdown-item" href="#" data-toggle="modal" data-target="#delete-modal{{uom.pk}}">{% trans "Delete" %}</a>
                       </div>
                     </div>
@@ -61,7 +61,7 @@
                       </div>
                       <div class="modal-footer">
                         <button type="button" class="btn btn-secondary" data-dismiss="modal">{% trans "No" %}</button>
-                        <a href="#" class="btn btn-danger" type="button">{% trans "Delete" %}</a>
+                        <a href="{% url 'inventory:delete-uom' id=uom.id %}" class="btn btn-danger" type="button">{% trans "Delete" %}</a>
                       </div>
                     </div>
                   </div>
