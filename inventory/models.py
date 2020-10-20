@@ -77,9 +77,6 @@ class Product(models.Model):
     brand = models.ForeignKey(Brand, on_delete=models.CASCADE, blank=True, null=True)
     category = TreeForeignKey(Category, on_delete=models.CASCADE, null=True, blank=True,
                               related_name='product_category')
-    # name = models.CharField(max_length=30)
-    # description = models.CharField(max_length=30, blank=True, null=True)
-
     created_at = models.DateField(auto_now_add=True, null=True)
     last_updated_at = models.DateField(null=True, auto_now=True, auto_now_add=False)
     created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, null=True,
