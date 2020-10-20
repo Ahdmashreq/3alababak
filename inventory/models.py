@@ -93,7 +93,8 @@ class Product(models.Model):
 class Attribute(models.Model):
     company = models.ForeignKey(Company, on_delete=models.CASCADE, )
     name = models.CharField(max_length=50)
-    att_type = models.CharField(max_length=50,  null=True, blank=True,choices=[('text', 'text'), ('number', 'number'), ('date', 'date')])
+    att_type = models.CharField(max_length=50, null=True, blank=True,
+                                choices=[('text', 'text'), ('number', 'number'), ('date', 'date'), ('bool', 'bool')])
     display_name = models.CharField(max_length=50, null=True, blank=True)
     created_at = models.DateField(auto_now_add=True, null=True)
     last_updated_at = models.DateField(null=True, auto_now=True, auto_now_add=False)

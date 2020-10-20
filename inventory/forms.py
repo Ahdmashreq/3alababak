@@ -58,10 +58,7 @@ class AttributeForm(forms.ModelForm):
 
 
 class ItemAttributeForm(forms.ModelForm):
-    text_field = forms.CharField(max_length=100, required=False)
-    number_field = forms.DecimalField(max_digits=200, decimal_places=2)
-    date_field = forms.DateField(required=False)
-
+    temp_value = forms.CharField(max_length=30, required=False)
     class Meta:
         model = ItemAttributeValue
         fields = '__all__'
@@ -72,8 +69,10 @@ class ItemAttributeForm(forms.ModelForm):
         self.fields['attribute'].widget.attrs['onchange'] = 'myFunction(this)'
 
         for field in self.fields:
-            if self.fields[field].widget.input_type == 'checkbox':
-                self.fields[field].widget.attrs['class'] = 'form-check-input'
+            # if self.fields[field].widget.input_type == 'checkbox':
+            #     self.fields[field].widget.attrs['class'] = 'form-check-input'
+            if self.fields[field].widget.input_type == 'select':
+                self.fields[field].widget.attrs['class'] = 'form-control  custom-select'
             else:
                 self.fields[field].widget.attrs['class'] = 'form-control'
 
@@ -114,8 +113,9 @@ class ProductForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         super(ProductForm, self).__init__(*args, **kwargs)
         for field in self.fields:
-            if self.fields[field].widget.input_type == 'checkbox':
-                self.fields[field].widget.attrs['class'] = 'form-check-input'
+
+            if self.fields[field].widget.input_type == 'select':
+                self.fields[field].widget.attrs['class'] = 'form-control  custom-select'
             else:
                 self.fields[field].widget.attrs['class'] = 'form-control'
 
@@ -131,6 +131,8 @@ class ItemForm(forms.ModelForm):
         for field in self.fields:
             if self.fields[field].widget.input_type == 'checkbox':
                 self.fields[field].widget.attrs['class'] = 'form-check-input'
+            elif self.fields[field].widget.input_type == 'select':
+                self.fields[field].widget.attrs['class'] = 'form-control  custom-select'
             else:
                 self.fields[field].widget.attrs['class'] = 'form-control'
 

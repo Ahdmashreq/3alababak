@@ -1,0 +1,87 @@
+{% extends 'master.html' %}
+{% load static %}
+{% load l10n %}
+{% load i18n %}
+
+{% block body %}
+<div class="container-fluid">
+  <div class="row">
+    <div class="col-12">
+      <h1>View Item</h1>
+
+      <div class="text-zero top-right-button-container">
+              <a href="{% url 'inventory:list-products'%}"><button type="button" class="btn btn-primary btn-lg top-right-button mr-1">BACK TO ITEM LIST</button></a>
+      </div>
+
+      <div class="separator mb-5"></div>
+    </div>
+  </div>
+  <div class="card mb-4">
+        <div class="card-body">
+             <div class="row">
+                 <div class="col-12">
+             <h2> Item Details</h2>
+                      <div class="separator mb-5"></div>
+                 </div>
+             </div>
+          <div class="form-row">
+              <div class="form-group col-md-6">
+                <b>Category: </b>
+                {{item.product.category}}
+              </div>
+              <div class="form-group col-md-6">
+                <b>Brand: </b>
+                {{item.product.brand}}
+              </div>
+               <div class="form-group col-md-6">
+                <b>Name: </b>
+                {{item.name}}
+              </div>
+              <div class="form-group col-md-6">
+                <b>SKU:</b>
+                {{item.sku}}
+              </div>
+                 <div class="form-group col-md-6">
+                <b>Barcode:</b>
+                {{item.barcode}}
+              </div>
+                 <div class="form-group col-md-6">
+                <b>UOM:</b>
+                {{item.uom}}
+              </div>
+
+            </div>
+           <div class="separator mb-5"></div>
+                <h2>Item Attributes</h2>
+                <div class="separator mb-5"></div>
+          <table class="table table-bordered" id="DataTables_Table_0" role="grid" aria-describedby="DataTables_Table_0_info">
+              <thead>
+                <tr role="row">
+                  <th class="sorting_asc" tabindex="0" aria-controls="DataTables_Table_0" rowspan="1" colspan="1" aria-sort="ascending" aria-label="Name: activate to sort column descending" style="width: 155.4px;">{% trans "Attribute" %}</th>
+                  <th class="sorting" tabindex="0" aria-controls="DataTables_Table_0" rowspan="1" colspan="1" aria-label="Position: activate to sort column ascending" style="width: 263.4px;">{% trans "Value" %}</th>
+
+                </tr>
+              </thead>
+              <tbody>
+              {% for attribute in attributes %}
+                <tr role="row" class="odd">
+                  <td class="sorting_1">{{ attribute.attribute}}</td>
+                    {% if attribute.attribute.att_type == 'bool' %}
+                        {% if attribute.value == 'on' %}
+                            <td>&#10003;</td>
+                        {% else %}
+                           <td>&times;</td>
+                        {% endif %}
+                    {% else %}
+                    <td>{{attribute.value}}</td>
+                    {% endif %}
+
+                </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+
+     </div>
+  </div>
+</div>
+{% endblock body %}

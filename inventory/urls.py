@@ -13,8 +13,11 @@ urlpatterns = [
                path('brand/delete/<int:brand_id>/', views.delete_brand_view, name='delete-brand'),
                path('attribute/list/', views.list_attributes_view, name='list-attributes'),
                path('attribute/create/', views.create_attribute_view, name='create-attribute'),
+               path('attribute/get-type/<id>', views.get_attribute_type, name='get-attribute-type'),
                path('product/list/', views.list_products_view, name='list-products'),
                path('product/create/', views.create_product_item_view, name='create-product'),
+               path('product/view/<int:id>', views.view_item, name='view-item'),
+               path('product/update/<int:id>', views.update_item, name='update-item'),
                path('stoke/list/', views.list_stoketake_view, name='list-stokes'),
                path('stoke/create/', views.create_stoketake_view, name='create-stoke'),
                path('uom/create/', views.create_uom_view, name='create-uom'),
@@ -32,5 +35,7 @@ urlpatterns = [
                path('stoke_take/view/<int:id>', views.view_stoke, name='print-stoke'),
                path('stoke_take/approval/list', views.list_stoketake_approvals, name='list-stokes-for-approval'),
                path('stoke_take/approve/<id>', views.approve_stoke_view, name='approve-stoke'),
+
+
 ]
 

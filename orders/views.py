@@ -1,7 +1,6 @@
 from datetime import date
 
 from django.db.models import Q
-from django.forms import model_to_dict
 from django.shortcuts import render, redirect
 from orders.forms import (PurchaseTransactionCreationForm,
                           PurchaseOrderCreationForm, ReceivingTransactionCreation_formset,
@@ -14,16 +13,11 @@ from orders.models import PurchaseOder, SalesOrder, MaterialTransaction, Purchas
 from inventory.models import Item, Uom
 from django.contrib import messages
 from json import dumps
-from rest_framework import serializers
-# from django.core import serializers
-from django.http import HttpResponse
-from rest_framework.renderers import JSONRenderer
-from rest_framework.parsers import JSONParser
-import json
+
 from dal import autocomplete
 from moneyed import Money, EGP
 import random
-from orders.utils import get_seq
+from orders.utils import get_seq, ItemSerializer, JSONResponse
 
 
 def create_purchase_order_view(request):
@@ -250,28 +244,6 @@ def delete_sale_order_view(request, id):
         return redirect('orders:list-so')
     else:
         print("item not deleted")
-
-
-class JSONResponse(HttpResponse):
-
-    def __init__(self, data, **kwargs):
-        content = JSONRenderer().render(data)
-        kwargs['content_type'] = 'application/json'
-        super(JSONResponse, self).__init__(content, **kwargs)
-
-
-class balanceField(serializers.RelatedField):
-    def to_representation(self, data):
-        return model_to_dict(data)
-
-
-class ItemSerializer(serializers.ModelSerializer):
-    uom = serializers.StringRelatedField(many=False)
-    balance = balanceField(many=True, read_only=True)
-
-    class Meta:
-        model = Item
-        fields = ('uom', 'balance',)
 
 
 def get_item(request, id):

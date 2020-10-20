@@ -20,6 +20,8 @@
     overflow: hidden;
 }
 
+
+
 </style>
 {% endblock style  %}
 {% block body%}
@@ -29,52 +31,108 @@
             <h1>{{title}}</h1>
             <div class="text-zero top-right-button-container">
                 <a href="{% url 'inventory:list-products'%}">
-                    <button type="button" class="btn btn-primary btn-lg top-right-button mr-1">{% trans "BACK TO LIST" %}</button>
+                    <button type="button" class="btn btn-primary btn-lg top-right-button mr-1">{% trans "BACK TO LIST"%}
+                    </button>
                 </a>
             </div>
             <div class="separator mb-5"></div>
         </div>
     </div>
+    <div class="modal fade" id="create" tabindex="-1" role="dialog" aria-hidden="true">
+      <div class="modal-dialog" role="document">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="exampleModalLabel">New Attribute</h5>
+            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+              <span aria-hidden="true">&times;</span>
+            </button>
+          </div>
+          <div class="modal-body">
+                  <form action="{% url 'inventory:create-attribute' %}" method="POST">
+                    {% csrf_token %}
+                    <div class="form-row">
+                      <div class="form-group col-md-12">
+                        <label>Attribute Name <span class="required">*</span></label>
+                        {{attribute_form.name}}
+                      </div>
+                      <div class="form-group col-md-4">
+                        <label>Attribute Display Name </label>
+                        {{attribute_form.display_name}}
+                      </div>
+                       <div class="form-group col-md-4">
+                        <label>Attribute Type </label>
+                        {{attribute_form.att_type}}
+                      </div>
+                    </div>
+                      <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+
+                       <button type="submit" class="btn btn-primary" name ='Save'>Save Changes</button>
+                    </div>
+                  </form>
+
+      </div>
+    </div>
+        </div>
+      </div>
 
     <div class="card mb-12">
         <div class="card-body">
-            <h2>Item Info</h2>
+            <h2 class="mb-4">Item Info </h2>
             <div class="separator mb-5"></div>
 
             <form method="POST">
                 {% csrf_token %}
+
                 <div class="form-row">
-                    <div class="form-group col-md-6">
-                        <label>Brand</label>
-                        {{product_form.brand}}
-                    </div>
-                    <div class="form-group col-md-6">
-                        <label>Category</label>
-                        {{product_form.category}}
+                    <div class="input-group  mb-3">
+                        <div class="input-group-prepend  input-group-sm col-md-6" id="brand">
+                            <span class="input-group-text">Brand</span>
+                            {{product_form.brand}}
+                        </div>
+
+
+
+
+                        <div class="input-group-prepend input-group-sm col-md-6">
+                            <span class="input-group-text">Category</span>
+                            {{product_form.category}}
+                        </div>
                     </div>
                 </div>
+
+
                 <div class="form-row">
-                    <div class="form-group col-md-12">
-                        <label>Item Name</label>
-                        {{item_form.name}}
+                    <div class="input-group mb-3">
+                        <div class="input-group-prepend input-group-sm col-md-6">
+                            <span class="input-group-text">Item Name</span>
+                            {{item_form.name}}
+                        </div>
+                        <div class="input-group-prepend input-group-sm col-md-6">
+
+                            <span class="input-group-text">UOM</span>
+                            {{item_form.uom}}
+                            </div>
+                        </div>
                     </div>
-                </div>
+
+
                 <div class="form-row">
-                    <div class="form-group col-md-6">
-                        <label>SKU</label>
-                        {{item_form.sku}}
+                    <div class="input-group mb-3">
+                        <div class="input-group-prepend input-group-sm col-md-6">
+                            <span class="input-group-text">SKU</span>
+                            {{item_form.sku}}
+                        </div>
+
+                        <div class="input-group-prepend input-group-sm col-md-6">
+                            <span class="input-group-text">Barcode</span>
+                            {{item_form.barcode}}
+                        </div>
                     </div>
-                    <div class="form-group col-md-6">
-                        <label>Barcode</label>
-                        {{item_form.barcode}}
-                    </div>
+
                 </div>
-                <div class="form-row">
-                    <div class="form-group col-md-6">
-                        <label>UOM</label>
-                        {{item_form.uom}}
-                    </div>
-                </div>
+
+
                 <div class="separator mb-5"></div>
 
                 <h2>Item Attributes</h2>
@@ -86,29 +144,30 @@
                             <div id="attribute_set">
                                 <div class="form-row">
                                     <div class="form-group col-md-4">
-                                        <label>{% trans "Attribute" %}</label>
+                                        <b><label>{% trans "Attribute" %}</label></b>
                                     </div>
-                                    <div class="form-group col-md-1">
-                                        <label>{% trans "Value" %}</label>
+                                    <div class="form-group col-md-4">
+                                        <b><label>{% trans "Value" %}</label></b>
                                     </div>
                                 </div>
-                            </div>
+
+                                {{ item_attribute_formset.management_form }}
+                                {% for form in item_attribute_formset %}
+                                {{ form.id }}
+                                <!--            {{ form.media }}-->
+                                <div class="form-row">
+                                    <div class="form-group col-md-4">
+                                        {{form.attribute}}
+                                    </div>
+                                    <div class="form-group col-md-4">
+                                        {{ form.temp_value}}
+                                    </div>
+                                </div>
+                                {% endfor %}
+                             </div>
                         </div>
                     </div>
                 </div>
-                {{ item_attribute_formset.management_form }}
-                {% for form in item_attribute_formset %}
-                {{ form.id }}
-                <!--            {{ form.media }}-->
-                <div class="form-row" >
-                    <div class="form-group col-md-4">
-                        {{form.attribute}}
-                    </div>
-                    <div class="form-group col-md-1">
-                        {{ form.value}}
-                    </div>
-                </div>
-                {% endfor %}
                 <div id="empty_form" style="display:none">
                     <table class='no_error'>
                         <div class="form-row">
@@ -117,30 +176,39 @@
                             <div class="form-group col-md-4">
                                 {{ item_attribute_formset.empty_form.attribute}}
                             </div>
-                            <div class="form-group col-md-1" style="display:block">
-                                <input type="text" name="text_value" maxlength="30" class="form-control" id="id_{{item_attribute_formset.empty_form.prefix}}_text">
+                            <div class="form-group col-md-4">
+                                {{ item_attribute_formset.empty_form.temp_value}}
                             </div>
-                            <div class="form-group col-md-1" style="display:block">
-                                <input type="number" name="number_value" maxlength="30" class="form-control" id="id_{{item_attribute_formset.empty_form.prefix}}_number">
-                            </div>
-                            <div class="custom-switch-primary-inverse custom-switch-small pl-1" data-placement="left" title="" data-original-title="Dark Mode" style="display:block">
-                                <input class="custom-switch-input" id="id_{{item_attribute_formset.empty_form.prefix}}_bool" type="checkbox" checked="checked">
-<!--                                <label class="custom-switch-btn" for="switchDark"></label>-->
-                            </div>
+                           <!-- <div class="form-group col-md-3" style="display:block">
+                                <input type="text" name="attribute_value" maxlength="30" class="form-control"
+                                       id="id_{{item_attribute_formset.empty_form.prefix}}_text">
+                            </div>-->
+                            <!--                            <div class="form-group col-md-1" style="display:block">-->
+                            <!--                                <input type="number" name="number_value" maxlength="30" class="form-control" id="id_{{item_attribute_formset.empty_form.prefix}}_number">-->
+                            <!--                            </div>-->
+                            <!--                            <div class="custom-switch-primary-inverse custom-switch-small pl-1" data-placement="left" title="" data-original-title="Dark Mode" style="display:block">-->
+                            <!--                                <input class="custom-switch-input" id="id_{{item_attribute_formset.empty_form.prefix}}_bool" type="checkbox" checked="checked">-->
+                            <!--&lt;!&ndash;                                <label class="custom-switch-btn" for="switchDark"></label>&ndash;&gt;-->
+                            <!--                            </div>-->
 
-                </div>
+                        </div>
                     </table>
                 </div>
 
                 <button type="button" id="add_item" class="btn cur-p btn-success">{% trans "Add Attribute "%}
+                </button>
+                 <button type="button" id="add_attribute" class="btn cur-p btn-success">{% trans "Create New Attribute "%}
                 </button>
 
                 <div class="submit-row">
                     <button type="submit" class="btn btn-primary btn-lg mt-3" name='Save'>Save</button>
                     <button type="submit" class="btn btn-primary btn-lg mt-3" name='Save and exit'>Save and Exit
                     </button>
+                    {% if not update %}
                     <button type="submit" class="btn btn-primary btn-lg mt-3" name='Save and add'>Save and Add</button>
+                    {% endif %}
                 </div>
+
             </form>
         </div>
     </div>
@@ -164,6 +232,8 @@
 
   });
 
+
+
 </script>
 <script>
 function myFunction(object) {
@@ -171,23 +241,46 @@ function myFunction(object) {
     var str = object.id
     var res= str.split("-")
     number_id = res[0]+'-'+res[1]+'_number'
-    text_id =  res[0]+'-'+res[1]+'_text'
+    text_id =  res[0]+'-'+res[1]+'-'+'temp_value'
     bool_id =  res[0]+'-'+res[1]+'_bool'
-    type = 'text'
-    if (type =='text'){
+    attribute = object.value
+    var endpoint = '{% url "inventory:get-attribute-type" -1 %}'.replace('-1', attribute);
+    $.ajax({
+        type: "get",
+        url: endpoint,
+        contentType: 'application/json',
+        success: function(data){
+                  if (data['att_type'] =='text'){
+                  document.getElementById(text_id).setAttribute("type", "text");
 
-      document.getElementById(number_id).style.display = 'none';
-            document.getElementById(bool_id).style.display = 'none';
+
+                  }
+                  else if(data['att_type'] =='number'){
+                    document.getElementById(text_id).setAttribute("type", "number");
+
+                 }
+                  else if(data['att_type'] =='bool'){
+                      document.getElementById(text_id).setAttribute("type", "checkbox");
+                 }
+                  else if(data['att_type'] =='date'){
+                      document.getElementById(text_id).setAttribute("type", "date");
+                 }
 
 
-    }
-    else {
-          document.getElementById(text_id).style.display = 'none';
 
-    }
+
+
+        },
+        error: function(){
+            alert("error");
+        }
+         });
+
 
 
 };
+
+
 
 
 

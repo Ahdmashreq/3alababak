@@ -1,16 +1,19 @@
+import json
 from datetime import date
 
 from django.db.models import Q, ProtectedError
 from django.shortcuts import render, redirect
 from django.contrib import messages
-from inventory.models import (Category, Brand, Product, Attribute, Item, Uom, StokeTake, StokeEntry, UomCategory)
+from inventory.models import (Category, Brand, Product, Attribute, Item, Uom, StokeTake, StokeEntry, UomCategory,
+                              ItemAttributeValue)
 from inventory.forms import (CategoryForm, category_model_formset, BrandForm, brand_model_formset,
                              AttributeForm, attribute_model_formset, ProductForm,
                              uom_formset, StokeTakeForm, UOMForm, stoke_entry_formset, StokeEntryForm, UomCategoryForm,
                              ItemForm, item_attribute_model_formset)
+from inventory.serializers import AttributeSeializer
 from orders.models import Inventory_Balance, MaterialTransaction1, MaterialTransactionLines
 import random
-from orders.utils import get_seq
+from orders.utils import get_seq, ItemSerializer, JSONResponse
 
 
 def create_category_view(request):
@@ -145,67 +148,47 @@ def create_product_item_view(request):
     product_form = ProductForm()
     item_form = ItemForm()
     item_attribute_form = item_attribute_model_formset()
-    print("^^^^^^^^^^^^^^^",item_attribute_form.empty_form.__dir__())
+    attribute_form = AttributeForm()
     if request.method == 'POST':
+
         product_form = ProductForm(request.POST)
-        item_formset = item_attribute_form(request.POST)
-        if product_form.is_valid() and item_formset.is_valid():
+        item_form = ItemForm(request.POST)
+        item_attribute_form = item_attribute_model_formset(request.POST)
+
+        if product_form.is_valid() and item_form.is_valid() and item_attribute_form.is_valid():
             product_obj = product_form.save(commit=False)
             product_obj.company = request.user.company
             product_obj.created_by = request.user
             product_obj.save()
-            item_formset = item_attribute_form(request.POST, instance=product_obj)
-            if item_formset.is_valid():
-                item_obj = item_formset.save(commit=False)
-                for form in item_obj:
-                    form.created_by = request.user
-                    form.save()
+            item_obj = item_form.save(commit=False)
+            item_obj.company = request.user.company
+            item_obj.product = product_obj
+            item_obj.created_by = request.user
+            item_obj.save()
+            item_attribute_form = item_attribute_model_formset(request.POST, instance=item_obj)
+            if item_attribute_form.is_valid():
+                for form in item_attribute_form:
+                    temp_value = form.cleaned_data['temp_value']
+                    att_obj = form.save(commit=False)
+                    att_obj.value = temp_value
+                    att_obj.created_by = request.user
+                    att_obj.save()
+
                 if 'Save and exit' in request.POST:
                     return redirect('inventory:list-products')
                 elif 'Save and add' in request.POST:
                     return redirect('inventory:create-product')
+                else:
+                    return redirect('inventory:view-item', id=item_obj.id)
     attributeContext = {
         'title': "New Item",
         'product_form': product_form,
         'item_form': item_form,
-        'item_attribute_formset':item_attribute_form,
+        'item_attribute_formset': item_attribute_form,
+        'attribute_form': attribute_form,
 
     }
     return render(request, 'create-product-item.html', context=attributeContext)
-
-
-# def create_stoketake_view(request):
-#     stoke_from = StokeTakeForm()
-#     stoke_entry_inlineformset = stoke_entry_formset()
-#     if request.method == 'POST':
-#         stoke_form = StokeTakeForm(request.POST)
-#         stoke_entry_inlineformset = stoke_entry_formset(request.POST)
-#         if stoke_form.is_valid() and stoke_entry_inlineformset.is_valid():
-#             stoke_obj = stoke_form.save(commit=False)
-#             stoke_obj.created_by = request.user
-#             stoke_obj.company = request.user.company
-#             stoke_obj.save()
-#             stoke_entry_inlineformset = stoke_entry_formset(request.POST, instance=stoke_obj)
-#             if stoke_entry_inlineformset.is_valid():
-#                 stoke_entry_obj = stoke_entry_inlineformset.save(commit=False)
-#                 for stoke_entry in stoke_entry_obj:
-#                     stoke_entry.created_by = request.user
-#                     stoke_entry.save()
-#                 if 'Save and exit' in request.POST:
-#                     return redirect('inventory:list-stokes')
-#                 elif 'Save and add' in request.POST:
-#                     return redirect('inventory:create-stoke')
-#             else:
-#                 print(stoke_entry_inlineformset.errors)
-#         else:
-#             print(stoke_form.errors)
-#     stoke_context = {
-#         'stoke_form': stoke_from,
-#         'stoke_entry_inlineformset': stoke_entry_inlineformset,
-#         'title': 'New Stoke Take'
-#
-#     }
-#     return render(request, 'create-stoke.html', context=stoke_context)
 
 
 def list_stoketake_view(request):
@@ -669,17 +652,65 @@ def create_stoke_transaction(stoke_take, user):
     else:
         return True
 
-# def update_items_quantity(item_location_list: list):
-#     items = []
-#     for item_location in item_location_list:
-#         inventory_balance = Inventory_Balance.objects.get(item=item_location['item'])
-#         item = Item.objects.get(id=item_quantity['item'])
-#         item.inventory_balance = item_quantity['quantity']
-#         items.append(item)
-#     try:
-#         Item.objects.bulk_update(items, ['quantity'])
-#         success = True
-#     except Exception as e:
-#         print(e)
-#         success = False
-#     return success
+
+def get_attribute_type(request, id):
+    attribute = Attribute.objects.get(pk=id)
+    serialized = AttributeSeializer(attribute)
+    return JSONResponse(serialized.data, content_type='application/json')
+
+
+def view_item(request, id):
+    item = Item.objects.get(id=id)
+    attributes = ItemAttributeValue.objects.filter(item__id=id)
+    subcontext = {
+        'item': item,
+        'attributes': attributes,
+
+    }
+    return render(request, 'view-item.html', context=subcontext)
+
+
+def update_item(request, id):
+    item = Item.objects.get(id=id)
+    product = Product.objects.get(id=item.product.id)
+    # attribute_value = ItemAttributeValue.objects.filter(item=item)
+    product_form = ProductForm(instance=product)
+    item_form = ItemForm(instance=item)
+    item_attribute_form = item_attribute_model_formset(instance=item)
+    for form in item_attribute_form:
+        value = form.instance.value
+        form.fields["temp_value"].initial = value
+    if request.method == 'POST':
+        product_form = ProductForm(request.POST, instance=product)
+        item_form = ItemForm(request.POST, instance=item)
+        item_attribute_form = item_attribute_model_formset(request.POST, instance=item)
+
+        if product_form.is_valid() and item_form.is_valid() and item_attribute_form.is_valid():
+            product_obj = product_form.save(commit=False)
+            product_obj.last_updated_by = request.user
+            product_obj.save()
+            item_obj = item_form.save(commit=False)
+            item_obj.last_updated_by = request.user
+            item_obj.save()
+            item_attribute_form = item_attribute_model_formset(request.POST, instance=item_obj)
+            if item_attribute_form.is_valid():
+                for form in item_attribute_form:
+                    temp_value = form.cleaned_data['temp_value']
+                    att_obj = form.save(commit=False)
+                    att_obj.value = temp_value
+                    att_obj.last_updated_by = request.user
+                    att_obj.save()
+
+                if 'Save and exit' in request.POST:
+                    return redirect('inventory:list-products')
+                else:
+                    return redirect('inventory:view-item', id=id)
+    attributeContext = {
+        'title': "Update Item",
+        'product_form': product_form,
+        'item_form': item_form,
+        'item_attribute_formset': item_attribute_form,
+        'update': True,
+
+    }
+    return render(request, 'create-product-item.html', context=attributeContext)
