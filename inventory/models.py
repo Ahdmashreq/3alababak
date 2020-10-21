@@ -91,7 +91,8 @@ class Attribute(models.Model):
     company = models.ForeignKey(Company, on_delete=models.CASCADE, )
     name = models.CharField(max_length=50)
     att_type = models.CharField(max_length=50, null=True, blank=True,
-                                choices=[('text', 'text'), ('number', 'number'), ('date', 'date'), ('bool', 'bool')])
+                                choices=[('text', 'text'), ('number', 'number'), ('date', 'date'),
+                                         ('checkbox', 'checkbox')])
     display_name = models.CharField(max_length=50, null=True, blank=True)
     created_at = models.DateField(auto_now_add=True, null=True)
     last_updated_at = models.DateField(null=True, auto_now=True, auto_now_add=False)
@@ -121,7 +122,7 @@ class Item(models.Model):
     product = models.ForeignKey(Product, on_delete=models.CASCADE, )
     uom = models.ForeignKey(Uom, on_delete=models.CASCADE, blank=True, null=True, related_name='uom')
     name = models.CharField(max_length=30)
-    description = models.CharField(max_length=30, blank=True, null=True)
+    description = models.CharField(max_length=100, blank=True, null=True)
     sku = models.CharField(max_length=30, blank=True, null=True)
     barcode = models.CharField(max_length=30, blank=True, null=True)
     created_at = models.DateField(auto_now_add=True, null=True)

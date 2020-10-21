@@ -66,9 +66,9 @@
               {% for attribute in attributes %}
                 <tr role="row" class="odd">
                   <td class="sorting_1">{{ attribute.attribute}}</td>
-                    {% if attribute.attribute.att_type == 'bool' %}
+                    {% if attribute.attribute.att_type == 'checkbox' %}
                         {% if attribute.value == 'on' %}
-                            <td>&#10003;</td>
+                            <td>&#10004;</td>
                         {% else %}
                            <td>&times;</td>
                         {% endif %}

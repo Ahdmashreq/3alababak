@@ -22,6 +22,7 @@
 
 
 
+
 </style>
 {% endblock style  %}
 {% block body%}
@@ -39,42 +40,43 @@
         </div>
     </div>
     <div class="modal fade" id="create" tabindex="-1" role="dialog" aria-hidden="true">
-      <div class="modal-dialog" role="document">
-        <div class="modal-content">
-          <div class="modal-header">
-            <h5 class="modal-title" id="exampleModalLabel">New Attribute</h5>
-            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-              <span aria-hidden="true">&times;</span>
-            </button>
-          </div>
-          <div class="modal-body">
-                  <form action="{% url 'inventory:create-attribute' %}" method="POST">
-                    {% csrf_token %}
-                    <div class="form-row">
-                      <div class="form-group col-md-12">
-                        <label>Attribute Name <span class="required">*</span></label>
-                        {{attribute_form.name}}
-                      </div>
-                      <div class="form-group col-md-4">
-                        <label>Attribute Display Name </label>
-                        {{attribute_form.display_name}}
-                      </div>
-                       <div class="form-group col-md-4">
-                        <label>Attribute Type </label>
-                        {{attribute_form.att_type}}
-                      </div>
-                    </div>
-                      <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="exampleModalLabel">New Attribute</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <form method="POST" id="attribute_form">
+                        {% csrf_token %}
+                        <div class="form-row">
+                            <div class="form-group col-md-12">
+                                <label>Attribute Name <span class="required">*</span></label>
+                                {{attribute_form.name}}
+                            </div>
+                            <div class="form-group col-md-12">
+                                <label>Attribute Display Name </label>
+                                {{attribute_form.display_name}}
+                            </div>
+                            <div class="form-group col-md-12">
+                                <label>Attribute Type </label>
+                                {{attribute_form.att_type}}
+                            </div>
+                        </div>
+                        <div id="results"></div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
 
-                       <button type="submit" class="btn btn-primary" name ='Save'>Save Changes</button>
-                    </div>
-                  </form>
+                            <button type="submit" class="btn btn-primary" name='Save'>Save Changes</button>
+                        </div>
+                    </form>
 
-      </div>
-    </div>
+                </div>
+            </div>
         </div>
-      </div>
+    </div>
 
     <div class="card mb-12">
         <div class="card-body">
@@ -90,8 +92,6 @@
                             <span class="input-group-text">Brand</span>
                             {{product_form.brand}}
                         </div>
-
-
 
 
                         <div class="input-group-prepend input-group-sm col-md-6">
@@ -112,9 +112,9 @@
 
                             <span class="input-group-text">UOM</span>
                             {{item_form.uom}}
-                            </div>
                         </div>
                     </div>
+                </div>
 
 
                 <div class="form-row">
@@ -130,6 +130,15 @@
                         </div>
                     </div>
 
+                </div>
+                <div class="form-row">
+
+                    <div class="input-group mb-3">
+                        <div class="input-group-prepend  col-md-12">
+                            <span class="input-group-text">Item Description</span>
+                            {{item_form.description}}
+                        </div>
+                    </div>
                 </div>
 
 
@@ -160,11 +169,16 @@
                                         {{form.attribute}}
                                     </div>
                                     <div class="form-group col-md-4">
-                                        {{ form.temp_value}}
+                                                                                {{ form.temp_value}}
+
+                                    <script>
+                                    console.log("{{form.instance.attribute.att_type}}")
+                                        document.getElementById("{{ form.temp_value.auto_id }}").setAttribute("type", "{{form.instance.attribute.att_type}}");
+                                    </script>
                                     </div>
                                 </div>
                                 {% endfor %}
-                             </div>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -179,25 +193,14 @@
                             <div class="form-group col-md-4">
                                 {{ item_attribute_formset.empty_form.temp_value}}
                             </div>
-                           <!-- <div class="form-group col-md-3" style="display:block">
-                                <input type="text" name="attribute_value" maxlength="30" class="form-control"
-                                       id="id_{{item_attribute_formset.empty_form.prefix}}_text">
-                            </div>-->
-                            <!--                            <div class="form-group col-md-1" style="display:block">-->
-                            <!--                                <input type="number" name="number_value" maxlength="30" class="form-control" id="id_{{item_attribute_formset.empty_form.prefix}}_number">-->
-                            <!--                            </div>-->
-                            <!--                            <div class="custom-switch-primary-inverse custom-switch-small pl-1" data-placement="left" title="" data-original-title="Dark Mode" style="display:block">-->
-                            <!--                                <input class="custom-switch-input" id="id_{{item_attribute_formset.empty_form.prefix}}_bool" type="checkbox" checked="checked">-->
-                            <!--&lt;!&ndash;                                <label class="custom-switch-btn" for="switchDark"></label>&ndash;&gt;-->
-                            <!--                            </div>-->
-
                         </div>
                     </table>
                 </div>
 
                 <button type="button" id="add_item" class="btn cur-p btn-success">{% trans "Add Attribute "%}
                 </button>
-                 <button type="button" id="add_attribute" class="btn cur-p btn-success">{% trans "Create New Attribute "%}
+                <button type="button" id="add_attribute" data-toggle="modal" data-target="#create"
+                        class="btn cur-p btn-success">{% trans "Create New Attribute "%}
                 </button>
 
                 <div class="submit-row">
@@ -234,15 +237,14 @@
 
 
 
+
 </script>
 <script>
 function myFunction(object) {
     console.log("Byyeeee")
     var str = object.id
     var res= str.split("-")
-    number_id = res[0]+'-'+res[1]+'_number'
     text_id =  res[0]+'-'+res[1]+'-'+'temp_value'
-    bool_id =  res[0]+'-'+res[1]+'_bool'
     attribute = object.value
     var endpoint = '{% url "inventory:get-attribute-type" -1 %}'.replace('-1', attribute);
     $.ajax({
@@ -259,7 +261,7 @@ function myFunction(object) {
                     document.getElementById(text_id).setAttribute("type", "number");
 
                  }
-                  else if(data['att_type'] =='bool'){
+                  else if(data['att_type'] =='checkbox'){
                       document.getElementById(text_id).setAttribute("type", "checkbox");
                  }
                   else if(data['att_type'] =='date'){
@@ -281,6 +283,101 @@ function myFunction(object) {
 };
 
 
+
+
+
+
+</script>
+<script>
+$(function() {
+
+
+    // This function gets cookie with a given name
+    function getCookie(name) {
+        var cookieValue = null;
+        if (document.cookie && document.cookie != '') {
+            var cookies = document.cookie.split(';');
+            for (var i = 0; i < cookies.length; i++) {
+                var cookie = jQuery.trim(cookies[i]);
+                // Does this cookie string begin with the name we want?
+                if (cookie.substring(0, name.length + 1) == (name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+    }
+    var csrftoken = getCookie('csrftoken');
+
+    /*
+    The functions below will create a header with csrftoken
+    */
+
+    function csrfSafeMethod(method) {
+        // these HTTP methods do not require CSRF protection
+        return (/^(GET|HEAD|OPTIONS|TRACE)$/.test(method));
+    }
+    function sameOrigin(url) {
+        // test that a given url is a same-origin URL
+        // url could be relative or scheme relative or absolute
+        var host = document.location.host; // host + port
+        var protocol = document.location.protocol;
+        var sr_origin = '//' + host;
+        var origin = protocol + sr_origin;
+        // Allow absolute or scheme relative URLs to same origin
+        return (url == origin || url.slice(0, origin.length + 1) == origin + '/') ||
+            (url == sr_origin || url.slice(0, sr_origin.length + 1) == sr_origin + '/') ||
+            // or any other URL that isn't scheme relative or absolute i.e relative.
+            !(/^(\/\/|http:|https:).*/.test(url));
+    }
+
+    $.ajaxSetup({
+        beforeSend: function(xhr, settings) {
+            if (!csrfSafeMethod(settings.type) && sameOrigin(settings.url)) {
+                // Send the token to same-origin, relative URLs only.
+                // Send the token only if the method warrants CSRF protection
+                // Using the CSRFToken value acquired earlier
+                xhr.setRequestHeader("X-CSRFToken", csrftoken);
+            }
+        }
+    });
+
+});
+
+
+$('#attribute_form').on('submit', function(event){
+    event.preventDefault();
+    console.log("form submitted!")  // sanity check
+    create_attribute();
+});
+
+function create_attribute(){
+    console.log("create post is working!") // sanity check
+    console.log($('#id_name').val())
+    console.log("create post is working!") // sanity check
+    $.ajax({
+
+        url : '{% url "inventory:create-attribute-ajax" %}',
+        type : "POST", // http method
+        data : { name : $('#id_name').val(),display_name: $('#id_display_name').val(),att_type: $('#id_att_type').val() }, // data sent with the post request
+
+        // handle a successful response
+        success : function(json) {
+            console.log(json); // log the returned json to the console
+            console.log("success"); // another sanity check
+             $('#create').modal('hide');
+
+        },
+
+        // handle a non-successful response
+        error : function(xhr,errmsg,err) {
+            $('#results').html("<div class='alert-box alert radius' data-alert>Oops! We have encountered an error: "+errmsg+
+                " <a href='#' class='close'>&times;</a></div>"); // add the error to the dom
+            console.log(xhr.status + ": " + xhr.responseText); // provide a bit more info about the error to the console
+        }
+    });
+}
 
 
 

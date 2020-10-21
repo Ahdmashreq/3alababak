@@ -59,6 +59,7 @@ class AttributeForm(forms.ModelForm):
 
 class ItemAttributeForm(forms.ModelForm):
     temp_value = forms.CharField(max_length=30, required=False)
+
     class Meta:
         model = ItemAttributeValue
         fields = '__all__'
@@ -67,7 +68,6 @@ class ItemAttributeForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         super(ItemAttributeForm, self).__init__(*args, **kwargs)
         self.fields['attribute'].widget.attrs['onchange'] = 'myFunction(this)'
-
         for field in self.fields:
             # if self.fields[field].widget.input_type == 'checkbox':
             #     self.fields[field].widget.attrs['class'] = 'form-check-input'
@@ -129,8 +129,8 @@ class ItemForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         super(ItemForm, self).__init__(*args, **kwargs)
         for field in self.fields:
-            if self.fields[field].widget.input_type == 'checkbox':
-                self.fields[field].widget.attrs['class'] = 'form-check-input'
+            if field == 'description':
+                self.fields[field].widget.attrs['class'] = 'form-control'
             elif self.fields[field].widget.input_type == 'select':
                 self.fields[field].widget.attrs['class'] = 'form-control  custom-select'
             else:

@@ -1,6 +1,7 @@
 import json
 from datetime import date
 
+from django.core.exceptions import ValidationError
 from django.db.models import Q, ProtectedError
 from django.shortcuts import render, redirect
 from django.contrib import messages
@@ -14,6 +15,7 @@ from inventory.serializers import AttributeSeializer
 from orders.models import Inventory_Balance, MaterialTransaction1, MaterialTransactionLines
 import random
 from orders.utils import get_seq, ItemSerializer, JSONResponse
+from django.http import HttpResponse
 
 
 def create_category_view(request):
@@ -673,6 +675,8 @@ def view_item(request, id):
 def update_item(request, id):
     item = Item.objects.get(id=id)
     product = Product.objects.get(id=item.product.id)
+    attribute_form = AttributeForm()
+
     # attribute_value = ItemAttributeValue.objects.filter(item=item)
     product_form = ProductForm(instance=product)
     item_form = ItemForm(instance=item)
@@ -710,7 +714,66 @@ def update_item(request, id):
         'product_form': product_form,
         'item_form': item_form,
         'item_attribute_formset': item_attribute_form,
+        'attribute_form': attribute_form,
         'update': True,
 
     }
     return render(request, 'create-product-item.html', context=attributeContext)
+
+
+def update_attribute(request, id):
+    attribute = Attribute.objects.get(id=id)
+    attribute_form = AttributeForm(instance=attribute)
+    if request.method == 'POST':
+        attribute_form = AttributeForm(request.POST, instance=attribute)
+        if attribute_form.is_valid():
+            attribute_obj = attribute_form.save(commit=False)
+            attribute_obj.last_updated_by = request.user
+            attribute_obj.save()
+            if 'Save and exit' in request.POST:
+                return redirect('inventory:list-attributes')
+
+    attributeContext = {
+        'attribute_form': attribute_form,
+        'title': 'Update Attribute',
+        'update': True,
+
+    }
+    return render(request, 'create-attribute.html', context=attributeContext)
+
+
+def delete_attribute(request, id):
+    attribute = Attribute.objects.get(id=id)
+    try:
+        attribute.delete()
+    except ProtectedError:
+        error_message = "This object can't be deleted!!"
+        messages.error(request, error_message)
+    return redirect('inventory:list-attributes')
+
+
+def create_attribute_ajax(request):
+    if request.method == 'POST':
+        name = request.POST.get('name')
+        display_name = request.POST.get('display_name')
+        att_type = request.POST.get('att_type')
+
+        response_data = {}
+        try:
+            attribute = Attribute(name=name, display_name=display_name, att_type=att_type, created_by=request.user,
+                                  company=request.user.company)
+            attribute.save()
+            response_data['result'] = 'Create attribute successful!'
+            return HttpResponse(
+                json.dumps(response_data),
+                content_type="application/json"
+            )
+        except ValidationError:
+            return HttpResponse(
+                json.dumps({"nothing to see": "this isn't happening"}),
+                content_type="application/json"
+            )
+        # response_data['postpk'] = post.pk
+        # response_data['text'] = post.text
+        # response_data['created'] = post.created.strftime('%B %d, %Y %I:%M %p')
+        # response_data['author'] = post.author.username

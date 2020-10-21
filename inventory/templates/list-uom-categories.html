@@ -29,10 +29,10 @@
                   <form action="{% url 'inventory:create-uom-category' %}" method="POST">
                     {% csrf_token %}
                     <div class="form-row">
-                      <div class="form-group col-md-12">
+                      <divdiv class="form-group col-md-12">
                         <label>Category Name <span class="required">*</span></label>
                         {{category_from.name}}
-                      </div>
+                      </divdiv>
                     </div>
                       <div class="modal-footer">
                         <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
