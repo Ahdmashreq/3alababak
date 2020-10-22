@@ -1,15 +1,16 @@
 from datetime import date
 
-from django.db.models import Q
+from django.core.exceptions import ObjectDoesNotExist
+from django.db.models import Q, ProtectedError
 from django.shortcuts import render, redirect
 from orders.forms import (PurchaseTransactionCreationForm,
                           PurchaseOrderCreationForm, ReceivingTransactionCreation_formset,
                           purchase_transaction_formset,
                           sale_transaction_formset,
                           SaleOrderCreationForm, MaterialTransactionCreationForm, MaterialTransactionLinesCreationForm,
-                          MaterialTransactionCreation_formset)
+                          MaterialTransactionCreation_formset, TaxForm)
 from orders.models import PurchaseOder, SalesOrder, MaterialTransaction, PurchaseTransaction, MaterialTransactionLines, \
-    MaterialTransaction1, Inventory_Balance, SalesTransaction
+    MaterialTransaction1, Inventory_Balance, SalesTransaction, Tax
 from inventory.models import Item, Uom
 from django.contrib import messages
 from json import dumps
@@ -18,6 +19,7 @@ from dal import autocomplete
 from moneyed import Money, EGP
 import random
 from orders.utils import get_seq, ItemSerializer, JSONResponse
+from decimal import Decimal
 
 
 def create_purchase_order_view(request):
@@ -96,7 +98,7 @@ def update_purchase_order_view(request, id):
         item = form.instance.item
         uom = item.uom
         unit_price = item.avg_cost.amount
-        form.fields["temp_uom"].initial = uom
+       # form.fields["temp_uom"].initial = uom
         form.fields["price_per_unit"].initial = unit_price
         form.fields["after_discount"].initial = form.instance.total_price_after_discount
 
@@ -162,6 +164,13 @@ def create_sales_order_view(request):
             so_obj.created_by = request.user
             so_obj.company = request.user.company
             so_obj.sale_code = so_code
+            try:
+                tax = Tax.objects.get(name='VAT')
+                tax_percentage = tax.value / 100
+            except ObjectDoesNotExist:
+                print(ObjectDoesNotExist)
+                tax_percentage = Decimal(0.14)
+            so_obj.tax = tax_percentage
             so_obj.save()
             so_transaction_inlineformset = sale_transaction_formset(request.POST, instance=so_obj)
             if so_transaction_inlineformset.is_valid():
@@ -442,9 +451,11 @@ def view_purchase_order(request, id, flag, return_to):
 def view_sale_order(request, id):
     sale_order = SalesOrder.objects.get(id=id)
     sale_lines = SalesTransaction.objects.filter(sales_order__id=id)
+    tax_value = sale_order.tax * 100
     subcontext = {
         'so': sale_order,
         'so_lines': sale_lines,
+        'tax': tax_value,
 
     }
     return render(request, 'view-so.html', context=subcontext)
@@ -468,3 +479,74 @@ def view_transaction_lines(request, id):
         'transaction': transaction,
     }
     return render(request, 'list-transactions-lines.html', context=context)
+
+
+def create_tax(request):
+    tax_form = TaxForm()
+    if request.method == 'POST':
+        tax_form = TaxForm(request.POST)
+        if tax_form.is_valid():
+            tax_obj = tax_form.save(commit=False)
+            tax_obj.company = request.user.company
+            tax_obj.created_by = request.user
+            tax_obj.save()
+            if 'Save and exit' in request.POST:
+                return redirect('orders:list-taxes')
+            elif 'Save and add' in request.POST:
+                return redirect('orders:create-tax')
+
+    Context = {
+        'tax_form': tax_form,
+        'title': 'New Tax'
+
+    }
+    return render(request, 'create-tax.html', context=Context)
+
+
+def list_taxes(request):
+    taxes = Tax.objects.all()
+    context = {
+        'tax_list': taxes,
+        'title': "Taxes",
+    }
+    return render(request, 'list-taxes.html', context=context)
+
+
+def update_tax(request, id):
+    tax = Tax.objects.get(id=id)
+    tax_form = TaxForm(instance=tax)
+    if request.method == 'POST':
+        tax_form = TaxForm(request.POST, instance=tax)
+        if tax_form.is_valid():
+            tax_obj = tax_form.save(commit=False)
+            tax_obj.last_updated_by = request.user
+            tax_obj.save()
+            if 'Save and exit' in request.POST:
+                return redirect('orders:list-taxes')
+
+    Context = {
+        'tax_form': tax_form,
+        'title': 'Update Tax',
+        'update': True,
+
+    }
+    return render(request, 'create-tax.html', context=Context)
+
+
+def delete_tax_view(request, id):
+    required_tax = Tax.objects.get(id=id)
+    try:
+        required_tax.delete()
+    except ProtectedError:
+        error_message = "This object can't be deleted!!"
+        messages.error(request, error_message)
+    return redirect('orders:list-taxes')
+
+
+def load_uoms(request):
+    item_id = request.GET.get('item')
+    print("&&&&&&&&",item_id)
+    item = Item.objects.get(id=item_id)
+    uoms = Uom.objects.filter(category=item.uom.category)
+    print("***************",uoms)
+    return render(request, 'load-uoms.html', {'uoms': uoms})

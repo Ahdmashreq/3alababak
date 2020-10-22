@@ -1,3 +1,4 @@
+from django.core.exceptions import ObjectDoesNotExist
 from django.db import models
 from django.db.models.signals import pre_save, post_save
 from django.dispatch import receiver
@@ -6,7 +7,7 @@ from django.utils.translation import ugettext_lazy as _
 from decimal import Decimal
 from djmoney.models.fields import MoneyField
 from account.models import Supplier, Customer, Company
-from inventory.models import Item
+from inventory.models import Item, Uom
 from django.conf import settings
 from moneyed import Money, EGP
 from currencies.models import Currency
@@ -62,6 +63,7 @@ class SalesOrder(models.Model):
     # status = models.CharField(max_length=8,
     #                           choices=[('received', 'Received'), ('returned', 'Returned'), ('shipping', 'Shipping')],
     #                           default='drafted')
+    tax = models.DecimalField(max_digits=4, decimal_places=3)
     date = models.DateField(null=True, blank=True)
     created_at = models.DateField(auto_now_add=True, null=True)
     last_updated_at = models.DateField(null=True, auto_now=True, auto_now_add=False)
@@ -74,15 +76,14 @@ class SalesOrder(models.Model):
 
     @property
     def global_price(self):
-        tax_percentage = Decimal(0.14)
-        tax = tax_percentage * self.subtotal_price
-
+        tax = self.tax * self.subtotal_price
         return round(self.subtotal_price - tax, 2)
 
 
 class PurchaseTransaction(models.Model):
     purchase_order = models.ForeignKey(PurchaseOder, on_delete=models.CASCADE, )
     item = models.ForeignKey(Item, on_delete=models.CASCADE, )
+    uom = models.ForeignKey(Uom, on_delete=models.CASCADE,blank=True, null=True)
     quantity = models.IntegerField()
     price_per_unit = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True, )
     total_price = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True, )
@@ -249,3 +250,15 @@ class Inventory_Balance(models.Model):
 
     def __unicode__(self):
         return '%s: %s' % (self.item.name, str(self.value))
+
+
+class Tax(models.Model):
+    company = models.ForeignKey(Company, on_delete=models.CASCADE)
+    name = models.CharField(max_length=100)
+    value = models.DecimalField(max_digits=4, decimal_places=1)
+    created_at = models.DateField(auto_now_add=True, null=True)
+    last_updated_at = models.DateField(null=True, auto_now=True, auto_now_add=False)
+    created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, null=True,
+                                   related_name="tax_created_by")
+    last_updated_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, null=True,
+                                        related_name="tax_last_updated_by")

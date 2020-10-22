@@ -173,7 +173,11 @@
 
                                     <script>
                                     console.log("{{form.instance.attribute.att_type}}")
-                                        document.getElementById("{{ form.temp_value.auto_id }}").setAttribute("type", "{{form.instance.attribute.att_type}}");
+                                    document.getElementById("{{ form.temp_value.auto_id }}").setAttribute("type", "{{form.instance.attribute.att_type}}");
+
+                                    {% if form.instance.attribute.att_type == 'checkbox' %}
+                                             document.getElementById("myCheck").checked = {{ form.temp_value}};
+                                             {% endif %}
                                     </script>
                                     </div>
                                 </div>

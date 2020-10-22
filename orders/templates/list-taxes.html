@@ -1,0 +1,77 @@
+{% extends 'master.html' %}
+{% load static %}
+{% load l10n %}
+{% load i18n %}
+
+{% block body%}
+<div class="container-fluid">
+  <div class="row">
+    <div class="col-12">
+      <h1>{{title}}</h1>
+      <div class="text-zero top-right-button-container">
+        <a href="{% url 'orders:create-tax' %}"><button type="button" class="btn btn-primary btn-lg top-right-button mr-1">{% trans "ADD NEW" %}</button></a>
+      </div>
+      <div class="separator mb-5"></div>
+    </div>
+  </div>
+
+  <div class="row">
+    <div class="col-12">
+      <div class="card">
+        <div class="card-body">
+          <div id="DataTables_Table_0_wrapper" class="dataTables_wrapper container-fluid dt-bootstrap4 no-footer">
+            <div class="row view-filter">
+              <div class="col-sm-12">
+              </div>
+            </div>
+            <table class="data-table data-table-feature4 dataTable no-footer" id="DataTables_Table_0" role="grid" aria-describedby="DataTables_Table_0_info">
+              <thead>
+                <tr role="row">
+                  <th class="sorting_asc" tabindex="0" aria-controls="DataTables_Table_0" rowspan="1" colspan="1" aria-sort="ascending">#</th>
+                  <th class="sorting" tabindex="0" aria-controls="DataTables_Table_0" rowspan="1" colspan="1">{% trans "Tax Name" %}</th>
+                  <th class="sorting" tabindex="0" aria-controls="DataTables_Table_0" rowspan="1" colspan="1">{% trans "Tax Value" %}</th>
+                  <th class="sorting" tabindex="0" aria-controls="DataTables_Table_0" rowspan="1" colspan="1">{% trans "Actions" %}</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for tax in tax_list %}
+                <tr role="row">
+                  <td class="sorting_1">{{ forloop.counter }}</td>
+                  <td>{{ tax.name }}</td>
+                  <td>{{ tax.value }} %</td>
+                  <td>
+                    <div class="dropdown d-inline-block">
+                      <a class="btn btn-outline-primary dropdown-toggle mb-1" href="#" role="button" id="dropdownMenuLink" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                        Actions
+                      </a>
+                      <div class="dropdown-menu" aria-labelledby="dropdownMenuLink" x-placement="top-start" style="position: absolute; will-change: transform; top: 0px; left: 0px; transform: translate3d(0px, -2px, 0px);">
+                        <a class="dropdown-item" href="{% url 'orders:update-tax' id=tax.id %}">{% trans "Update" %}</a>
+                        <a class="dropdown-item" href="#" data-toggle="modal" data-target="#delete-modal{{tax.pk}}">{% trans "Delete" %}</a>
+                      </div>
+                    </div>
+                  </td>
+                </tr>
+                <div class="modal fade" id="delete-modal{{tax.pk}}" tabindex="-1" role="dialog" aria-hidden="true" style="display: none;">
+                  <div class="modal-dialog" role="document">
+                    <div class="modal-content">
+                      <div class="modal-body">
+                        <p>{% trans "Are you sure you want to delete this record?" %}</p>
+                      </div>
+                      <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-dismiss="modal">{% trans "No" %}</button>
+                        <a href="{% url 'orders:delete-tax' id=tax.id %}" class="btn btn-danger" type="button">{% trans "Delete" %}</a>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+{% endblock body%}

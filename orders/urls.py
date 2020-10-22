@@ -24,5 +24,9 @@ urlpatterns = [
     path('po/view/<id>', views.view_sale_order, name='view-so'),
     path('transactions/list/all', views.list_all_transactions, name='list-transactions'),
     path('transaction-lines/list/<int:id>', views.view_transaction_lines, name='list-transaction-lines'),
-
+    path('tax/create/', views.create_tax, name='create-tax'),
+    path('tax/list/', views.list_taxes, name='list-taxes'),
+    path('tax/update/<int:id>', views.update_tax, name='update-tax'),
+    path('tax/delete/<int:id>', views.delete_tax_view, name='delete-tax'),
+    path('ajax/load-uoms/', views.load_uoms, name='ajax_load_uoms'),
 ]
