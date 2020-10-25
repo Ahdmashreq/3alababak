@@ -83,7 +83,7 @@ class SalesOrder(models.Model):
 class PurchaseTransaction(models.Model):
     purchase_order = models.ForeignKey(PurchaseOder, on_delete=models.CASCADE, )
     item = models.ForeignKey(Item, on_delete=models.CASCADE, )
-    uom = models.ForeignKey(Uom, on_delete=models.CASCADE,blank=True, null=True)
+    uom = models.ForeignKey(Uom, on_delete=models.CASCADE, blank=True, null=True)
     quantity = models.IntegerField()
     price_per_unit = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True, )
     total_price = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True, )
@@ -173,14 +173,15 @@ class MaterialTransactionLines(models.Model):
 
 
 @receiver(post_save, sender=MaterialTransactionLines)
-def create_or_update_inventory_balance(sender, instance, *args, **kwargs):
+def create_or_update_inventory_balance(sender, instance, created, *args, **kwargs):
     if instance.material_transaction.purchase_order is not None:
+        new_quantity = convert_quantity(instance)
         po_unit_cost = PurchaseTransaction.objects.filter(
             purchase_order=instance.material_transaction.purchase_order).get(item=instance.item)
         try:
             inventory_item_obj = Inventory_Balance.objects.get(item=instance.item, location=instance.location)
-            inventory_item_obj.qnt += instance.quantity
-            new_item_recieved_value = instance.quantity * po_unit_cost.price_per_unit
+            inventory_item_obj.qnt += new_quantity
+            new_item_recieved_value = new_quantity * po_unit_cost.price_per_unit
             inventory_item_obj.unit_cost = (inventory_item_obj.value + new_item_recieved_value) / inventory_item_obj.qnt
             new_value = inventory_item_obj.qnt * inventory_item_obj.unit_cost
             print(new_value)
@@ -191,8 +192,8 @@ def create_or_update_inventory_balance(sender, instance, *args, **kwargs):
                 item=instance.item,
                 location=instance.location,
                 unit_cost=po_unit_cost.price_per_unit,
-                qnt=instance.quantity,
-                value=instance.quantity * po_unit_cost.price_per_unit,
+                qnt=new_quantity,
+                value=new_quantity * po_unit_cost.price_per_unit,
             )
             inventory_item_obj.save()
 
@@ -236,7 +237,7 @@ class Inventory_Balance(models.Model):
     item = models.ForeignKey(Item, on_delete=models.CASCADE, related_name='balance')
     location = models.ForeignKey(Location, on_delete=models.CASCADE)
     unit_cost = models.DecimalField(max_digits=9, decimal_places=2)
-    qnt = models.IntegerField(default=0)
+    qnt = models.DecimalField(max_digits=9, decimal_places=2,default=0)
     value = models.DecimalField(max_digits=9, decimal_places=2)
     created_at = models.DateField(auto_now_add=True, null=True)
     last_updated_at = models.DateField(null=True, auto_now=True, auto_now_add=False)
@@ -262,3 +263,43 @@ class Tax(models.Model):
                                    related_name="tax_created_by")
     last_updated_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, null=True,
                                         related_name="tax_last_updated_by")
+
+
+def convert_quantity(instance):
+    purchase_line = PurchaseTransaction.objects.filter(
+        purchase_order=instance.material_transaction.purchase_order).get(item=instance.item)
+    new_quantity = instance.quantity
+    if purchase_line.uom != instance.item.uom:  # if the purchased quantity not the same uom as inventory
+        print("YES ITME if founct that both uoms not equal")
+        if purchase_line.uom.type == 'reference':
+            print("1")
+            if instance.item.uom.type == 'smaller':
+                new_quantity = instance.quantity * instance.item.uom.ratio
+            elif instance.item.uom.type == 'bigger':
+                new_quantity = instance.quantity / instance.item.uom.ratio
+        elif instance.item.uom.type == 'reference':
+            print("2")
+
+            if purchase_line.uom.type == 'smaller':
+                new_quantity = instance.quantity / purchase_line.uom.ratio
+            elif purchase_line.uom.type == 'bigger':
+                new_quantity = instance.quantity * purchase_line.uom.ratio
+        elif instance.item.uom.type == 'smaller':
+            print("3")
+
+            if purchase_line.uom.type == 'smaller':
+                new_quantity_temp = instance.quantity / purchase_line.uom.ratio
+                new_quantity = new_quantity_temp * instance.item.uom.ratio
+            elif purchase_line.uom.type == 'bigger':
+                new_quantity_temp = instance.quantity * purchase_line.uom.ratio
+                new_quantity = new_quantity_temp / instance.item.uom.ratio
+        elif instance.item.uom.type == 'bigger':
+            print("4")
+
+            if purchase_line.uom.type == 'smaller':
+                new_quantity_temp = instance.quantity / purchase_line.uom.ratio
+                new_quantity = new_quantity_temp / instance.item.uom.ratio
+            elif purchase_line.uom.type == 'bigger':
+                new_quantity_temp = instance.quantity * purchase_line.uom.ratio
+                new_quantity = new_quantity_temp / instance.item.uom.ratio
+    return new_quantity

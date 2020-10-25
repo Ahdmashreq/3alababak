@@ -171,8 +171,12 @@
                         <button type="submit" class="btn btn-primary btn-lg mt-3" name='Save'>Save</button>
                         <button type="submit" class="btn btn-primary btn-lg mt-3" name='Save and exit'>Save and Exit
                         </button>
+                        {% if not update %}
                         <button type="submit" class="btn btn-primary btn-lg mt-3" name='Save as draft'>Save as Draft
                         </button>
+                        {% else %}
+                          <button type="submit" class="btn btn-primary btn-lg mt-3" name='Save as open'>Save as Open</button>
+{% endif %}
                     </div>
                 </form>
             </div>
@@ -201,7 +205,7 @@ for (i = 0; i < $('#id_purchasetransaction_set-TOTAL_FORMS').val(); i++) {
           item = object.value
           var endpoint = '{% url "orders:get-item" -1 %}'.replace('-1', item);
           if ( item !==""){
-          uom_function(object)
+
                 var str = object.id
                 var res= str.split("-")
                 var id_prefix = res[0]+'-'+res[1]
@@ -212,6 +216,7 @@ for (i = 0; i < $('#id_purchasetransaction_set-TOTAL_FORMS').val(); i++) {
                 url: endpoint,
                 contentType: 'application/json',
                 success: function(data){
+                  uom_function(object)
                       if (document.getElementById(quantity_id).value){
                         myFunction(document.getElementById(quantity_id));
                       };
@@ -358,6 +363,7 @@ function uom_function(object){
             success: function (data) {   // `data` is the return of the `load_cities` view function
             console.log(data)
               document.getElementById(myuom_id).innerHTML=data;  // replace the contents of the city input with the data that came from the server
+
             }
           });
 

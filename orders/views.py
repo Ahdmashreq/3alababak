@@ -2,6 +2,7 @@ from datetime import date
 
 from django.core.exceptions import ObjectDoesNotExist
 from django.db.models import Q, ProtectedError
+from django.db.models.signals import post_save
 from django.shortcuts import render, redirect
 from orders.forms import (PurchaseTransactionCreationForm,
                           PurchaseOrderCreationForm, ReceivingTransactionCreation_formset,
@@ -10,7 +11,7 @@ from orders.forms import (PurchaseTransactionCreationForm,
                           SaleOrderCreationForm, MaterialTransactionCreationForm, MaterialTransactionLinesCreationForm,
                           MaterialTransactionCreation_formset, TaxForm)
 from orders.models import PurchaseOder, SalesOrder, MaterialTransaction, PurchaseTransaction, MaterialTransactionLines, \
-    MaterialTransaction1, Inventory_Balance, SalesTransaction, Tax
+    MaterialTransaction1, Inventory_Balance, SalesTransaction, Tax, create_or_update_inventory_balance
 from inventory.models import Item, Uom
 from django.contrib import messages
 from json import dumps
@@ -50,7 +51,7 @@ def create_purchase_order_view(request):
                     if po_obj.discount_type == "percentage":
                         po_transaction_obj.discount_percentage = po_obj.discount
                     elif po_obj.discount_type == "amount":
-                        # TODO: implement this if
+                        # TODO: implement this
                         po_transaction_obj.discount_percentage = po_obj.discount
 
                     po_transaction_obj.save()
@@ -95,11 +96,6 @@ def update_purchase_order_view(request, id):
     po_transaction_inlineformset = purchase_transaction_formset(instance=order)
     purchase_order_form.fields["my_total_price_after_discount"].initial = order.global_price_after_discount
     for form in po_transaction_inlineformset:
-        item = form.instance.item
-        uom = item.uom
-        unit_price = item.avg_cost.amount
-       # form.fields["temp_uom"].initial = uom
-        form.fields["price_per_unit"].initial = unit_price
         form.fields["after_discount"].initial = form.instance.total_price_after_discount
 
     if request.method == 'POST':
@@ -116,6 +112,7 @@ def update_purchase_order_view(request, id):
                 for form in po_transaction_inlineformset:
                     po_transaction_obj = form.save(commit=False)
                     po_transaction_obj.last_updated_by = request.user
+                    po_transaction_obj.balance = po_transaction_obj.quantity
                     if po_obj.discount_type == "percentage":
                         po_transaction_obj.discount_percentage = po_obj.discount
                     elif po_obj.discount_type == "amount":
@@ -135,10 +132,11 @@ def update_purchase_order_view(request, id):
     supContext = {
         'po_form': purchase_order_form,
         'po_transaction_inlineformset': po_transaction_inlineformset,
-        'title': 'Update Purchase Order'
+        'title': 'Update Purchase Order',
+        'update':True,
 
     }
-    return render(request, 'update-purchase-order.html', supContext)
+    return render(request, 'create-purchase-order.html', supContext)
 
 
 def delete_purchase_order_view(request, id):
@@ -545,8 +543,8 @@ def delete_tax_view(request, id):
 
 def load_uoms(request):
     item_id = request.GET.get('item')
-    print("&&&&&&&&",item_id)
+    print("&&&&&&&&", item_id)
     item = Item.objects.get(id=item_id)
     uoms = Uom.objects.filter(category=item.uom.category)
-    print("***************",uoms)
-    return render(request, 'load-uoms.html', {'uoms': uoms})
+    print("***************", uoms)
+    return render(request, 'load-uoms.html', {'uoms': uoms,'default':item.uom})

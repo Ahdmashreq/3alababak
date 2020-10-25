@@ -1,4 +1,7 @@
 <option value="">---------</option>
+<option value={{default.id}} selected>{{default}}</option>
 {% for uom in uoms %}
-<option value="{{ uom.pk }}">{{ uom.name }}</option>
+    {% if uom != default %}
+        <option value="{{ uom.pk }}">{{ uom.name }}</option>
+    {% endif %}
 {% endfor %}

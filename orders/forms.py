@@ -45,9 +45,6 @@ class CustomMoneyWidget(MoneyWidget):
 
 
 class PurchaseTransactionCreationForm(forms.ModelForm):
-   # temp_uom = forms.CharField(max_length=30, required=False)
-    # my_total_price = forms.DecimalField(max_digits=200, decimal_places=2)
-    # my_price_per_unit = forms.DecimalField(max_digits=200, decimal_places=2)
     after_discount = forms.DecimalField(max_digits=200, decimal_places=2)
 
     class Meta:
@@ -63,47 +60,24 @@ class PurchaseTransactionCreationForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         super(PurchaseTransactionCreationForm, self).__init__(*args, **kwargs)
         self.fields['uom'].queryset = Uom.objects.none()
-        form_id = self.auto_id
-        print("HHHHHHH",form_id)
-        splits = form_id.split("-")
-        #st = splits[0]+'-'+splits[1]
-        # splits = st.split("_")
-        # item = splits[1]+'-'+'item'
-        print("%%%%%%%",splits)
-        if 'item' in self.data:
-            print("HIIIIIIIIIIIIIIIIIIIIIIIi")
+        item_id = self['item'].auto_id
+        splits = item_id.split("_")
+        item = splits[1] + '_' + splits[2]
+        if item in self.data:
             try:
-                item_id = int(self.data.get('item'))
-                self.fields['uom'].queryset = Uom.objects.filter(category=item_id.uom.category)
+                item_value = int(self.data.get(item))
+                item = Item.objects.get(id=item_value)
+                self.fields['uom'].queryset = Uom.objects.filter(category=item.uom.category)
             except (ValueError, TypeError):
                 pass  # invalid input from the client; ignore and fallback to empty City queryset
         elif self.instance.pk:
-            print("NOOOOOOOOOOOOOOOOOO")
-            self.fields['uom'].queryset = self.instance.item.uom.categpry.uom_set
+            self.fields['uom'].queryset = self.instance.item.uom.category.uom_set
 
-
-
-        # amount, currency = self.fields['total_price'].fields
-        # currency.initial = 'EGP'
-        # amount2, currency2 = self.fields['price_per_unit'].fields
-        # currency2.initial = 'EGP'
-
-        # amount.widget.attrs['readonly'] = True
-        # amount.widget.attrs['disabled'] = True
-        # currency.widget.attrs['readonly'] = True
-        # currency.widget.attrs['disabled'] = True
-        #self.fields['temp_uom'].widget.attrs['readonly'] = True
         self.fields['price_per_unit'].widget.attrs['onchange'] = 'myFunction(this)'
         self.fields['total_price'].widget.attrs['readonly'] = True
         self.fields['total_price'].widget.attrs['disabled'] = True
         self.fields['after_discount'].widget.attrs['readonly'] = True
         self.fields['after_discount'].widget.attrs['disabled'] = True
-
-        # amount2.widget.attrs['onchange'] = 'myFunction(this)'
-        # self.fields['price_per_unit'].widget = CustomMoneyWidget(
-        #     amount_widget=amount2.widget, currency_widget=currency2.widget)
-        # self.fields['total_price'].widget = CustomMoneyWidget(
-        #     amount_widget=amount.widget, currency_widget=currency.widget)
 
         for field in self.fields:
             if field == 'total_price':
@@ -116,7 +90,7 @@ class PurchaseTransactionCreationForm(forms.ModelForm):
 class SaleOrderCreationForm(forms.ModelForm):
     class Meta:
         model = SalesOrder
-        exclude = ('tax','currency', 'company', 'created_at', 'last_updated_at', 'created_by', 'last_updated_by')
+        exclude = ('tax', 'currency', 'company', 'created_at', 'last_updated_at', 'created_by', 'last_updated_by')
         widgets = {
             'date': forms.DateInput(attrs={'class': 'form-control tm', 'type': 'date', })
         }
