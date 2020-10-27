@@ -96,6 +96,9 @@
            </div>
             {{ address_inlineformset.management_form }}
            {% for form in address_inlineformset.forms %}
+            {% for hidden in form.hidden_fields %}
+                      {{ hidden }}
+              {% endfor %}
              <div class="form-group col-md-2">
                {{ form.address }}
                {{ form.address.errors }}
@@ -108,22 +111,22 @@
                {{ form.city }}
                {{ form.city.errors }}
              </div>
-             <div class="form-group col-md-1.5">
+             <div class="form-group col-md-2">
                {{ form.phone_number }}
                {{ form.phone_number.errors }}
              </div>
-             <div class="form-group col-md-1.5">
+             <div class="form-group col-md-2">
                {{ form.landline }}
                {{ form.landline.errors }}
              </div>
-             <div class="form-group col-md-1.5">
+             <div class="form-group col-md-2">
                {{ form.zip_code }}
                {{ form.zip_code.errors }}
              </div>
-             <div class="custom-switch custom-switch-secondary mb-2 custom-switch-small">
-                {{ form.DELETE }}
-                 <label class="custom-switch-btn" for=""></label>
-             </div>
+<!--             <div class="custom-switch custom-switch-secondary mb-2 custom-switch-small">-->
+<!--                {{ form.DELETE }}-->
+<!--                 <label class="custom-switch-btn" for=""></label>-->
+<!--             </div>-->
            {% endfor %}
        </div>
       </div>
@@ -140,26 +143,28 @@
                <div class="form-group col-md-2">
                  {{ address_inlineformset.empty_form.city }}
                </div>
-               <div class="form-group col-md-1.5">
+               <div class="form-group col-md-2">
                  {{ address_inlineformset.empty_form.phone_number }}
                </div>
-               <div class="form-group col-md-1.5">
+               <div class="form-group col-md-2">
                  {{ address_inlineformset.empty_form.landline }}
                </div>
-               <div class="form-group col-md-1.5">
+               <div class="form-group col-md-2">
                  {{ address_inlineformset.empty_form.zip_code }}
                </div>
-              <div class="custom-switch custom-switch-secondary mb-2 custom-switch-small">
-                 {{ address_inlineformset.empty_form.DELETE }}
-                  <label class="custom-switch-btn" for=""></label>
-              </div>
+<!--              <div class="custom-switch custom-switch-secondary mb-2 custom-switch-small">-->
+<!--                 {{ address_inlineformset.empty_form.DELETE }}-->
+<!--                  <label class="custom-switch-btn" for=""></label>-->
+<!--              </div>-->
              </div>
            </table>
         </div>
         <div class="submit-row">
           <button type="submit" class="btn btn-primary btn-lg mr-1" name ='Save'>Save</button>
           <button type="submit" class="btn btn-primary btn-lg mr-1" name ='Save and exit'>Save and Exit</button>
+            {% if not update %}
           <button type="submit" class="btn btn-primary btn-lg mr-1" name ='Save and add'>Save and Add</button>
+            {% endif %}
         </div>
       </form>
     </div>

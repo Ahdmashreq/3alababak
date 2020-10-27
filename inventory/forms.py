@@ -100,6 +100,19 @@ class UOMForm(forms.ModelForm):
             else:
                 self.fields[field].widget.attrs['class'] = 'form-control'
 
+    def clean(self):
+        cleaned_data = super(UOMForm, self).clean()
+        uoms = Uom.objects.filter(category=cleaned_data['category'])
+        item_length = len(uoms)
+        if item_length == 0 :
+            return cleaned_data
+        if cleaned_data['type'] == 'reference':
+            for uom in uoms:
+                if uom.type == 'reference':
+                    self.add_error('type', 'Reference unit is already set for this category')
+                    break
+        return cleaned_data
+
 
 uom_formset = modelformset_factory(Uom, form=UOMForm, extra=3, can_delete=False)
 

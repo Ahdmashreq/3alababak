@@ -156,7 +156,8 @@ def update_customer_view(request, id):
         'account_form': customer_form,
         'address_inlineformset': address_inlineformset,
         'title': 'Update Customer',
-        'account_type': 'Customer'
+        'account_type': 'Customer',
+        'update':True,
 
     }
     return render(request, 'create-supplier.html', supContext)
@@ -192,7 +193,8 @@ def update_supplier_view(request, id):
     supContext = {
         'account_form': supplier_form,
         'address_inlineformset': address_inlineformset,
-        'title': 'Update Supplier'
+        'title': 'Update Supplier',
+        'update':True
 
     }
     return render(request, 'create-supplier.html', supContext)

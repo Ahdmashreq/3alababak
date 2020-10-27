@@ -272,21 +272,16 @@ def convert_quantity(instance):
     if purchase_line.uom != instance.item.uom:  # if the purchased quantity not the same uom as inventory
         print("YES ITME if founct that both uoms not equal")
         if purchase_line.uom.type == 'reference':
-            print("1")
             if instance.item.uom.type == 'smaller':
                 new_quantity = instance.quantity * instance.item.uom.ratio
             elif instance.item.uom.type == 'bigger':
                 new_quantity = instance.quantity / instance.item.uom.ratio
         elif instance.item.uom.type == 'reference':
-            print("2")
-
             if purchase_line.uom.type == 'smaller':
                 new_quantity = instance.quantity / purchase_line.uom.ratio
             elif purchase_line.uom.type == 'bigger':
                 new_quantity = instance.quantity * purchase_line.uom.ratio
         elif instance.item.uom.type == 'smaller':
-            print("3")
-
             if purchase_line.uom.type == 'smaller':
                 new_quantity_temp = instance.quantity / purchase_line.uom.ratio
                 new_quantity = new_quantity_temp * instance.item.uom.ratio
@@ -294,8 +289,6 @@ def convert_quantity(instance):
                 new_quantity_temp = instance.quantity * purchase_line.uom.ratio
                 new_quantity = new_quantity_temp / instance.item.uom.ratio
         elif instance.item.uom.type == 'bigger':
-            print("4")
-
             if purchase_line.uom.type == 'smaller':
                 new_quantity_temp = instance.quantity / purchase_line.uom.ratio
                 new_quantity = new_quantity_temp / instance.item.uom.ratio
