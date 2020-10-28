@@ -7,7 +7,7 @@ from .serializers import CustomerSerializer, SupplierSerializer
 
 @api_view(['GET', ])
 def api_list_customers(request):
-    customers = Customer.objects.filter(company=request.user.company).order_by("last_updated_at")
+    customers = Customer.objects.all().order_by("last_updated_at")
     serializer = CustomerSerializer(customers, many=True)
     return Response(serializer.data)
 
