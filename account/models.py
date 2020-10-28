@@ -1,11 +1,15 @@
 from django.db import models
 from django.conf import settings
 from cities_light.models import Country, City
-
+from django.template.defaultfilters import slugify
 
 # Create your models here.
+from alababak.utils import arabic_slugify
+
+
 class Customer(models.Model):
     company = models.ForeignKey('Company', on_delete=models.CASCADE, )
+    slug = models.SlugField(null=True, blank=True, unique=True, allow_unicode=True)
     first_name = models.CharField(max_length=30)
     last_name = models.CharField(max_length=30)
     email = models.EmailField(blank=True, null=True)
@@ -21,9 +25,18 @@ class Customer(models.Model):
     def __str__(self):
         return self.first_name + ' ' + self.last_name
 
+    def save(self, *args, **kwargs):
+        if not self.slug:
+            self.slug = slugify(self.first_name + self.last_name)
+            if not self.slug:
+                self.slug = arabic_slugify(self.first_name + self.last_name)
+
+        super(Customer, self).save(*args, **kwargs)
+
 
 class Supplier(models.Model):
     company = models.ForeignKey('Company', on_delete=models.CASCADE, )
+    slug = models.SlugField(null=True, blank=True, unique=True, allow_unicode=True)
     first_name = models.CharField(max_length=30)
     last_name = models.CharField(max_length=30)
     email = models.EmailField(blank=True, null=True)
@@ -38,6 +51,14 @@ class Supplier(models.Model):
 
     def __str__(self):
         return self.first_name + ' ' + self.last_name
+
+    def save(self, *args, **kwargs):
+        if not self.id:
+            self.slug = slugify(self.first_name + self.last_name)
+            if not self.slug:
+                self.slug = arabic_slugify(self.first_name + self.last_name)
+
+        super(Supplier, self).save(*args, **kwargs)
 
 
 class Address(models.Model):
@@ -54,7 +75,7 @@ class Address(models.Model):
     created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, null=True,
                                    related_name="address_created_by")
     last_updated_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE,
-                                        null=True, related_name= "address_last_updated_by")
+                                        null=True, related_name="address_last_updated_by")
 
     class Meta:
         verbose_name_plural = "Addresses"

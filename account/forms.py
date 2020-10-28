@@ -6,7 +6,7 @@ from django.forms import inlineformset_factory
 class CustomerCreationForm(forms.ModelForm):
     class Meta:
         model = Customer
-        exclude = ('company', 'created_at', 'last_updated_at', 'created_by', 'last_updated_by')
+        exclude = ('slug','company', 'created_at', 'last_updated_at', 'created_by', 'last_updated_by')
 
     def __init__(self, *args, **kwargs):
         super(CustomerCreationForm, self).__init__(*args, **kwargs)
@@ -20,7 +20,7 @@ class CustomerCreationForm(forms.ModelForm):
 class SupplierCreationForm(forms.ModelForm):
     class Meta:
         model = Supplier
-        exclude = ('company', 'created_at', 'last_updated_at', 'created_by', 'last_updated_by')
+        exclude = ('slug','company', 'created_at', 'last_updated_at', 'created_by', 'last_updated_by')
 
     def __init__(self, *args, **kwargs):
         super(SupplierCreationForm, self).__init__(*args, **kwargs)

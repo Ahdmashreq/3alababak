@@ -56,8 +56,8 @@ def create_location_view(request, l_type):
     return render(request, 'create-location.html', location_context)
 
 
-def update_location_view(request, id):
-    location = Location.objects.get(id=id)
+def update_location_view(request, slug):
+    location = Location.objects.get(slug=slug)
     title = 'Update Warehouse' if location.type == 'warehouse' else 'Update Store'
     mytype = 'w' if location.type == 'warehouse' else 's'
     if request.method == 'POST':
@@ -81,8 +81,8 @@ def update_location_view(request, id):
     return render(request, 'create-location.html', location_context)
 
 
-def delete_location_view(request, id):
-    location = Location.objects.get(id=id)
+def delete_location_view(request, slug):
+    location = Location.objects.get(slug=slug)
     mytype = 'w' if location.type == 'warehouse' else 's'
 
     try:

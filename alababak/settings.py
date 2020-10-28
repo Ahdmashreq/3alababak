@@ -175,3 +175,4 @@ django_heroku.settings(locals())
 CURRENCIES = ('USD', 'EUR', 'EGP')
 CURRENCY_CHOICES = [('USD', 'USD $'), ('EUR', 'EUR €'), ('EGP', 'EGP E£')]
 OPENEXCHANGERATES_APP_ID = "c2b2efcb306e075d9c2f2d0b614119ea"
+ALLOW_UNICODE_SLUGS = True

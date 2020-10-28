@@ -49,7 +49,7 @@
                         Actions
                       </a>
                       <div class="dropdown-menu" aria-labelledby="dropdownMenuLink" x-placement="top-start" style="position: absolute; will-change: transform; top: 0px; left: 0px; transform: translate3d(0px, -2px, 0px);">
-                        <a class="dropdown-item" href="{% url 'account:update-customer' id=customer.id %}">{% trans "Update" %}</a>
+                        <a class="dropdown-item" href="{% url 'account:update-customer' slug=customer.slug %}">{% trans "Update" %}</a>
                         <a class="dropdown-item" href="#" data-toggle="modal" data-target="#delete-modal{{customer.pk}}">{% trans "Delete" %}</a>
                       </div>
                     </div>

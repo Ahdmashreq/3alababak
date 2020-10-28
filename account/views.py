@@ -1,3 +1,4 @@
+from django.db import IntegrityError
 from django.shortcuts import render, redirect
 from account.forms import (CustomerCreationForm, SupplierCreationForm, customer_address_formset,
                            supplier_address_formset, CompanyCreationForm, )
@@ -13,7 +14,13 @@ def create_customer_address_account(request):
             customer_obj = customer_form.save(commit=False)
             customer_obj.created_by = request.user
             customer_obj.company = request.user.company
-            customer_obj.save()
+            try:
+                customer_obj.save()
+            except IntegrityError:
+                cust_number = Customer.objects.filter(slug=customer_obj.slug).count()
+                customer_obj.slug = customer_obj.first_name + customer_obj.last_name + str(cust_number+1)
+                customer_obj.save()
+
             address_inlineformset = customer_address_formset(request.POST, instance=customer_obj)
             if address_inlineformset.is_valid():
                 address_obj = address_inlineformset.save(commit=False)
@@ -40,7 +47,7 @@ def create_customer_address_account(request):
         'account_form': customer_form,
         'address_inlineformset': address_inlineformset,
         'title': 'New Customer',
-        'account_type':'Customer'
+        'account_type': 'Customer'
     }
     return render(request, 'create-supplier.html', context=customer_information_context)
 
@@ -123,8 +130,8 @@ def list_customer_view(request):
     return render(request, 'list-customers.html', supContext)
 
 
-def update_customer_view(request, id):
-    customer = Customer.objects.get(id=id)
+def update_customer_view(request, slug):
+    customer = Customer.objects.get(slug=slug)
     customer_form = CustomerCreationForm(instance=customer)
     address_inlineformset = customer_address_formset(instance=customer)
     if request.method == 'POST':
@@ -157,15 +164,14 @@ def update_customer_view(request, id):
         'address_inlineformset': address_inlineformset,
         'title': 'Update Customer',
         'account_type': 'Customer',
-        'update':True,
+        'update': True,
 
     }
     return render(request, 'create-supplier.html', supContext)
 
 
-
-def update_supplier_view(request, id):
-    supplier = Supplier.objects.get(pk=id)
+def update_supplier_view(request, slug):
+    supplier = Supplier.objects.get(slug=slug)
     supplier_form = SupplierCreationForm(instance=supplier)
     address_inlineformset = supplier_address_formset(instance=supplier)
     if request.method == 'POST':
@@ -194,7 +200,7 @@ def update_supplier_view(request, id):
         'account_form': supplier_form,
         'address_inlineformset': address_inlineformset,
         'title': 'Update Supplier',
-        'update':True
+        'update': True
 
     }
     return render(request, 'create-supplier.html', supContext)
