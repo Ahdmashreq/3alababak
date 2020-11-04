@@ -26,12 +26,19 @@ class Customer(models.Model):
         return self.first_name + ' ' + self.last_name
 
     def save(self, *args, **kwargs):
-        if not self.slug:
-            self.slug = slugify(self.first_name + self.last_name)
-            if not self.slug:
-                self.slug = arabic_slugify(self.first_name + self.last_name)
-
+        if self.id:
+            obj = Customer.objects.get(id=self.id)
+            if obj.first_name != self.first_name or obj.last_name != self.last_name:
+                self.create_slug()
+        else:
+            self.create_slug()
         super(Customer, self).save(*args, **kwargs)
+
+    def create_slug(self):
+        self.slug = slugify(self.first_name + self.last_name)
+        cut_number = Customer.objects.filter(slug__startswith=self.slug).count()
+        slug_tail = cut_number + 1
+        self.slug = self.slug + str(slug_tail)
 
 
 class Supplier(models.Model):
@@ -53,17 +60,24 @@ class Supplier(models.Model):
         return self.first_name + ' ' + self.last_name
 
     def save(self, *args, **kwargs):
-        if not self.id:
-            self.slug = slugify(self.first_name + self.last_name)
-            if not self.slug:
-                self.slug = arabic_slugify(self.first_name + self.last_name)
-
+        if self.id:
+            obj = Supplier.objects.get(id=self.id)
+            if obj.first_name != self.first_name or obj.last_name != self.last_name:
+                self.create_slug()
+        else:
+            self.create_slug()
         super(Supplier, self).save(*args, **kwargs)
+
+    def create_slug(self):
+        self.slug = slugify(self.first_name + self.last_name)
+        supp_number = Supplier.objects.filter(slug__startswith=self.slug).count()
+        slug_tail = supp_number + 1
+        self.slug = self.slug + str(slug_tail)
 
 
 class Address(models.Model):
-    customer = models.ForeignKey('Customer', on_delete=models.CASCADE, blank=True, null=True)
-    supplier = models.ForeignKey('Supplier', on_delete=models.CASCADE, blank=True, null=True)
+    customer = models.ForeignKey('Customer', on_delete=models.CASCADE, blank=True, null=True, related_name='address')
+    supplier = models.ForeignKey('Supplier', on_delete=models.CASCADE, blank=True, null=True,related_name='supp_address')
     address = models.CharField(max_length=30, blank=True, null=True)
     country = models.ForeignKey(Country, on_delete=models.CASCADE, blank=True, null=True)
     city = models.CharField(max_length=30, blank=True, null=True)

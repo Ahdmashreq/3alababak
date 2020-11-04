@@ -1,7 +1,10 @@
 from rest_framework.response import Response
-from rest_framework.decorators import api_view
-from account.models import Customer, Supplier, Company
+from rest_framework.decorators import api_view, permission_classes
+from rest_framework.authtoken.models import Token
 from .serializers import UserSerializer
+from account.models import Customer, Supplier, Company
+
+
 
 
 @api_view(['POST', ])
@@ -21,6 +24,8 @@ def api_register_user(request):
         data['response'] = "Successfully registered a new user"
         data['username'] = user.username
         data['email'] = user.email
+        token = Token.objects.get(user=user).key
+        data['token'] = token
 
     else:
         data = serializer.errors
