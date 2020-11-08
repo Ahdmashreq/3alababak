@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from inventory.models import Location
+from location.models import Location
 
 
 class LocationSerializer(serializers.ModelSerializer):
