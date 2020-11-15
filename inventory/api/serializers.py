@@ -1,7 +1,7 @@
 from rest_framework import serializers
 from rest_framework.exceptions import ValidationError
 
-from inventory.models import UomCategory, Uom, Category, Brand, Attribute
+from inventory.models import UomCategory, Uom, Category, Brand, Attribute, StokeTake, StokeEntry
 
 
 class UomSerializer(serializers.ModelSerializer):
@@ -23,7 +23,7 @@ class UomSerializer(serializers.ModelSerializer):
 
 
 class UomCategorySerializer(serializers.ModelSerializer):
-    uoms = UomSerializer(many=True, required=False)
+    #uoms = UomSerializer(many=True, required=False)
 
     class Meta:
         model = UomCategory
@@ -53,3 +53,17 @@ class AttributeSerializer(serializers.ModelSerializer):
         model = Attribute
         exclude = ('created_at', 'created_by', 'last_updated_at', 'last_updated_by', 'company')
         read_only_fields = ('slug', 'id',)
+
+
+class StokeTakeSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = StokeTake
+        exclude = ('created_at', 'created_by', 'last_updated_at', 'last_updated_by', 'company')
+        read_only_fields = ('slug', 'id',)
+
+
+class StokeEntrySerializer(serializers.ModelSerializer):
+    class Meta:
+        model = StokeEntry
+        exclude = ('created_at', 'created_by', 'last_updated_at', 'last_updated_by',)
+        read_only_fields = ('slug', 'id', 'item', 'stoke_take',)

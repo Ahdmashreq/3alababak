@@ -32,22 +32,21 @@ def api_add_location(request):
     location_serializer = LocationSerializer(data=request.data)
     if location_serializer.is_valid():
         location_serializer.save(company=request.user.company, created_by=request.user)
-        return Response(location_serializer.data, status=status.HTTP_201_CREATED)
-    return Response(location_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        data = {"success": True, "data": location_serializer.data}
+        return Response(data, status=status.HTTP_201_CREATED)
+    else:
+        data = {"success": False, "error": {"code": 400, "message": location_serializer.errors}}
+        return Response(data, status=status.HTTP_400_BAD_REQUEST)
 
 
 @api_view(['PUT', 'PATCH', ])
 @permission_classes((IsAuthenticated,))
 def api_update_location(request, slug):
-    data = {}
     try:
-        location = Location.objects.get(slug=slug)
+        location = Location.objects.filter(company=request.user.company).get(slug=slug)
     except Location.DoesNotExist:
-        data['failure'] = 'record not found'
+        data = {"success": False, "error": {"code": 404, "message": "record not found"}}
         return Response(data=data, status=status.HTTP_404_NOT_FOUND)
-    if location.company != request.user.company:
-        data['failure'] = 'you are not allowed to edit this location'
-        return Response(data=data, status=status.HTTP_401_UNAUTHORIZED)
     if request.method == 'PUT':
         partial = False
     elif request.method == 'PATCH':
@@ -55,56 +54,65 @@ def api_update_location(request, slug):
     location_serializer = LocationSerializer(location, data=request.data, partial=partial)
     if location_serializer.is_valid():
         location_serializer.save()
-        # TODO : find a standardized way to send the response
-        data["success"] = 'update successful'
-        return Response(location_serializer.data, status=status.HTTP_200_OK)
-    return Response(location_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        data = {"success": True, "data": location_serializer.data}
+        return Response(data, status=status.HTTP_200_OK)
+    else:
+        data = {"success": False, "error": {"code": 400, "message": location_serializer.errors}}
+        return Response(data, status=status.HTTP_400_BAD_REQUEST)
 
 
 @api_view(['DELETE', ])
 @permission_classes((IsAuthenticated,))
 def api_delete_location(request, slug):
-    data = {}
     try:
-        location = Location.objects.get(slug=slug)
+        location = Location.objects.filter(company=request.user.company).get(slug=slug)
     except Location.DoesNotExist:
-        data['failure'] = 'record not found'
+        data = {"success": False, "error": {"code": 400, "message": "record not found"}}
         return Response(data=data, status=status.HTTP_404_NOT_FOUND)
-    if location.company != request.user.company:
-        data['failure'] = 'you are not allowed to delete this location'
-        return Response(data=data, status=status.HTTP_401_UNAUTHORIZED)
     operation = location.delete()
     if operation:
-        data['success'] = 'delete successful'
-        st = status.HTTP_200_OK
+        data = {"success": True}
+        return Response(data=data, status=status.HTTP_200_OK)
     else:
-        data['failure'] = 'delete failed'
-        st = status.HTTP_400_BAD_REQUEST
-    return Response(data=data, status=st)
+        data = {"success": False}
+        return Response(data=data, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
 @api_view(['GET', ])
 @permission_classes((IsAuthenticated,))
 def api_view_location(request, slug):
-    data = {}
     try:
-        location = Location.objects.get(slug=slug)
+        location = Location.objects.filter(company=request.user.company).get(slug=slug)
     except Location.DoesNotExist:
-        data['failure'] = 'record not found'
+        data = {"success": False, "error": {"code": 404, "message": "record not found"}}
         return Response(data=data, status=status.HTTP_404_NOT_FOUND)
-    if location.company != request.user.company:
-        data['failure'] = 'you are not allowed to view this customer'
-        return Response(data=data, status=status.HTTP_401_UNAUTHORIZED)
     serializer = LocationSerializer(location, many=False)
-    return Response(serializer.data, status=status.HTTP_200_OK)
+    data = {"success": True, "data": serializer.data}
+    return Response(data, status=status.HTTP_200_OK)
 
 
 # List locations with filter on type field
 class LocationListView(ListAPIView):
-    queryset = Location.objects.all()
     serializer_class = LocationSerializer
     permission_classes = (IsAuthenticated,)
     filter_backends = (DjangoFilterBackend, OrderingFilter)
     filter_fields = ('type',)
     ordering_fields = ('name',)
     pagination_class = PageNumberPagination
+
+    def get_queryset(self):
+        company = self.request.user.company
+        return Location.objects.filter(company=company)
+
+    def list(self, request, *args, **kwargs):
+        queryset = self.filter_queryset(self.get_queryset())
+        page = self.paginate_queryset(queryset)
+        if page is not None:
+            serializer = self.get_serializer(page, many=True)
+            paginated_response = self.get_paginated_response(serializer.data)
+            data = {"success": True, "count": paginated_response.data["count"], "data": serializer.data, }
+            return Response(data)
+
+        serializer = self.get_serializer(queryset, many=True)
+        data = {"success": True, "data": serializer.data}
+        return Response(data)

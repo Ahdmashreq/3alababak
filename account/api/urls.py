@@ -16,5 +16,4 @@ urlpatterns = [
     path('suppliers/<slug>/delete/', views.api_delete_supplier, name='delete-supplier'),
     path('suppliers/<slug>/view/', views.api_view_supplier, name='view-supplier'),
 
-
 ]

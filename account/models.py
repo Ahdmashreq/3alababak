@@ -22,8 +22,15 @@ class Customer(models.Model):
                                    related_name="customer_created_by")
     last_updated_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, null=True)
 
+    @property
+    def full_name(self):
+        return "%s %s" % (self.first_name, self.last_name)
+
     def __str__(self):
         return self.first_name + ' ' + self.last_name
+
+    class Meta:
+        unique_together = ['first_name', 'last_name', 'company']
 
     def save(self, *args, **kwargs):
         if self.id:
@@ -35,10 +42,10 @@ class Customer(models.Model):
         super(Customer, self).save(*args, **kwargs)
 
     def create_slug(self):
-        self.slug = slugify(self.first_name + self.last_name)
-        cut_number = Customer.objects.filter(slug__startswith=self.slug).count()
-        slug_tail = cut_number + 1
-        self.slug = self.slug + str(slug_tail)
+        self.slug = slugify(self.first_name + self.last_name + str(self.company.id))
+        # cut_number = Customer.objects.filter(slug__startswith=self.slug).count()
+        # slug_tail = cut_number + 1
+        # self.slug = self.slug + str(slug_tail)
 
 
 class Supplier(models.Model):
@@ -56,8 +63,15 @@ class Supplier(models.Model):
                                    related_name="supplier_created_by")
     last_updated_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, null=True)
 
+    @property
+    def full_name(self):
+        return "%s %s" % (self.first_name, self.last_name)
+
     def __str__(self):
         return self.first_name + ' ' + self.last_name
+
+    class Meta:
+        unique_together = ['first_name', 'last_name', 'company']
 
     def save(self, *args, **kwargs):
         if self.id:
@@ -69,15 +83,16 @@ class Supplier(models.Model):
         super(Supplier, self).save(*args, **kwargs)
 
     def create_slug(self):
-        self.slug = slugify(self.first_name + self.last_name)
-        supp_number = Supplier.objects.filter(slug__startswith=self.slug).count()
-        slug_tail = supp_number + 1
-        self.slug = self.slug + str(slug_tail)
+        self.slug = slugify(self.first_name + self.last_name + str(self.company.id))
+        # supp_number = Supplier.objects.filter(slug__startswith=self.slug).count()
+        # slug_tail = supp_number + 1
+        # self.slug = self.slug + str(slug_tail)
 
 
 class Address(models.Model):
     customer = models.ForeignKey('Customer', on_delete=models.CASCADE, blank=True, null=True, related_name='address')
-    supplier = models.ForeignKey('Supplier', on_delete=models.CASCADE, blank=True, null=True,related_name='supp_address')
+    supplier = models.ForeignKey('Supplier', on_delete=models.CASCADE, blank=True, null=True,
+                                 related_name='supp_address')
     address = models.CharField(max_length=30, blank=True, null=True)
     country = models.ForeignKey(Country, on_delete=models.CASCADE, blank=True, null=True)
     city = models.CharField(max_length=30, blank=True, null=True)

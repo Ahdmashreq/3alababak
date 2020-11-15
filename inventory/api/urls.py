@@ -30,5 +30,12 @@ urlpatterns = [
     path('attributes/<slug>/update/', views.api_update_attribute, name='update-attribute'),
     path('attributes/<slug>/delete/', views.api_delete_attribute, name='delete-attribute'),
     path('attributes/<slug>/', views.api_view_attribute, name='view-attribute'),
+    path('stokes/', views.StokeTakeListView.as_view(), name='list-stokes'),
+    path('stokes/create/', views.api_add_stoke, name='create-stoke'),
+    path('stokes/<slug>/update/', views.api_update_stoke, name='update-stoke'),
+    path('stokes/<slug>/delete/', views.api_delete_stoke, name='delete-stoke'),
+    path('stokes/<slug>/stoke-entries/', views.StokeEntryListView.as_view(), name='list-stoke-entries'),
+    path('stokes/<slug>/stoke-entries/update/', views.api_update_stoke_entry, name='update-stoke-entries'),
+    path('stokes/<slug>/review/', views.api_approve_or_disapprove_stoke, name='approve-stoke'),
 
 ]

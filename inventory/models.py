@@ -164,6 +164,8 @@ class Product(models.Model):
         return self.brand.name
 
 
+
+
 class Attribute(models.Model):
     company = models.ForeignKey(Company, on_delete=models.CASCADE, )
     name = models.CharField(max_length=50)
@@ -245,7 +247,7 @@ class ItemAttributeValue(models.Model):
 
 
 class StokeTake(models.Model):
-    location = models.ForeignKey(Location, on_delete=models.CASCADE, blank=True, null=True)
+    location = models.ForeignKey(Location, on_delete=models.CASCADE)
     company = models.ForeignKey(Company, on_delete=models.CASCADE, )
     category = TreeForeignKey(Category, on_delete=models.CASCADE, blank=True, null=True,
                               related_name='stoke_category')
@@ -253,6 +255,8 @@ class StokeTake(models.Model):
     type = models.CharField(max_length=30,
                             choices=[('location', 'By Location'), ('category', 'By Category'),
                                      ('random', 'Random')], default='location')
+    slug = models.SlugField(null=True, blank=True, allow_unicode=True, unique=True)
+
     date = models.DateField(null=True, blank=True)
     status = models.CharField(max_length=30, choices=[('Drafted', 'Drafted'), ('In Progress', 'In Progress'),
                                                       ('Pending Approval', 'Pending Approval'),
@@ -268,11 +272,28 @@ class StokeTake(models.Model):
     def __str__(self):
         return self.name
 
+    def save(self, *args, **kwargs):
+        try:
+            obj = StokeTake.objects.get(id=self.id)
+            if obj.name != self.name:
+                self.create_slug()
+        except StokeTake.DoesNotExist:
+            self.create_slug()
+
+        if not self.slug:
+            self.slug = arabic_slugify(self.name)
+
+        super(StokeTake, self).save(*args, **kwargs)
+
+    def create_slug(self):
+        self.slug = slugify(self.name + '-' + str(self.company.id))
+
 
 class StokeEntry(models.Model):
     stoke_take = models.ForeignKey(StokeTake, on_delete=models.CASCADE, )
     item = models.ForeignKey(Item, on_delete=models.CASCADE, related_name="stoke_entry")
     quantity = models.IntegerField(null=True, blank=True)
+    slug = models.SlugField(null=True, blank=True, allow_unicode=True, unique=True)
     created_at = models.DateField(auto_now_add=True, null=True)
     last_updated_at = models.DateField(null=True, auto_now=True, auto_now_add=False)
     created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, null=True,
