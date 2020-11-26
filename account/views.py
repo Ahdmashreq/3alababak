@@ -29,7 +29,6 @@ def create_customer_address_account(request):
                     address.save()
 
                 messages.success(request, 'Saved Successfully')
-                print("***************")
                 if 'Save and exit' in request.POST:
                     return redirect('account:list-customers')
                 elif 'Save and add' in request.POST:

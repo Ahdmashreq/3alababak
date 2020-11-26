@@ -260,10 +260,7 @@ def get_item(request, id):
 
 
 class ItemAutocomplete(autocomplete.Select2QuerySetView):
-    print("inside ItemAutocomplete")
-
     def get_queryset(self):
-        print("inside get_queryset ItemAutocomplete")
         if not self.request.user.is_authenticated:
             return Item.objects.none()
         qs = Item.objects.all()
@@ -273,8 +270,6 @@ class ItemAutocomplete(autocomplete.Select2QuerySetView):
 
 
 class SoItemAutocomplete(autocomplete.Select2QuerySetView):
-    print("inside ItemAutocomplete")
-
     def get_queryset(self):
         print("inside get_queryset ItemAutocomplete")
         if not self.request.user.is_authenticated:
