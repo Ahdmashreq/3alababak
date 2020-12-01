@@ -11,7 +11,7 @@ def list_location_view(request, l_type):
         mytype = 'warehouse'
     elif l_type == 's':
         mytype = 'store'
-    locations_list = Location.objects.filter(type=mytype)
+    locations_list = Location.objects.filter(company=request.user.company,type=mytype)
     location_context = {
         'locations_list': locations_list,
         'type': l_type,
@@ -56,8 +56,8 @@ def create_location_view(request, l_type):
     return render(request, 'create-location.html', location_context)
 
 
-def update_location_view(request, id):
-    location = Location.objects.get(id=id)
+def update_location_view(request, slug):
+    location = Location.objects.get(slug=slug)
     title = 'Update Warehouse' if location.type == 'warehouse' else 'Update Store'
     mytype = 'w' if location.type == 'warehouse' else 's'
     if request.method == 'POST':
@@ -81,8 +81,8 @@ def update_location_view(request, id):
     return render(request, 'create-location.html', location_context)
 
 
-def delete_location_view(request, id):
-    location = Location.objects.get(id=id)
+def delete_location_view(request, slug):
+    location = Location.objects.get(slug=slug)
     mytype = 'w' if location.type == 'warehouse' else 's'
 
     try:

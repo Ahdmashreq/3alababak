@@ -41,14 +41,14 @@
                   <td class="sorting_1">{{ forloop.counter }}</td>
                   <td>{{ category.name }}</td>
                   <td>{{ category.description }}</td>
-                  <td>{{ category.parent_category }}</td>
+                  <td>{{ category.parent }}</td>
                   <td>
                     <div class="dropdown d-inline-block">
                       <a class="btn btn-outline-primary dropdown-toggle mb-1" href="#" role="button" id="dropdownMenuLink" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                         Actions
                       </a>
                       <div class="dropdown-menu" aria-labelledby="dropdownMenuLink" x-placement="top-start" style="position: absolute; will-change: transform; top: 0px; left: 0px; transform: translate3d(0px, -2px, 0px);">
-                        <a class="dropdown-item" href="#">{% trans "Update" %}</a>
+                        <a class="dropdown-item" href="{% url 'inventory:update-categories' id=category.id %}">{% trans "Update" %}</a>
                         <a class="dropdown-item" href="#" data-toggle="modal" data-target="#delete-modal{{category.pk}}">{% trans "Delete" %}</a>
                       </div>
                     </div>
@@ -62,7 +62,7 @@
                       </div>
                       <div class="modal-footer">
                         <button type="button" class="btn btn-secondary" data-dismiss="modal">{% trans "No" %}</button>
-                        <a href="#" class="btn btn-danger" type="button">{% trans "Delete" %}</a>
+                        <a href="{% url 'inventory:delete-categories' id=category.id %}" class="btn btn-danger" type="button">{% trans "Delete" %}</a>
                       </div>
                     </div>
                   </div>
@@ -71,18 +71,7 @@
               </tbody>
             </table>
           </div>
-          <ul class="root">
-    {% recursetree categories_list %}
-        <li>
-          <a href="#">{{ node.name }}</a>
-            {% if not node.is_leaf_node %}
-                <ul class="children">
-                  <a href="#">{{ children }}</a>
-                </ul>
-            {% endif %}
-        </li>
-    {% endrecursetree %}
-</ul>
+
         </div>
       </div>
     </div>

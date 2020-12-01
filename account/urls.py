@@ -1,4 +1,5 @@
 from django.urls import path
+
 from account import views
 
 app_name = 'account'
@@ -8,8 +9,8 @@ urlpatterns = [
     path('list/suppliers/', views.list_suppliers_view, name='list-suppliers'),
     path('list/customers/', views.list_customer_view, name='list-customers'),
     path('company/', views.create_company, name='create-company'),
-    path('update/customer/<id>', views.update_customer_view, name='update-customer'),
-    path('update/supplier/<id>', views.update_supplier_view, name='update-supplier'),
+    path('update/customer/<slug>', views.update_customer_view, name='update-customer'),
+    path('update/supplier/<slug>', views.update_supplier_view, name='update-supplier'),
     path('delete/customer/<id>', views.delete_customer, name='delete-customer'),
     path('delete/supplier/<id>', views.delete_supplier, name='delete-supplier'),
 

@@ -19,156 +19,158 @@
     text-align: right;
     overflow: hidden;
   }
+
 </style>
 {% endblock style  %}
 {% block body%}
 <div class="container-fluid">
-  <div class="row">
-    <div class="col-12">
-      <h1>{{title}}</h1>
+    <div class="row">
+        <div class="col-12">
+            <h1>{{title}}</h1>
 
-      <div class="text-zero top-right-button-container">
-        <a href="{% url 'orders:list-so'%}">
-          <button type="button" class="btn btn-primary btn-lg top-right-button mr-1">BACK TO LIST</button>
-        </a>
-      </div>
-      <div class="separator mb-5"></div>
+            <div class="text-zero top-right-button-container">
+                <a href="{% url 'orders:list-so'%}">
+                    <button type="button" class="btn btn-primary btn-lg top-right-button mr-1">BACK TO LIST</button>
+                </a>
+            </div>
+            <div class="separator mb-5"></div>
+        </div>
     </div>
-  </div>
 
-  <div class="card mb-4">
-    <div class="card">
-      <div class="card-body">
-      <form method="POST" id="myform">
-        {% csrf_token %}
-        <div class="form-row">
-            <div class="form-group col-md-3">
-                <label>Customer</label>
-                {{so_form.customer}}
-            </div>
-            <div class="form-group col-md-3">
-                <label>Name</label>
-                {{so_form.order_name}}
-            </div>
-            <div class="form-group col-md-3">
-                <label>Code</label>
-                {{so_form.sale_code}}
-            </div>
-            <div class="form-group col-md-3">
-                <label>Date</label>
-                {{so_form.date}}
-            </div>
-             <div class="form-group col-md-3">
-                <label>Grand Total (EGP)</label>
-                {{so_form.subtotal_price}}
-            </div>
-        </div>
-      <div class="separator mb-5"></div>
-      <div class="row" style="margin-left:0px;">
-        <div class="col-md-12">
-          <div class="bgc-white bd bdrs-3 p-20 mB-20">
-            <div id="purchase_set">
-            <div class="form-row">
-               <div class="form-group col-md-4">
-                   <label>{% trans "Item" %}</label>
-               </div>
-                <div class="form-group col-md-2">
-                   <label>{% trans "Location" %}</label>
-               </div>
-               <div class="form-group col-md-1">
-                   <label>{% trans "Quantity" %}</label>
-               </div>
-               <div class="form-group col-md-1">
-                   <label>{% trans "Unit" %}</label>
-               </div>
-               <div class="form-group col-md-1">
-                   <label>{% trans "Cost per unit (EGP)" %}</label>
-               </div>
-                <div class="form-group col-md-1">
-                   <label>{% trans "Selling price per unit (EGP)" %}</label>
-               </div>
-                 <div class="form-group col-md-2">
-                   <label>{% trans "Total Price (EGP)" %}</label>
-               </div>
-
-            </div>
-             {{ so_transaction_inlineformset.management_form }}
-            {% for form in so_transaction_inlineformset %}
-            {{ form.id }}
-            {{ form.media }}
-           <div class="form-row">
-             <div class="form-group col-md-4">
-              {{form.item}}
-             </div>
-             <div class="form-group col-md-2">
-               {{ form.location}}
-             </div>
-             <div class="form-group col-md-1">
-               {{ form.quantity}}
-             </div>
-             <div class="form-group col-md-1">
-               {{form.temp_uom}}
-             </div>
-             <div class="form-group col-md-1">
-                 {{form.temp_unit_cost}}
-             </div>
-             <div class="form-group col-md-1">
-                 {{form.price_per_unit}}
-             </div>
-             <div class="form-group col-md-2">
-               {{form.total_price}}
-             </div>
-
-           </div>
-           {% endfor %}
-          </div>
-        </div>
-      </div>
-
-
-      </div>
-
-
-        <button type="button" id="add_item" class="btn cur-p btn-success">{% trans "Add Inventory Item"%}</button>
-          <div id="empty_form" style="display:none">
-                  <table class='no_error'>
+    <div class="card mb-4">
+        <div class="card">
+            <div class="card-body">
+                <form method="POST" id="myform" onsubmit="setFormSubmitting()">
+                    {% csrf_token %}
                     <div class="form-row">
-                        {{ so_transaction_inlineformset.empty_form.media }}
-                      <div class="form-group col-md-4">
-                        {{ so_transaction_inlineformset.empty_form.item}}
-                      </div>
-                      <div class="form-group col-md-2">
-                        {{ so_transaction_inlineformset.empty_form.location}}
-                      </div>
-                      <div class="form-group col-md-1">
-                        {{ so_transaction_inlineformset.empty_form.quantity}}
-                      </div>
-                      <div class="form-group col-md-1">
-                        {{ so_transaction_inlineformset.empty_form.temp_uom}}
-                      </div>
-                      <div class="form-group col-md-1">
-                          {{ so_transaction_inlineformset.empty_form.temp_unit_cost }}
+                        <div class="form-group col-md-3">
+                            <label>Customer</label>
+                            {{so_form.customer}}
+                        </div>
+                        <div class="form-group col-md-3">
+                            <label>Name</label>
+                            {{so_form.order_name}}
+                        </div>
+                        <div class="form-group col-md-3">
+                            <label>Code</label>
+                            {{so_form.sale_code}}
+                        </div>
+                        <div class="form-group col-md-3">
+                            <label>Date</label>
+                            {{so_form.date}}
+                        </div>
+                        <div class="form-group col-md-3">
+                            <label>Grand Total (EGP)</label>
+                            {{so_form.subtotal_price}}
+                        </div>
+                    </div>
+                    <div class="separator mb-5"></div>
+                    <div class="row" style="margin-left:0px;">
+                        <div class="col-md-12">
+                            <div class="bgc-white bd bdrs-3 p-20 mB-20">
+                                <div id="purchase_set">
+                                    <div class="form-row">
+                                        <div class="form-group col-md-4">
+                                            <label>{% trans "Item" %}</label>
+                                        </div>
+                                        <div class="form-group col-md-2">
+                                            <label>{% trans "Location" %}</label>
+                                        </div>
+                                        <div class="form-group col-md-1">
+                                            <label>{% trans "Quantity" %}</label>
+                                        </div>
+                                        <div class="form-group col-md-1">
+                                            <label>{% trans "Unit" %}</label>
+                                        </div>
+                                        <div class="form-group col-md-1">
+                                            <label>{% trans "Cost per unit (EGP)" %}</label>
+                                        </div>
+                                        <div class="form-group col-md-1">
+                                            <label>{% trans "Selling price per unit (EGP)" %}</label>
+                                        </div>
+                                        <div class="form-group col-md-2">
+                                            <label>{% trans "Total Price (EGP)" %}</label>
+                                        </div>
 
-                      </div>
-                     <div class="form-group col-md-1">
-                          {{ so_transaction_inlineformset.empty_form.price_per_unit }}
-                      </div>
-                      <div class="form-group col-md-2">
-                        {{ so_transaction_inlineformset.empty_form.total_price}}
-                      </div>
+                                    </div>
+                                    {{ so_transaction_inlineformset.management_form }}
+                                    {% for form in so_transaction_inlineformset %}
+                                    {{ form.id }}
+                                    {{ form.media }}
+                                    <div class="form-row">
+                                        <div class="form-group col-md-4">
+                                            {{form.item}}
+                                        </div>
+                                        <div class="form-group col-md-2">
+                                            {{ form.location}}
+                                        </div>
+                                        <div class="form-group col-md-1">
+                                            {{ form.quantity}}
+                                        </div>
+                                        <div class="form-group col-md-1">
+                                            {{form.temp_uom}}
+                                        </div>
+                                        <div class="form-group col-md-1">
+                                            {{form.temp_unit_cost}}
+                                        </div>
+                                        <div class="form-group col-md-1">
+                                            {{form.price_per_unit}}
+                                        </div>
+                                        <div class="form-group col-md-2">
+                                            {{form.total_price}}
+                                        </div>
+
+                                    </div>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                        </div>
+
 
                     </div>
-                  </table>
-                </div>
 
-        <div class="submit-row">
-          <button type="submit" class="btn btn-primary btn-lg mt-3" name='Save'>Save</button>
-          <button type="submit" class="btn btn-primary btn-lg mt-3" name='Save and exit'>Save and Exit
-          </button>
+
+                    <button type="button" id="add_item" class="btn cur-p btn-success">{% trans "Add Inventory Item"%}
+                    </button>
+                    <div id="empty_form" style="display:none">
+                        <table class='no_error'>
+                            <div class="form-row">
+                                {{ so_transaction_inlineformset.empty_form.media }}
+                                <div class="form-group col-md-4">
+                                    {{ so_transaction_inlineformset.empty_form.item}}
+                                </div>
+                                <div class="form-group col-md-2">
+                                    {{ so_transaction_inlineformset.empty_form.location}}
+                                </div>
+                                <div class="form-group col-md-1">
+                                    {{ so_transaction_inlineformset.empty_form.quantity}}
+                                </div>
+                                <div class="form-group col-md-1">
+                                    {{ so_transaction_inlineformset.empty_form.temp_uom}}
+                                </div>
+                                <div class="form-group col-md-1">
+                                    {{ so_transaction_inlineformset.empty_form.temp_unit_cost }}
+
+                                </div>
+                                <div class="form-group col-md-1">
+                                    {{ so_transaction_inlineformset.empty_form.price_per_unit }}
+                                </div>
+                                <div class="form-group col-md-2">
+                                    {{ so_transaction_inlineformset.empty_form.total_price}}
+                                </div>
+
+                            </div>
+                        </table>
+                    </div>
+
+                    <div class="submit-row">
+                        <button type="submit" class="btn btn-primary btn-lg mt-3" name='Save'>Save</button>
+                        <button type="submit" class="btn btn-primary btn-lg mt-3" name='Save and exit'>Save and Exit
+                        </button>
+                    </div>
+                </form>
+            </div>
         </div>
-      </form>
-      </div>
-    </div>
     </div>
 </div>
 {% endblock body %}
@@ -182,6 +184,7 @@ for (i = 0; i < $('#id_salestransaction_set-TOTAL_FORMS').val(); i++) {
     }
          $('#id_subtotal_price').prop('disabled', false);
 });
+
 </script>
 <script>
     function myAction(object) {
@@ -194,23 +197,35 @@ for (i = 0; i < $('#id_salestransaction_set-TOTAL_FORMS').val(); i++) {
                 uom_id = id_prefix+'-'+'temp_uom'
                 price_id = id_prefix+'-'+'price_per_unit'
                 quantity_id =  id_prefix+'-'+'quantity'
+                cost_id = id_prefix+'-'+'temp_unit_cost'
+                location_id = id_prefix+'-'+'location'
+                mylocation = document.getElementById(location_id).value
+                console.log(mylocation)
                 $.ajax({
                 type: "get",
                 url: endpoint,
                 contentType: 'application/json',
                 success: function(data){
-                console.log("HEYYYYYYYYY")
                   document.getElementById(uom_id).value=data['uom']
-                  if (location !== ""){
-                 for (i = 0; i < data['balance'].length; i++) {
-                      if (object.value == data['balance'][i]['item'] && location == data['balance'][i]['location'] ){
-                          document.getElementById(quantity_id).placeholder = data['balance'][i]['qnt'];
-                      };
-                    };
-                    }
-                     else {
+                  if (mylocation !== ""){
+                     var flag = false;
+                     for (i = 0; i < data['balance'].length; i++) {
+                          if (mylocation == data['balance'][i]['location'] ){
+                                                        flag = true;
+
+                              document.getElementById(quantity_id).placeholder = data['balance'][i]['qnt'];
+                              document.getElementById(cost_id).value = data['balance'][i]['unit_cost'];
+                          };
+                     };
+                     if (flag == false){
+                            document.getElementById(quantity_id).placeholder = "";
+                            document.getElementById(cost_id).value = "";
+                     }
+                  }
+                 else {
                     document.getElementById(quantity_id).placeholder = "";
-        }
+                    document.getElementById(cost_id).value = "";
+                }
                       if (document.getElementById(quantity_id).value){
                         myFunction(document.getElementById(quantity_id));
                       };
@@ -225,6 +240,7 @@ for (i = 0; i < $('#id_salestransaction_set-TOTAL_FORMS').val(); i++) {
             };
 
     };
+
 </script>
 
 <script>
@@ -251,6 +267,7 @@ function myFunction(object) {
         };
 
 };
+
 </script>
 
 <script>
@@ -267,6 +284,7 @@ function grandTotal(){
     document.getElementById("id_subtotal_price").value = grand_total;
 
 }
+
 </script>
 <script>
   $('#add_item').click(function() {
@@ -280,6 +298,7 @@ function grandTotal(){
 
 
   });
+
 </script>
 <script>
 function inventory(object) {
@@ -298,12 +317,18 @@ function inventory(object) {
                 url: endpoint,
                 contentType: 'application/json',
                 success: function(data){
+                      var flag = false;
                       for (i = 0; i < data['balance'].length; i++) {
                       if (object.value == data['balance'][i]['location']){
+                            flag=true;
                           document.getElementById(quantity_id).placeholder = data['balance'][i]['qnt'];
                         document.getElementById(price_id).value = data['balance'][i]['unit_cost'];
 
                       };
+                    };
+                    if (flag == false){
+                     document.getElementById(quantity_id).placeholder = '';
+                     document.getElementById(price_id).value='';
                     };
 
 
@@ -317,6 +342,25 @@ function inventory(object) {
             };
 
     };
+
+</script>
+<script>
+var formSubmitting = false;
+var setFormSubmitting = function() { formSubmitting = true; console.log("ENTEREERERD"); };
+
+window.onload = function() {
+    window.addEventListener("beforeunload", function (e) {
+        if (formSubmitting) {
+            return undefined;
+        }
+
+        var confirmationMessage = 'It looks like you have been editing something. '
+                                + 'If you leave before saving, your changes will be lost.';
+
+        (e || window.event).returnValue = confirmationMessage; //Gecko + IE
+        return confirmationMessage; //Gecko + Webkit, Safari, Chrome etc.
+    });
+};
 </script>
 
 {% endblock js %}

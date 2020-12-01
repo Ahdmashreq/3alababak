@@ -1,7 +1,9 @@
 from django import forms
 from djmoney.forms import MoneyWidget
 
+from account.models import Supplier, Customer
 from inventory.models import Item, Uom
+from location.models import Location
 from orders.models import PurchaseOder, Tax
 from django.forms import inlineformset_factory, modelformset_factory
 from orders.models import PurchaseOder, PurchaseTransaction, SalesOrder, SalesTransaction, MaterialTransaction, \
@@ -23,12 +25,15 @@ class PurchaseOrderCreationForm(forms.ModelForm):
         }
 
     def __init__(self, *args, **kwargs):
+        user = kwargs.pop('user')
         super(PurchaseOrderCreationForm, self).__init__(*args, **kwargs)
         self.fields['purchase_code'].widget.attrs['readonly'] = True
         self.fields['global_price'].widget.attrs['readonly'] = True
         self.fields['global_price'].widget.attrs['disabled'] = True
         self.fields['my_total_price_after_discount'].widget.attrs['readonly'] = True
         self.fields['my_total_price_after_discount'].widget.attrs['disabled'] = True
+        self.fields["supplier"].queryset = Supplier.objects.filter(company=user.company)
+
         # amount, currency = self.fields['global_price'].fields
         # amount.widget.attrs['readonly'] = True
         # amount.widget.attrs['disabled'] = True
@@ -58,6 +63,7 @@ class PurchaseTransactionCreationForm(forms.ModelForm):
         }
 
     def __init__(self, *args, **kwargs):
+        user = kwargs.pop('user')
         super(PurchaseTransactionCreationForm, self).__init__(*args, **kwargs)
         self.fields['uom'].queryset = Uom.objects.none()
         item_id = self['item'].auto_id
@@ -67,12 +73,16 @@ class PurchaseTransactionCreationForm(forms.ModelForm):
             try:
                 item_value = int(self.data.get(item))
                 item = Item.objects.get(id=item_value)
-                self.fields['uom'].queryset = Uom.objects.filter(category=item.uom.category)
+                if item.uom is not None:
+                    query = Uom.objects.filter(category=item.uom.category, company=user.company)
+                else:
+                    query = Uom.objects.filter(company=user.company)
+                self.fields['uom'].queryset = query
             except (ValueError, TypeError):
-                pass  # invalid input from the client; ignore and fallback to empty City queryset
+                pass  # invalid input from the client; ignore and fallback to empty item queryset
         elif self.instance.pk:
             self.fields['uom'].queryset = self.instance.item.uom.category.uom_set
-
+        self.fields["item"].queryset = Item.objects.filter(company=user.company)
         self.fields['price_per_unit'].widget.attrs['onchange'] = 'myFunction(this)'
         self.fields['total_price'].widget.attrs['readonly'] = True
         self.fields['total_price'].widget.attrs['disabled'] = True
@@ -96,10 +106,13 @@ class SaleOrderCreationForm(forms.ModelForm):
         }
 
     def __init__(self, *args, **kwargs):
+        user = kwargs.pop('user')
         super(SaleOrderCreationForm, self).__init__(*args, **kwargs)
         self.fields['sale_code'].widget.attrs['readonly'] = True
         self.fields['subtotal_price'].widget.attrs['readonly'] = True
         self.fields['subtotal_price'].widget.attrs['disabled'] = True
+        self.fields["customer"].queryset = Customer.objects.filter(company=user.company)
+
 
         for field in self.fields:
             self.fields[field].widget.attrs['class'] = 'form-control'
@@ -121,6 +134,7 @@ class SaleTransactionCreationForm(forms.ModelForm):
         }
 
     def __init__(self, *args, **kwargs):
+        user = kwargs.pop('user')
         super(SaleTransactionCreationForm, self).__init__(*args, **kwargs)
         self.fields['temp_uom'].widget.attrs['readonly'] = True
         self.fields['price_per_unit'].widget.attrs['onchange'] = 'myFunction(this)'
@@ -129,6 +143,8 @@ class SaleTransactionCreationForm(forms.ModelForm):
         self.fields['total_price'].widget.attrs['disabled'] = True
         self.fields['temp_unit_cost'].widget.attrs['readonly'] = True
         self.fields['temp_unit_cost'].widget.attrs['disabled'] = True
+        self.fields["location"].queryset = Location.objects.filter(company=user.company)
+
 
         for field in self.fields:
             if field == 'total_price':
@@ -167,7 +183,7 @@ class ReceivingTransactionCreationForm(forms.ModelForm):
 class MaterialTransactionCreationForm(forms.ModelForm):
     class Meta:
         model = MaterialTransaction1
-        exclude = ('transaction_type', 'stoke_take', 'sale_order', 'created_at', 'last_updated_at',
+        exclude = ('company','transaction_type', 'stoke_take', 'sale_order', 'created_at', 'last_updated_at',
                    'created_by', 'last_updated_by')
         widgets = {
             'date': forms.DateInput(attrs={'class': 'form-control tm', 'type': 'date', }),
@@ -194,15 +210,15 @@ class MaterialTransactionLinesCreationForm(forms.ModelForm):
 
     def __init__(self, *args, **kwargs):
         id = kwargs.pop('id')
+        user = kwargs.pop('user')
         super(MaterialTransactionLinesCreationForm, self).__init__(*args, **kwargs)
         po_transactions = PurchaseTransaction.objects.select_related('item').filter(purchase_order__id=id,
                                                                                     status='open')
-        print("Hiiiiiiiiiiiiii", po_transactions)
         items = Item.objects.filter(name__in=list(po_transactions))
-        print(items)
+        self.fields['item'].queryset = items
+        self.fields['location'].queryset = Location.objects.filter(company=user.company)
         for field in self.fields:
             self.fields[field].widget.attrs['class'] = 'form-control'
-            self.fields['item'].queryset = items
 
 
 class TaxForm(forms.ModelForm):

@@ -2,15 +2,16 @@ import json
 from datetime import date
 
 from django.core.exceptions import ValidationError
+from django.db import IntegrityError
 from django.db.models import Q, ProtectedError
 from django.shortcuts import render, redirect
 from django.contrib import messages
 from inventory.models import (Category, Brand, Product, Attribute, Item, Uom, StokeTake, StokeEntry, UomCategory,
-                              ItemAttributeValue)
+                              ItemAttributeValue, ItemImage)
 from inventory.forms import (CategoryForm, category_model_formset, BrandForm, brand_model_formset,
                              AttributeForm, attribute_model_formset, ProductForm,
                              uom_formset, StokeTakeForm, UOMForm, stoke_entry_formset, StokeEntryForm, UomCategoryForm,
-                             ItemForm, item_attribute_model_formset)
+                             ItemForm, item_attribute_model_formset, ItemImageForm)
 from inventory.serializers import AttributeSeializer
 from orders.models import Inventory_Balance, MaterialTransaction1, MaterialTransactionLines
 import random
@@ -19,18 +20,21 @@ from django.http import HttpResponse
 
 
 def create_category_view(request):
-    category_form = CategoryForm()
+    category_form = CategoryForm(user=request.user)
     if request.method == 'POST':
-        category_form = CategoryForm(request.POST)
+        category_form = CategoryForm(request.POST, user=request.user)
         if category_form.is_valid():
             category_obj = category_form.save(commit=False)
             category_obj.company = request.user.company
             category_obj.created_by = request.user
-            category_obj.save()
-            if 'Save and exit' in request.POST:
-                return redirect('inventory:list-categories')
-            elif 'Save and add' in request.POST:
-                return redirect('inventory:create-category')
+            try:
+                category_obj.save()
+                if 'Save and exit' in request.POST:
+                    return redirect('inventory:list-categories')
+                elif 'Save and add' in request.POST:
+                    return redirect('inventory:create-category')
+            except IntegrityError:
+                messages.error(request, "Category name already exists")
 
     categoryContext = {
         'category_form': category_form,
@@ -41,15 +45,15 @@ def create_category_view(request):
 
 
 def list_categorires_view(request):
-    categories_list = Category.objects.all()
+    categories_list = Category.objects.filter(company=request.user.company)
     categoryContext = {
         'categories_list': categories_list
     }
-    return render(request, 'list-category.html', context=categoryContext)
+    return render(request, 'list-categories.html', context=categoryContext)
 
 
 def list_brands_view(request):
-    brands_list = Brand.objects.all()
+    brands_list = Brand.objects.filter(company=request.user.company)
     brandsContext = {
         'brands_list': brands_list
     }
@@ -64,11 +68,15 @@ def create_brand_view(request):
             brand_obj = brand_form.save(commit=False)
             brand_obj.company = request.user.company
             brand_obj.created_by = request.user
-            brand_obj.save()
-            if 'Save and exit' in request.POST:
-                return redirect('inventory:list-brands')
-            elif 'Save and add' in request.POST:
-                return redirect('inventory:create-brand')
+            try:
+                brand_obj.save()
+                if 'Save and exit' in request.POST:
+                    return redirect('inventory:list-brands')
+                elif 'Save and add' in request.POST:
+                    return redirect('inventory:create-brand')
+
+            except IntegrityError:
+                messages.error(request, "Brand name already exists")
 
     categoryContext = {
         'brand_form': brand_form,
@@ -86,9 +94,12 @@ def update_brand_view(request, brand_id):
         if brand_form.is_valid():
             brand_obj = brand_form.save(commit=False)
             brand_obj.last_updated_by = request.user
-            brand_obj.save()
-            if 'Save and exit' in request.POST:
-                return redirect('inventory:list-brands')
+            try:
+                brand_obj.save()
+                if 'Save and exit' in request.POST:
+                    return redirect('inventory:list-brands')
+            except IntegrityError:
+                messages.error(request, "Brand name already exists")
 
     categoryContext = {
         'brand_form': brand_form,
@@ -109,7 +120,7 @@ def delete_brand_view(request, brand_id):
 
 
 def list_attributes_view(request):
-    attributes_list = Attribute.objects.all()
+    attributes_list = Attribute.objects.filter(company=request.user.company)
     attributesContext = {
         'attributes_list': attributes_list
     }
@@ -124,11 +135,14 @@ def create_attribute_view(request):
             attribute_obj = attribute_form.save(commit=False)
             attribute_obj.company = request.user.company
             attribute_obj.created_by = request.user
-            attribute_obj.save()
-            if 'Save and exit' in request.POST:
-                return redirect('inventory:list-attributes')
-            elif 'Save and add' in request.POST:
-                return redirect('inventory:create-attribute')
+            try:
+                attribute_obj.save()
+                if 'Save and exit' in request.POST:
+                    return redirect('inventory:list-attributes')
+                elif 'Save and add' in request.POST:
+                    return redirect('inventory:create-attribute')
+            except IntegrityError:
+                messages.error(request, "Attribute name and type already exit")
 
     attributeContext = {
         'attribute_form': attribute_form,
@@ -139,7 +153,7 @@ def create_attribute_view(request):
 
 
 def list_products_view(request):
-    products_list = Item.objects.all()
+    products_list = Item.objects.filter(company=request.user.company)
     productsContext = {
         'products_list': products_list
     }
@@ -147,17 +161,19 @@ def list_products_view(request):
 
 
 def create_product_item_view(request):
-    product_form = ProductForm()
-    item_form = ItemForm()
+    product_form = ProductForm(user=request.user)
+    item_form = ItemForm(user=request.user)
     item_attribute_form = item_attribute_model_formset()
     attribute_form = AttributeForm()
+    image_form = ItemImageForm()
     if request.method == 'POST':
 
-        product_form = ProductForm(request.POST)
-        item_form = ItemForm(request.POST)
+        product_form = ProductForm(request.POST, user=request.user)
+        item_form = ItemForm(request.POST, user=request.user)
         item_attribute_form = item_attribute_model_formset(request.POST)
+        image_form = ItemImageForm(request.POST, request.FILES)
 
-        if product_form.is_valid() and item_form.is_valid() and item_attribute_form.is_valid():
+        if product_form.is_valid() and item_form.is_valid() and item_attribute_form.is_valid() and image_form.is_valid():
             product_obj = product_form.save(commit=False)
             product_obj.company = request.user.company
             product_obj.created_by = request.user
@@ -167,6 +183,10 @@ def create_product_item_view(request):
             item_obj.product = product_obj
             item_obj.created_by = request.user
             item_obj.save()
+            image_obj = image_form.save(commit=False)
+            image_obj.created_by = request.user
+            image_obj.item = item_obj
+            image_obj.save()
             item_attribute_form = item_attribute_model_formset(request.POST, instance=item_obj)
             if item_attribute_form.is_valid():
                 for form in item_attribute_form:
@@ -188,69 +208,84 @@ def create_product_item_view(request):
         'item_form': item_form,
         'item_attribute_formset': item_attribute_form,
         'attribute_form': attribute_form,
+        'image_form': image_form,
 
     }
     return render(request, 'create-product-item.html', context=attributeContext)
 
 
 def list_stoketake_view(request):
-    stoke_list = StokeTake.objects.all()
+    stoke_list = StokeTake.objects.filter(company=request.user.company)
     stokes_context = {
-        "title": "Stoke Takes",
+        "title": "Stoke Takings",
         'stoke_list': stoke_list
     }
     return render(request, 'list-stokes.html', context=stokes_context)
 
 
-def create_uom_view(request):
-    uom_from = UOMForm()
+def create_uom_view(request, category_id):
+    uom_form = UOMForm()
+    uom_category = UomCategory.objects.get(id=category_id)
     if request.method == 'POST':
-        uom_from = UOMForm(request.POST)
-        if uom_from.is_valid():
-            uom_obj = uom_from.save(commit=False)
+        uom_form = UOMForm(request.POST)
+        uom_form.instance.category = uom_category
+        uom_form.instance.company = request.user.company
+        if uom_form.is_valid():
+            uom_obj = uom_form.save(commit=False)
             uom_obj.created_by = request.user
-            uom_obj.company = request.user.company
-            uom_obj.save()
-            if 'Save and exit' in request.POST:
-                return redirect('inventory:list-uom')
-            elif 'Save and add' in request.POST:
-                return redirect('inventory:create-uom')
+            try:
+                uom_obj.save()
+                if 'Save and exit' in request.POST:
+                    return redirect('inventory:list-uom', category_id=category_id)
+                elif 'Save and add' in request.POST:
+                    return redirect('inventory:create-uom', category_id=category_id)
+            except IntegrityError:
+                messages.error(request, "UOM name already exists")
         else:
-            print(uom_from.errors)
+            messages.error(request, "UOM is not valid :{}".format(uom_form.errors))
+            print(uom_form.errors)
     uom_context = {
-        'uom_from': uom_from,
-        'title': 'New UOM'
-
+        'uom_from': uom_form,
+        'title': 'New UOM for {}'.format(uom_category),
+        'category_id': category_id,
     }
     return render(request, 'create-uom.html', context=uom_context)
 
 
-def list_uom_view(request):
-    uom_list = Uom.objects.all()
+def list_uom_view(request, category_id):
+    uom_list = Uom.objects.filter(company=request.user.company, category=category_id)
+    category = UomCategory.objects.get(id=category_id)
     uom_context = {
-        'uom_list': uom_list
+        'uom_list': uom_list,
+        'category_id': category_id,
+        'title': "Uoms for {} category".format(category),
     }
     return render(request, 'list-uom.html', context=uom_context)
 
 
 def update_uom_view(request, id):
     uom = Uom.objects.get(id=id)
+    category = uom.category
     uom_form = UOMForm(instance=uom)
     if request.method == 'POST':
         uom_form = UOMForm(request.POST, instance=uom)
         if uom_form.is_valid():
             uom_obj = uom_form.save(commit=False)
             uom_obj.last_updated_by = request.user
-            uom_obj.save()
-            if 'Save and exit' in request.POST:
-                return redirect('inventory:list-uom')
-
+            try:
+                uom_obj.save()
+                if 'Save and exit' in request.POST:
+                    return redirect('inventory:list-uom', category_id=category.id)
+            except IntegrityError:
+                messages.error(request, "UOM name already exists")
         else:
+            messages.error(request, "UOM is not valid :{}".format(uom_form.errors))
             print(uom_form.errors)
     uom_context = {
         'uom_from': uom_form,
         'title': 'Update UOM',
         'update': True,
+        'category_id': category.id,
 
     }
     return render(request, 'create-uom.html', context=uom_context)
@@ -258,20 +293,21 @@ def update_uom_view(request, id):
 
 def delete_uom_view(request, id):
     required_uom = Uom.objects.get(id=id)
+    category = required_uom.category
     try:
         required_uom.delete()
     except ProtectedError:
         error_message = "This object can't be deleted!!"
         messages.error(request, error_message)
-    return redirect('inventory:list-uom')
+    return redirect('inventory:list-uom', category_id=category.id)
 
 
 def create_stoketake_view(request):
-    stoke_form = StokeTakeForm(update=False)
+    stoke_form = StokeTakeForm(update=False, user=request.user)
     stoke_context = {}
     items = []
     if request.method == 'POST':
-        stoke_form = StokeTakeForm(request.POST, update=False)
+        stoke_form = StokeTakeForm(request.POST, update=False, user=request.user)
         if stoke_form.is_valid():
             stoke_obj = stoke_form.save(commit=False)
             stoke_obj.created_by = request.user
@@ -290,7 +326,7 @@ def create_stoketake_view(request):
                     items.append(record.item)
             elif type == 'category':
                 category = stoke_obj.category
-                descendants = Category.objects.get(name=category).get_descendants(include_self=True)
+                descendants = Category.objects.get(id=category.id).get_descendants(include_self=True)
                 products = Product.objects.filter(Q(category__parent__in=descendants) | Q(category__in=descendants))
                 myitems = Item.objects.filter(product__in=products)
                 inventory_balance = Inventory_Balance.objects.filter(location=location, item__in=myitems)
@@ -322,7 +358,7 @@ def create_stoketake_view(request):
 
     stoke_context = {
         'stoke_form': stoke_form,
-        'title': 'New Stoke Take'
+        'title': 'New Stoke Taking'
 
     }
     return render(request, 'create-stoke.html', context=stoke_context)
@@ -330,11 +366,11 @@ def create_stoketake_view(request):
 
 def update_stoke_take_view(request, id):
     stoke_inst = StokeTake.objects.get(id=id)
-    stoke_form = StokeTakeForm(update=False, instance=stoke_inst)
+    stoke_form = StokeTakeForm(update=False, instance=stoke_inst, user=request.user)
     items = []
 
     if request.method == 'POST':
-        stoke_form = StokeTakeForm(request.POST, update=False, instance=stoke_inst)
+        stoke_form = StokeTakeForm(request.POST, update=False, instance=stoke_inst, user=request.user)
         if stoke_form.is_valid():
             stoke_obj = stoke_form.save(commit=False)
             stoke_obj.last_updated_by = request.user
@@ -375,20 +411,20 @@ def update_stoke_take_view(request, id):
         else:
             messages.error(request, 'Form is not valid')
 
-    context = {'stoke_form': stoke_form, 'title': 'Update Stoke'}
+    context = {'stoke_form': stoke_form, 'title': 'Update Stoke Taking'}
     return render(request, 'create-stoke.html', context=context)
 
 
 def list_stoketake_entries(request):
-    stoke_list = StokeTake.objects.exclude(status='Approved')
-    context = {"title": "Stoke Take Entries", "entry_mode": True, 'stoke_list': stoke_list}
+    stoke_list = StokeTake.objects.filter(company=request.user.company).exclude(status='Approved')
+    context = {"title": "Stoke Taking Entries", "entry_mode": True, 'stoke_list': stoke_list}
 
     return render(request, 'list-stokes.html', context=context)
 
 
 def update_stoke_entry_view(request, id):
     stoke_obj = StokeTake.objects.get(id=id)
-    stoke_take_form = StokeTakeForm(update=True, instance=stoke_obj)
+    stoke_take_form = StokeTakeForm(update=True, instance=stoke_obj, user=request.user)
     stoke_entry_inline_formset = stoke_entry_formset(instance=stoke_obj, form_kwargs={'approve': False})
 
     if request.method == 'POST':
@@ -467,7 +503,8 @@ def view_stoke(request, id):
 
 
 def list_stoketake_approvals(request):
-    stoke_list = StokeTake.objects.filter(Q(status='Pending Approval') | Q(status='Approved'))
+    stoke_list = StokeTake.objects.filter(Q(status='Pending Approval') | Q(status='Approved'),
+                                          company=request.user.company)
     context = {"entry_mode": True, 'stoke_list': stoke_list}
     return render(request, 'list-stoke-approvals.html', context=context)
 
@@ -500,7 +537,7 @@ def approve_stoke_view(request, id):
             messages.success(request, 'Stoke record sent back to stoke entry page')
         return redirect('inventory:list-stokes-for-approval')
 
-    sub_context = {'title': "Approve Stoke",
+    sub_context = {'title': "Approve Stoke Taking",
                    'stoke_form': stoke_obj, 'status': status, 'stoke_entries': entries}
     return render(request, 'approve-stoke.html', context=sub_context)
 
@@ -517,15 +554,18 @@ def delete_category_view(request, id):
 
 def update_category_view(request, id):
     category = Category.objects.get(id=id)
-    category_form = CategoryForm(instance=category)
+    category_form = CategoryForm(instance=category, user=request.user)
     if request.method == 'POST':
-        category_form = CategoryForm(request.POST, instance=category)
+        category_form = CategoryForm(request.POST, instance=category, user=request.user)
         if category_form.is_valid():
             category_obj = category_form.save(commit=False)
             category_obj.last_updated_by = request.user
-            category_obj.save()
-            if 'Save and exit' in request.POST:
-                return redirect('inventory:list-categories')
+            try:
+                category_obj.save()
+                if 'Save and exit' in request.POST:
+                    return redirect('inventory:list-categories')
+            except IntegrityError:
+                messages.error(request, "Category name already exists")
 
     categoryContext = {
         'category_form': category_form,
@@ -537,20 +577,19 @@ def update_category_view(request, id):
 
 
 def create_uom_category(request):
-    category_form = UomCategoryForm()
-    uom_categories = UomCategory.objects.all()
     if request.method == 'POST':
         category_form = UomCategoryForm(request.POST)
         if category_form.is_valid():
             category_obj = category_form.save(commit=False)
             category_obj.company = request.user.company
             category_obj.created_by = request.user
-            category_obj.save()
-            messages.success(request, 'UOM Category created successfully')
-            uom_categories = UomCategory.objects.all()
+            try:
+                category_obj.save()
+                messages.success(request, 'UOM Category created successfully')
+            except IntegrityError:
+                messages.error(request, 'UOM Category name already exists')
         else:
             messages.error(request, 'UOM Category NOT created')
-    context = {'category_from': category_form, "uom_category_list": uom_categories}
     return redirect('inventory:list-uom-category')
 
 
@@ -565,8 +604,8 @@ def delete_uom_category(request, id):
 
 
 def list_uom_category(request):
-    uom_categories = UomCategory.objects.all()
-    print(uom_categories)
+    uom_categories = UomCategory.objects.filter(company=request.user.company)
+    # this form is for the modal used to create and update a record
     uom_category_form = UomCategoryForm()
     context = {"uom_category_list": uom_categories, 'category_from': uom_category_form}
     return render(request, 'list-uom-categories.html', context=context)
@@ -574,40 +613,20 @@ def list_uom_category(request):
 
 def update_uom_category(request, id):
     uom_category = UomCategory.objects.get(id=id)
-    category_form = UomCategoryForm(instance=uom_category)
-    uom_categories = UomCategory.objects.all()
     if request.method == 'POST':
         category_form = UomCategoryForm(request.POST, instance=uom_category)
         if category_form.is_valid():
             category_obj = category_form.save(commit=False)
             category_obj.last_updated_by = request.user
-            category_obj.save()
+            try:
+                category_obj.save()
+            except IntegrityError:
+                messages.error(request, 'UOM Category name already exists')
             messages.success(request, 'UOM Category updated successfully')
-            uom_categories = UomCategory.objects.all()
         else:
             messages.error(request, 'UOM Category NOT updated')
-    context = {'category_from': category_form, "uom_category_list": uom_categories, "update": True}
     return redirect('inventory:list-uom-category')
 
-
-def update_uom(request, id):
-    uom = Uom.objects.get(id=id)
-    uom_from = UOMForm(instance=uom)
-    if request.method == 'POST':
-        uom_from = UOMForm(request.POST, instance=uom)
-        if uom_from.is_valid():
-            uom_obj = uom_from.save(commit=False)
-            uom_obj.last_updated_by = request.user
-            uom_obj.save()
-            if 'Save and exit' in request.POST:
-                return redirect('inventory:list-uom')
-        else:
-            print(uom_from.errors)
-    uom_context = {
-        'uom_from': uom_from, 'title': 'Update UOM', 'update': True,
-
-    }
-    return render(request, 'create-uom.html', context=uom_context)
 
 
 def check_balance_difference(stoke_take):
@@ -635,7 +654,7 @@ def create_stoke_transaction(stoke_take, user):
         transaction_code = "STK-" + str(date.today()) + "-" + get_seq(rows_number)
         try:
             stoke_transaction = MaterialTransaction1(transaction_code=transaction_code, stoke_take=stoke_take,
-                                                     date=date.today(), created_by=user)
+                                                     date=date.today(), created_by=user, company=user.company)
             stoke_transaction.save()
 
             for record in result:
@@ -663,10 +682,12 @@ def get_attribute_type(request, id):
 
 def view_item(request, id):
     item = Item.objects.get(id=id)
+    item_image = ItemImage.objects.filter(item=item)
     attributes = ItemAttributeValue.objects.filter(item__id=id)
     subcontext = {
         'item': item,
         'attributes': attributes,
+        'image': item_image,
 
     }
     return render(request, 'view-item.html', context=subcontext)
@@ -674,19 +695,23 @@ def view_item(request, id):
 
 def update_item(request, id):
     item = Item.objects.get(id=id)
+    try:
+        item_image = ItemImage.objects.get(item=item)
+    except ItemImage.DoesNotExist:
+        item_image = None
     product = Product.objects.get(id=item.product.id)
     attribute_form = AttributeForm()
-
+    image_form = ItemImageForm(instance=item_image)
     # attribute_value = ItemAttributeValue.objects.filter(item=item)
-    product_form = ProductForm(instance=product)
-    item_form = ItemForm(instance=item)
+    product_form = ProductForm(instance=product, user=request.user)
+    item_form = ItemForm(instance=item, user=request.user)
     item_attribute_form = item_attribute_model_formset(instance=item)
     for form in item_attribute_form:
         value = form.instance.value
         form.fields["temp_value"].initial = value
     if request.method == 'POST':
-        product_form = ProductForm(request.POST, instance=product)
-        item_form = ItemForm(request.POST, instance=item)
+        product_form = ProductForm(request.POST, instance=product, user=request.user)
+        item_form = ItemForm(request.POST, instance=item, user=request.user)
         item_attribute_form = item_attribute_model_formset(request.POST, instance=item)
 
         if product_form.is_valid() and item_form.is_valid() and item_attribute_form.is_valid():
@@ -716,6 +741,7 @@ def update_item(request, id):
         'item_attribute_formset': item_attribute_form,
         'attribute_form': attribute_form,
         'update': True,
+        'image_form': image_form,
 
     }
     return render(request, 'create-product-item.html', context=attributeContext)
@@ -729,9 +755,12 @@ def update_attribute(request, id):
         if attribute_form.is_valid():
             attribute_obj = attribute_form.save(commit=False)
             attribute_obj.last_updated_by = request.user
-            attribute_obj.save()
-            if 'Save and exit' in request.POST:
-                return redirect('inventory:list-attributes')
+            try:
+                attribute_obj.save()
+                if 'Save and exit' in request.POST:
+                    return redirect('inventory:list-attributes')
+            except IntegrityError:
+                messages.error(request, "Attribute name and type already exit")
 
     attributeContext = {
         'attribute_form': attribute_form,

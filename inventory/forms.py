@@ -1,7 +1,8 @@
 from django import forms
 from django.forms import inlineformset_factory, modelformset_factory
 from inventory.models import (Category, Brand, Attribute, Uom, Item, Product, StokeTake, StokeEntry, Uom, UomCategory,
-                              ItemAttributeValue)
+                              ItemAttributeValue, ItemImage)
+from location.models import Location
 from orders.models import Inventory_Balance
 from mptt.forms import TreeNodeChoiceField
 
@@ -13,7 +14,9 @@ class CategoryForm(forms.ModelForm):
         exclude = ('company', 'created_at', 'last_updated_at', 'created_by', 'last_updated_by')
 
     def __init__(self, *args, **kwargs):
+        user = kwargs.pop('user')
         super(CategoryForm, self).__init__(*args, **kwargs)
+        self.fields["parent"].queryset = Category.objects.filter(company=user.company)
         for field in self.fields:
             if self.fields[field].widget.input_type == 'checkbox':
                 self.fields[field].widget.attrs['class'] = 'form-check-input'
@@ -86,7 +89,7 @@ class UOMForm(forms.ModelForm):
     class Meta:
         model = Uom
         fields = '__all__'
-        exclude = ('company', 'created_at', 'last_updated_at', 'created_by', 'last_updated_by')
+        exclude = ('category','company', 'created_at', 'last_updated_at', 'created_by', 'last_updated_by')
         widgets = {
             'type': forms.Select(attrs={'onchange': 'myFunction()'}),
         }
@@ -99,19 +102,16 @@ class UOMForm(forms.ModelForm):
                 self.fields[field].widget.attrs['class'] = 'form-check-input'
             else:
                 self.fields[field].widget.attrs['class'] = 'form-control'
-
-    def clean(self):
-        cleaned_data = super(UOMForm, self).clean()
-        uoms = Uom.objects.filter(category=cleaned_data['category'])
-        item_length = len(uoms)
-        if item_length == 0 :
-            return cleaned_data
-        if cleaned_data['type'] == 'reference':
-            for uom in uoms:
-                if uom.type == 'reference':
-                    self.add_error('type', 'Reference unit is already set for this category')
-                    break
-        return cleaned_data
+    #
+    # def clean(self):
+    #     cleaned_data = super(UOMForm, self).clean()
+    #     if cleaned_data['type'] == "reference":
+    #         uoms = Uom.objects.filter(category=cleaned_data['category'], type='reference')
+    #         item_length = len(uoms)
+    #         if item_length != 0:
+    #             self.add_error('type', 'Reference unit is already set for this category')
+    #             print(cleaned_data)
+    #     return cleaned_data
 
 
 uom_formset = modelformset_factory(Uom, form=UOMForm, extra=3, can_delete=False)
@@ -124,7 +124,11 @@ class ProductForm(forms.ModelForm):
         exclude = ('company', 'created_at', 'last_updated_at', 'created_by', 'last_updated_by')
 
     def __init__(self, *args, **kwargs):
+        user = kwargs.pop('user')
         super(ProductForm, self).__init__(*args, **kwargs)
+        self.fields["category"].queryset = Category.objects.filter(company=user.company)
+        self.fields["brand"].queryset = Brand.objects.filter(company=user.company)
+
         for field in self.fields:
 
             if self.fields[field].widget.input_type == 'select':
@@ -133,14 +137,25 @@ class ProductForm(forms.ModelForm):
                 self.fields[field].widget.attrs['class'] = 'form-control'
 
 
+class ItemImageForm(forms.ModelForm):
+    class Meta:
+        model = ItemImage
+        exclude = ('item','created_at', 'last_updated_at', 'created_by', 'last_updated_by')
+
+        def __init__(self, *args, **kwargs):
+            super(ItemImageForm, self).__init__(*args, **kwargs)
+            self.fields["image"].widget.attrs['class'] = 'form-control'
+
+
 class ItemForm(forms.ModelForm):
     class Meta:
         model = Item
-        fields = '__all__'
         exclude = ('product', 'company', 'created_at', 'last_updated_at', 'created_by', 'last_updated_by')
 
     def __init__(self, *args, **kwargs):
+        user = kwargs.pop('user')
         super(ItemForm, self).__init__(*args, **kwargs)
+        self.fields["uom"].queryset = Uom.objects.filter(company=user.company)
         for field in self.fields:
             if field == 'description':
                 self.fields[field].widget.attrs['class'] = 'form-control'
@@ -166,9 +181,12 @@ class StokeTakeForm(forms.ModelForm):
 
     def __init__(self, *args, **kwargs):
         update = kwargs.pop('update')
+        user = kwargs.pop('user')
         super(StokeTakeForm, self).__init__(*args, **kwargs)
         self.fields['category'].empty_label = "(Select here)"
+        self.fields["category"].queryset = Category.objects.filter(company=user.company)
         self.fields['location'].empty_label = "(Select here)"
+        self.fields["location"].queryset = Location.objects.filter(company=user.company)
 
         for field in self.fields:
             if update:

@@ -29,10 +29,10 @@
                   <form action="{% url 'inventory:create-uom-category' %}" method="POST">
                     {% csrf_token %}
                     <div class="form-row">
-                      <divdiv class="form-group col-md-12">
+                      <div class="form-group col-md-12">
                         <label>Category Name <span class="required">*</span></label>
                         {{category_from.name}}
-                      </divdiv>
+                      </div>
                     </div>
                       <div class="modal-footer">
                         <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
@@ -68,7 +68,7 @@
                 {% for category in uom_category_list %}
                 <tr role="row">
                   <td class="sorting_1">{{ forloop.counter }}</td>
-                  <td>{{ category.name }}</td>
+                  <td><a href = "{% url 'inventory:list-uom' category_id=category.id %}">{{ category.name }}</a></td>
                   <td>
                     <div class="dropdown d-inline-block">
                       <a class="btn btn-outline-primary dropdown-toggle mb-1" href="#" role="button" id="dropdownMenuLink" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">

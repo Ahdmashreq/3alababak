@@ -26,7 +26,7 @@ class PurchaseOder(models.Model):
     order_name = models.CharField(max_length=250)
     purchase_code = models.CharField(max_length=100, help_text='code number of a po', null=True, blank=True, )
     global_price = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True, default=0)
-    currency = models.ForeignKey(Currency, on_delete=models.CASCADE, null=True, blank=True, default='EGP')
+    #currency = models.ForeignKey(Currency, on_delete=models.CASCADE, null=True, blank=True, default='EGP')
     status = models.CharField(max_length=20,
                               choices=[('drafted', 'Drafted'), ('Partial_receive', 'Partially Received'),
                                        ('closed', 'Closed'), ('open', 'Open')], default='open')
@@ -59,7 +59,7 @@ class SalesOrder(models.Model):
     order_name = models.CharField(max_length=10)
     sale_code = models.CharField(max_length=100, help_text='code number of a so', null=True, blank=True, )
     subtotal_price = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True, default=0)
-    # currency = models.ForeignKey(Currency, on_delete=models.CASCADE, null=True, blank=True, default='EGP')
+    currency = models.ForeignKey(Currency, on_delete=models.CASCADE, null=True, blank=True, default='EGP')
     # status = models.CharField(max_length=8,
     #                           choices=[('received', 'Received'), ('returned', 'Returned'), ('shipping', 'Shipping')],
     #                           default='drafted')
@@ -127,6 +127,7 @@ class SalesTransaction(models.Model):
 
 
 class MaterialTransaction1(models.Model):
+    company = models.ForeignKey(Company, on_delete=models.CASCADE)
     transaction_code = models.CharField(max_length=100, help_text='code number of a transaction')
     sale_order = models.ForeignKey(SalesOrder, on_delete=models.CASCADE, blank=True, null=True)
     purchase_order = models.ForeignKey(PurchaseOder, on_delete=models.CASCADE, blank=True, null=True)
@@ -176,12 +177,13 @@ class MaterialTransactionLines(models.Model):
 def create_or_update_inventory_balance(sender, instance, created, *args, **kwargs):
     if instance.material_transaction.purchase_order is not None:
         new_quantity = convert_quantity(instance)
+        print(new_quantity)
         po_unit_cost = PurchaseTransaction.objects.filter(
             purchase_order=instance.material_transaction.purchase_order).get(item=instance.item)
         try:
             inventory_item_obj = Inventory_Balance.objects.get(item=instance.item, location=instance.location)
             inventory_item_obj.qnt += new_quantity
-            new_item_recieved_value = new_quantity * po_unit_cost.price_per_unit
+            new_item_recieved_value = instance.quantity * po_unit_cost.price_per_unit
             inventory_item_obj.unit_cost = (inventory_item_obj.value + new_item_recieved_value) / inventory_item_obj.qnt
             new_value = inventory_item_obj.qnt * inventory_item_obj.unit_cost
             print(new_value)
@@ -189,6 +191,7 @@ def create_or_update_inventory_balance(sender, instance, created, *args, **kwarg
             inventory_item_obj.save()
         except Inventory_Balance.DoesNotExist:
             inventory_item_obj = Inventory_Balance(
+                company=instance.material_transaction.company,
                 item=instance.item,
                 location=instance.location,
                 unit_cost=po_unit_cost.price_per_unit,
@@ -233,7 +236,7 @@ class MaterialTransaction(models.Model):
 class Inventory_Balance(models.Model):
     class Meta:
         unique_together = ['item', 'location']
-
+    company = models.ForeignKey(Company, on_delete=models.CASCADE)
     item = models.ForeignKey(Item, on_delete=models.CASCADE, related_name='balance')
     location = models.ForeignKey(Location, on_delete=models.CASCADE)
     unit_cost = models.DecimalField(max_digits=9, decimal_places=2)
@@ -278,7 +281,9 @@ def convert_quantity(instance):
                 new_quantity = instance.quantity / instance.item.uom.ratio
         elif instance.item.uom.type == 'reference':
             if purchase_line.uom.type == 'smaller':
+                print("YES YES this is the case")
                 new_quantity = instance.quantity / purchase_line.uom.ratio
+                print(new_quantity)
             elif purchase_line.uom.type == 'bigger':
                 new_quantity = instance.quantity * purchase_line.uom.ratio
         elif instance.item.uom.type == 'smaller':
