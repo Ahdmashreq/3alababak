@@ -11,7 +11,7 @@ def list_location_view(request, l_type):
         mytype = 'warehouse'
     elif l_type == 's':
         mytype = 'store'
-    locations_list = Location.objects.filter(type=mytype)
+    locations_list = Location.objects.filter(company=request.user.company,type=mytype)
     location_context = {
         'locations_list': locations_list,
         'type': l_type,

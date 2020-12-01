@@ -14,24 +14,21 @@ from orders.models import PurchaseOder, SalesOrder, MaterialTransaction, Purchas
     MaterialTransaction1, Inventory_Balance, SalesTransaction, Tax, create_or_update_inventory_balance
 from inventory.models import Item, Uom
 from django.contrib import messages
-from json import dumps
-
 from dal import autocomplete
-from moneyed import Money, EGP
 import random
 from orders.utils import get_seq, ItemSerializer, JSONResponse
 from decimal import Decimal
 
 
 def create_purchase_order_view(request):
-    po_form = PurchaseOrderCreationForm()
-    po_transaction_inlineformset = purchase_transaction_formset()
+    po_form = PurchaseOrderCreationForm(user=request.user)
+    po_transaction_inlineformset = purchase_transaction_formset(form_kwargs={'user': request.user})
     rows_number = PurchaseOder.objects.all().count()
     po_code = "PO-" + str(date.today()) + "-" + get_seq(rows_number)
     po_form.fields['purchase_code'].initial = po_code
     if request.method == 'POST':
-        po_form = PurchaseOrderCreationForm(request.POST)
-        po_transaction_inlineformset = purchase_transaction_formset(request.POST)
+        po_form = PurchaseOrderCreationForm(request.POST, user=request.user)
+        po_transaction_inlineformset = purchase_transaction_formset(request.POST, form_kwargs={'user': request.user})
         if po_form.is_valid() and po_transaction_inlineformset.is_valid():
             po_obj = po_form.save(commit=False)
             # po_obj.global_price = Money(str(po_form.cleaned_data['my_global_price']), EGP)
@@ -41,7 +38,8 @@ def create_purchase_order_view(request):
             if 'Save as draft' in request.POST:
                 po_obj.status = "drafted"
             po_obj.save()
-            po_transaction_inlineformset = purchase_transaction_formset(request.POST, instance=po_obj)
+            po_transaction_inlineformset = purchase_transaction_formset(request.POST, instance=po_obj,
+                                                                        form_kwargs={'user': request.user})
             if po_transaction_inlineformset.is_valid():
                 for form in po_transaction_inlineformset:
                     po_transaction_obj = form.save(commit=False)
@@ -82,7 +80,7 @@ def create_purchase_order_view(request):
 
 
 def list_purchase_order_view(request):
-    purchase_orders = PurchaseOder.objects.all()
+    purchase_orders = PurchaseOder.objects.filter(company=request.user.company)
     subcontext = {
         'purchase_orders_list': purchase_orders,
         'title': "Purchase Orders",
@@ -92,22 +90,24 @@ def list_purchase_order_view(request):
 
 def update_purchase_order_view(request, id):
     order = PurchaseOder.objects.get(pk=id)
-    purchase_order_form = PurchaseOrderCreationForm(instance=order)
-    po_transaction_inlineformset = purchase_transaction_formset(instance=order)
+    purchase_order_form = PurchaseOrderCreationForm(instance=order, user=request.user)
+    po_transaction_inlineformset = purchase_transaction_formset(instance=order, form_kwargs={'user': request.user})
     purchase_order_form.fields["my_total_price_after_discount"].initial = order.global_price_after_discount
     for form in po_transaction_inlineformset:
         form.fields["after_discount"].initial = form.instance.total_price_after_discount
 
     if request.method == 'POST':
-        purchase_order_form = PurchaseOrderCreationForm(request.POST, instance=order)
-        po_transaction_inlineformset = purchase_transaction_formset(request.POST, instance=order)
+        purchase_order_form = PurchaseOrderCreationForm(request.POST, instance=order, user=request.user)
+        po_transaction_inlineformset = purchase_transaction_formset(request.POST, instance=order,
+                                                                    form_kwargs={'user': request.user})
         if purchase_order_form.is_valid() and po_transaction_inlineformset.is_valid():
             po_obj = purchase_order_form.save(commit=False)
             po_obj.last_updated_by = request.user
             if 'Save as open' in request.POST:
                 po_obj.status = 'open'
             po_obj.save()
-            po_transaction_inlineformset = purchase_transaction_formset(request.POST, instance=po_obj)
+            po_transaction_inlineformset = purchase_transaction_formset(request.POST, instance=po_obj,
+                                                                        form_kwargs={'user': request.user})
             if po_transaction_inlineformset.is_valid():
                 for form in po_transaction_inlineformset:
                     po_transaction_obj = form.save(commit=False)
@@ -133,7 +133,7 @@ def update_purchase_order_view(request, id):
         'po_form': purchase_order_form,
         'po_transaction_inlineformset': po_transaction_inlineformset,
         'title': 'Update Purchase Order',
-        'update':True,
+        'update': True,
 
     }
     return render(request, 'create-purchase-order.html', supContext)
@@ -149,14 +149,14 @@ def delete_purchase_order_view(request, id):
 
 
 def create_sales_order_view(request):
-    so_form = SaleOrderCreationForm()
-    so_transaction_inlineformset = sale_transaction_formset()
+    so_form = SaleOrderCreationForm(user=request.user)
+    so_transaction_inlineformset = sale_transaction_formset(form_kwargs={'user': request.user})
     rows_number = SalesOrder.objects.all().count()
     so_code = "SO-" + str(date.today()) + "-" + get_seq(rows_number)
     so_form.fields['sale_code'].initial = so_code
     if request.method == 'POST':
-        so_form = SaleOrderCreationForm(request.POST)
-        so_transaction_inlineformset = sale_transaction_formset(request.POST)
+        so_form = SaleOrderCreationForm(request.POST, user=request.user)
+        so_transaction_inlineformset = sale_transaction_formset(request.POST, form_kwargs={'user': request.user})
         if so_form.is_valid() and so_transaction_inlineformset.is_valid():
             so_obj = so_form.save(commit=False)
             so_obj.created_by = request.user
@@ -170,7 +170,8 @@ def create_sales_order_view(request):
                 tax_percentage = Decimal(0.14)
             so_obj.tax = tax_percentage
             so_obj.save()
-            so_transaction_inlineformset = sale_transaction_formset(request.POST, instance=so_obj)
+            so_transaction_inlineformset = sale_transaction_formset(request.POST, instance=so_obj,
+                                                                    form_kwargs={'user': request.user})
             if so_transaction_inlineformset.is_valid():
                 so_transaction_obj = so_transaction_inlineformset.save(commit=False)
                 for so_transaction in so_transaction_obj:
@@ -194,7 +195,7 @@ def create_sales_order_view(request):
 
 
 def list_sale_order_view(request):
-    sale_orders = SalesOrder.objects.all()
+    sale_orders = SalesOrder.objects.filter(company=request.user.company)
     subcontext = {
         'sale_orders_list': sale_orders
     }
@@ -203,8 +204,8 @@ def list_sale_order_view(request):
 
 def update_sale_order_view(request, id):
     order = SalesOrder.objects.get(pk=id)
-    sale_order_form = SaleOrderCreationForm(instance=order)
-    so_transaction_inlineformset = sale_transaction_formset(instance=order)
+    sale_order_form = SaleOrderCreationForm(instance=order, user=request.user)
+    so_transaction_inlineformset = sale_transaction_formset(instance=order, form_kwargs={'user': request.user})
     for form in so_transaction_inlineformset:
         print(form.instance.item.id)
         item = form.instance.item
@@ -215,13 +216,15 @@ def update_sale_order_view(request, id):
         form.fields["temp_uom"].initial = uom
         form.fields["price_per_unit"].initial = unit_price
     if request.method == 'POST':
-        sale_order_form = SaleOrderCreationForm(request.POST, instance=order)
-        so_transaction_inlineformset = sale_transaction_formset(request.POST, instance=order)
+        sale_order_form = SaleOrderCreationForm(request.POST, instance=order, user=request.user)
+        so_transaction_inlineformset = sale_transaction_formset(request.POST, instance=order,
+                                                                form_kwargs={'user': request.user})
         if sale_order_form.is_valid() and so_transaction_inlineformset.is_valid():
             so_obj = sale_order_form.save(commit=False)
             so_obj.last_updated_by = request.user
             so_obj.save()
-            so_transaction_inlineformset = sale_transaction_formset(request.POST, instance=so_obj)
+            so_transaction_inlineformset = sale_transaction_formset(request.POST, instance=so_obj,
+                                                                    form_kwargs={'user': request.user})
             if so_transaction_inlineformset.is_valid():
                 so_transaction_obj = so_transaction_inlineformset.save(commit=False)
                 for so_transaction in so_transaction_obj:
@@ -266,7 +269,7 @@ class ItemAutocomplete(autocomplete.Select2QuerySetView):
         print("inside get_queryset ItemAutocomplete")
         if not self.request.user.is_authenticated:
             return Item.objects.none()
-        qs = Item.objects.all()
+        qs = Item.objects.filter(company=self.request.user.company)
         if self.q:
             qs = qs.filter(name__istartswith=self.q)
         return qs
@@ -279,7 +282,7 @@ class SoItemAutocomplete(autocomplete.Select2QuerySetView):
         print("inside get_queryset ItemAutocomplete")
         if not self.request.user.is_authenticated:
             return Inventory_Balance.objects.none()
-        inventory_items = Inventory_Balance.objects.values('item').distinct()
+        inventory_items = Inventory_Balance.objects.filter(company=self.request.user.company).values('item').distinct()
         myids = [record['item'] for record in inventory_items]
         qs = Item.objects.filter(id__in=myids)
         if self.q:
@@ -313,55 +316,8 @@ def list_receiving(request, id, return_to):
 
 
 def create_receiving(request, id):
-    receiving_formset = ReceivingTransactionCreation_formset(form_kwargs={'id': id})
-    purchase_lines = PurchaseTransaction.objects.filter(purchase_order__id=id)
-    purchase_order = PurchaseOder.objects.get(id=id)
-
-    if request.method == 'POST':
-        receiving_formset = ReceivingTransactionCreation_formset(request.POST, instance=purchase_order,
-                                                                 form_kwargs={'id': id})
-        if receiving_formset.is_valid():
-            receiving_objs = receiving_formset.save(commit=False)
-            transaction_code = "REC-" + str(date.today()) + "-" + str(random.randint(0, 5000))
-            for obj in receiving_objs:
-                obj.created_by = request.user
-                obj.transaction_type = 'in'
-                obj.transaction_code = transaction_code
-                obj.save()
-                po_line = PurchaseTransaction.objects.filter(purchase_order__id=id, item=obj.item)
-                new_balance = po_line[0].balance - obj.quantity
-                if new_balance == 0:
-                    PurchaseTransaction.objects.filter(purchase_order__id=id, item=obj.item).update(balance=new_balance,
-                                                                                                    status='closed')
-                else:
-                    PurchaseTransaction.objects.filter(purchase_order__id=id, item=obj.item).update(balance=new_balance)
-            purchase_lines = PurchaseTransaction.objects.filter(purchase_order__id=id)
-            flag = False
-            for line in purchase_lines:
-                if line.status == 'open' or line.status == 'Partial_receive':
-                    flag = True
-                    break
-            if not flag:
-                PurchaseOder.objects.filter(id=id).update(status='closed')
-            else:
-                PurchaseOder.objects.filter(id=id).update(status='Partially Received')
-            if 'Save and exit' in request.POST:
-                return redirect('orders:list-receiving', id=id, return_to='list')
-        else:
-            print(receiving_formset.errors)
-
-    subcontext = {
-        'po': purchase_order,
-        'receiving_form': receiving_formset,
-        'purchase_lines': purchase_lines,
-
-    }
-    return render(request, 'create-receiving.html', context=subcontext)
-
-
-def create_receiving2(request, id):
     material_form = MaterialTransactionCreationForm()
-    material_lines_formset = MaterialTransactionCreation_formset(form_kwargs={'id': id})
+    material_lines_formset = MaterialTransactionCreation_formset(form_kwargs={'id': id, 'user': request.user})
     purchase_lines = PurchaseTransaction.objects.filter(purchase_order__id=id)
     purchase_order = PurchaseOder.objects.get(id=id)
     rows_number = MaterialTransaction1.objects.all().count()
@@ -372,12 +328,13 @@ def create_receiving2(request, id):
         material_form = MaterialTransactionCreationForm(request.POST)
         if material_form.is_valid():
             material_obj = material_form.save(commit=False)
+            material_obj.company = request.user.company
             material_obj.purchase_order = purchase_order
             material_obj.transaction_code = transaction_code
             material_obj.created_by = request.user
             material_obj.save()
             material_lines_formset = MaterialTransactionCreation_formset(request.POST, instance=material_obj,
-                                                                         form_kwargs={'id': id})
+                                                                         form_kwargs={'id': id, 'user': request.user})
         if material_lines_formset.is_valid():
             receiving_objs = material_lines_formset.save(commit=False)
             for obj in receiving_objs:
@@ -460,8 +417,7 @@ def view_sale_order(request, id):
 
 
 def list_all_transactions(request):
-    transactions = MaterialTransaction1.objects.all()
-    transaction_lines = MaterialTransactionLines.objects.all()
+    transaction_lines = MaterialTransactionLines.objects.filter(material_transaction__company=request.user.company)
 
     context = {
         'transactions': transaction_lines,
@@ -547,4 +503,4 @@ def load_uoms(request):
     item = Item.objects.get(id=item_id)
     uoms = Uom.objects.filter(category=item.uom.category)
     print("***************", uoms)
-    return render(request, 'load-uoms.html', {'uoms': uoms,'default':item.uom})
+    return render(request, 'load-uoms.html', {'uoms': uoms, 'default': item.uom})

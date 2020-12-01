@@ -39,10 +39,10 @@ class Location(models.Model):
         if not self.id:
             if self.type == 'w':
                 rows_number = Location.objects.filter(type='w', company=self.company).count()
-                self.code = "W-" + get_seq(rows_number)+'-'+str(self.company.id)
+                self.code = "W-" + get_seq(rows_number) + '-' + str(self.company.id)
             elif self.type == 's':
                 rows_number = Location.objects.filter(type='s', company=self.company).count()
-                self.code = "S-" + get_seq(rows_number)+'-'+str(self.company.id)
+                self.code = "S-" + get_seq(rows_number) + '-' + str(self.company.id)
             self.create_slug()
 
         if not self.slug:
@@ -55,4 +55,4 @@ class Location(models.Model):
         location_number = Location.objects.filter(slug__startswith=self.slug).count()
         if location_number != 0:
             slug_tail = location_number + 1
-            self.slug = self.slug + str(slug_tail)
+            self.slug = self.slug + '-' + str(slug_tail)

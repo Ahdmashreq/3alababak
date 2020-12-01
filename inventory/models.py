@@ -1,9 +1,11 @@
+from django.core.exceptions import ValidationError
 from django.db import models
 from django.conf import settings
 from django.template.defaultfilters import slugify
 
 from account.models import Company
 from alababak.utils import arabic_slugify
+from inventory.manager import UomCategoryManager, UomManager
 from location.models import Location
 from mptt.models import MPTTModel
 from mptt.fields import TreeForeignKey
@@ -47,7 +49,6 @@ class Category(MPTTModel):
     parent = TreeForeignKey('self', on_delete=models.CASCADE, null=True, blank=True,
                             related_name='sub_category')
     slug = models.SlugField(null=True, blank=True, allow_unicode=True, unique=True)
-
     created_at = models.DateField(auto_now_add=True, null=True)
     last_updated_at = models.DateField(null=True, auto_now=True, auto_now_add=False)
     created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, null=True,
@@ -132,7 +133,15 @@ class Uom(models.Model):
     class Meta:
         unique_together = ['name', 'category', 'company']
 
+    def clean(self):
+        # Don't allow two uoms in the same category to be of type 'reference'.
+        if self.type == 'reference':
+            uoms_with_same_category = Uom.objects.filter(company=self.company, category=self.category, type='reference')
+            if len(uoms_with_same_category) != 0:
+                raise ValidationError({"type": "Reference UOM for this category already exists."})
+
     def save(self, *args, **kwargs):
+
         try:
             obj = Uom.objects.get(id=self.id)
             if obj.name != self.name or obj.category != self.category:
@@ -162,8 +171,6 @@ class Product(models.Model):
 
     def __str__(self):
         return self.brand.name
-
-
 
 
 class Attribute(models.Model):
@@ -222,6 +229,7 @@ class Item(models.Model):
     description = models.CharField(max_length=100, blank=True, null=True)
     sku = models.CharField(max_length=30, blank=True, null=True)
     barcode = models.CharField(max_length=30, blank=True, null=True)
+    expirable = models.BooleanField(default=False, verbose_name='Expirable', help_text='Checkbox if item is expirable')
     created_at = models.DateField(auto_now_add=True, null=True)
     last_updated_at = models.DateField(null=True, auto_now=True, auto_now_add=False)
     created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, null=True,
@@ -306,4 +314,12 @@ class StokeEntry(models.Model):
 
 class ItemImage(models.Model):
     item = models.ForeignKey(Item, on_delete=models.CASCADE, )
-    image = models.FileField(upload_to='uploads/', blank=True, null=True)
+    image = models.ImageField(upload_to='uploads/', blank=True, null=True)
+    created_at = models.DateField(auto_now_add=True, null=True)
+    last_updated_at = models.DateField(null=True, auto_now=True, auto_now_add=False)
+    created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, null=True,
+                                   related_name="image_created_by")
+    last_updated_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, null=True, blank=True)
+
+    def __str__(self):
+        return self.item.name + ' image'

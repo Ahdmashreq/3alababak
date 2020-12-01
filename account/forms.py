@@ -1,6 +1,7 @@
 from django import forms
-from account.models import Customer, Supplier, Address, Company
 from django.forms import inlineformset_factory
+
+from account.models import Customer, Supplier, Address, Company
 
 
 class CustomerCreationForm(forms.ModelForm):

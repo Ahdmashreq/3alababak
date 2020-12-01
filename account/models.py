@@ -1,10 +1,8 @@
 from django.db import models
 from django.conf import settings
-from cities_light.models import Country, City
 from django.template.defaultfilters import slugify
 
-# Create your models here.
-from alababak.utils import arabic_slugify
+from cities_light.models import Country, City
 
 
 class Customer(models.Model):
@@ -24,20 +22,21 @@ class Customer(models.Model):
 
     @property
     def full_name(self):
+        """return first name concatenated with last name"""
         return "%s %s" % (self.first_name, self.last_name)
 
     def __str__(self):
         return self.first_name + ' ' + self.last_name
 
-    class Meta:
-        unique_together = ['first_name', 'last_name', 'company']
-
     def save(self, *args, **kwargs):
         if self.id:
+            # if the instance is being updated then it has an id
             obj = Customer.objects.get(id=self.id)
+            # check if the user has changed the first name or last name
             if obj.first_name != self.first_name or obj.last_name != self.last_name:
                 self.create_slug()
         else:
+            # the instance is created for the first time
             self.create_slug()
         super(Customer, self).save(*args, **kwargs)
 
@@ -69,9 +68,6 @@ class Supplier(models.Model):
 
     def __str__(self):
         return self.first_name + ' ' + self.last_name
-
-    class Meta:
-        unique_together = ['first_name', 'last_name', 'company']
 
     def save(self, *args, **kwargs):
         if self.id:
@@ -120,8 +116,8 @@ class Company(models.Model):
     created_by = models.IntegerField(null=True, blank=True)
     last_updated_by = models.IntegerField(null=True, blank=True)
 
-    def __str__(self):
-        return self.name
-
     class Meta:
         verbose_name_plural = "Companies"
+
+    def __str__(self):
+        return self.name
