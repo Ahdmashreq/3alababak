@@ -1,26 +1,41 @@
-from datetime import date
-
 from django.core.exceptions import ObjectDoesNotExist
 from django.db.models import Q, ProtectedError
-from django.db.models.signals import post_save
 from django.shortcuts import render, redirect
-from orders.forms import (PurchaseTransactionCreationForm,
-                          PurchaseOrderCreationForm, ReceivingTransactionCreation_formset,
+from django.contrib import messages
+
+from dal import autocomplete
+from datetime import date
+from decimal import Decimal
+
+from orders.forms import (PurchaseOrderCreationForm,
                           purchase_transaction_formset,
                           sale_transaction_formset,
-                          SaleOrderCreationForm, MaterialTransactionCreationForm, MaterialTransactionLinesCreationForm,
+                          SaleOrderCreationForm, MaterialTransactionCreationForm,
                           MaterialTransactionCreation_formset, TaxForm)
-from orders.models import PurchaseOder, SalesOrder, MaterialTransaction, PurchaseTransaction, MaterialTransactionLines, \
-    MaterialTransaction1, Inventory_Balance, SalesTransaction, Tax, create_or_update_inventory_balance
+from orders.models import PurchaseOder, SalesOrder, PurchaseTransaction, MaterialTransactionLines, \
+    MaterialTransaction1, Inventory_Balance, SalesTransaction, Tax
 from inventory.models import Item, Uom
-from django.contrib import messages
-from dal import autocomplete
-import random
 from orders.utils import get_seq, ItemSerializer, JSONResponse
-from decimal import Decimal
 
 
 def create_purchase_order_view(request):
+    """
+        Create a purchase order :model:`Orders.PurchaseOrder`.
+
+        **Context**
+
+        ``po_form``
+            An instance of :form:`Orders.forms.PurchaseOrderCreationForm`.
+        ``po_transaction_inlineformset``
+            An instance of :inlineformset_factory:`Orders.forms.purchase_transaction_formset`
+        ``title``
+            A string representing the title of the rendered HTML page
+
+        **Template:**
+
+        :template:`orders/templates/create-purchase-order.html`
+
+    """
     po_form = PurchaseOrderCreationForm(user=request.user)
     po_transaction_inlineformset = purchase_transaction_formset(form_kwargs={'user': request.user})
     rows_number = PurchaseOder.objects.all().count()
@@ -31,7 +46,6 @@ def create_purchase_order_view(request):
         po_transaction_inlineformset = purchase_transaction_formset(request.POST, form_kwargs={'user': request.user})
         if po_form.is_valid() and po_transaction_inlineformset.is_valid():
             po_obj = po_form.save(commit=False)
-            # po_obj.global_price = Money(str(po_form.cleaned_data['my_global_price']), EGP)
             po_obj.created_by = request.user
             po_obj.company = request.user.company
             po_obj.purchase_code = po_code
@@ -45,50 +59,79 @@ def create_purchase_order_view(request):
                     po_transaction_obj = form.save(commit=False)
                     po_transaction_obj.created_by = request.user
                     po_transaction_obj.balance = po_transaction_obj.quantity
-                    # po_transaction_obj.price_per_unit = Money(str(form.cleaned_data['my_price_per_unit']), EGP)
                     if po_obj.discount_type == "percentage":
                         po_transaction_obj.discount_percentage = po_obj.discount
                     elif po_obj.discount_type == "amount":
                         # TODO: implement this
                         po_transaction_obj.discount_percentage = po_obj.discount
-
                     po_transaction_obj.save()
-                    # po_transaction_obj = po_transaction_inlineformset.save(commit=False)
-                # for po_transaction in po_transaction_obj:
-                #     po_transaction.created_by = request.user
-                #     po_transaction.save()
                 messages.success(request, 'Saved Successfully')
                 if 'Save and exit' in request.POST:
                     return redirect('orders:list-po')
 
             else:
-                print("************")
+                messages.error(request,po_transaction_inlineformset.errors)
                 print(po_transaction_inlineformset.errors)
         else:
-            print("))))))))))))))))")
+            messages.add_message(request, messages.error, po_form.errors)
+            messages.add_message(request, messages.error, po_transaction_inlineformset.errors)
             print(po_form.errors)
             print(po_transaction_inlineformset.errors)
-    items = Item.objects.all()
-    subcontext = {
+    context = {
         'po_form': po_form,
         'po_transaction_inlineformset': po_transaction_inlineformset,
-        'items': items,
         'title': 'New Purchase Order',
     }
 
-    return render(request, 'create-purchase-order.html', context=subcontext)
+    return render(request, 'create-purchase-order.html', context=context)
 
 
 def list_purchase_order_view(request):
+    """
+    List all purchase orders in the user company :model:`Order.PurchaseOrder`.
+
+    **Context**
+
+    ``purchase_orders_list``
+        A list of purchase orders in user's company :model:`Order.PurchaseOrder`.
+     ``title``
+        A string representing the title of the rendered HTML page
+
+
+    **Template:**
+
+    :template:`orders/templates/list-purchase_orders.html`
+
+    """
     purchase_orders = PurchaseOder.objects.filter(company=request.user.company)
-    subcontext = {
+    context = {
         'purchase_orders_list': purchase_orders,
         'title': "Purchase Orders",
     }
-    return render(request, 'list-purchase_orders.html', context=subcontext)
+    return render(request, 'list-purchase_orders.html', context=context)
 
 
 def update_purchase_order_view(request, id):
+    """
+    Update a purchase order only if its status is "drafted" :model:`Orders.PurchaseOrder`.
+
+    **Context**
+
+      ``po_form``
+          An instance of :form:`Orders.forms.PurchaseOrderCreationForm`.
+      ``po_transaction_inlineformset``
+          An instance of :inlineformset_factory:`Orders.forms.purchase_transaction_formset`
+      ``title``
+          A string representing the title of the rendered HTML page
+      ``update``
+         A boolean value set to True in case of updating purchase order
+
+
+    **Template:**
+
+      :template:`orders/templates/create-purchase-order.html`
+
+    """
     order = PurchaseOder.objects.get(pk=id)
     purchase_order_form = PurchaseOrderCreationForm(instance=order, user=request.user)
     po_transaction_inlineformset = purchase_transaction_formset(instance=order, form_kwargs={'user': request.user})
@@ -104,7 +147,7 @@ def update_purchase_order_view(request, id):
             po_obj = purchase_order_form.save(commit=False)
             po_obj.last_updated_by = request.user
             if 'Save as open' in request.POST:
-                po_obj.status = 'open'
+                po_obj.status = 'open' # otherwise status will be as it was:"drafted"
             po_obj.save()
             po_transaction_inlineformset = purchase_transaction_formset(request.POST, instance=po_obj,
                                                                         form_kwargs={'user': request.user})
@@ -112,7 +155,7 @@ def update_purchase_order_view(request, id):
                 for form in po_transaction_inlineformset:
                     po_transaction_obj = form.save(commit=False)
                     po_transaction_obj.last_updated_by = request.user
-                    po_transaction_obj.balance = po_transaction_obj.quantity
+                    #po_transaction_obj.balance = po_transaction_obj.quantity
                     if po_obj.discount_type == "percentage":
                         po_transaction_obj.discount_percentage = po_obj.discount
                     elif po_obj.discount_type == "amount":
@@ -123,28 +166,36 @@ def update_purchase_order_view(request, id):
                 if 'Save and exit' in request.POST:
                     return redirect('orders:list-po')
 
-
             else:
+                messages.error(request,po_transaction_inlineformset.errors)
                 print(po_transaction_inlineformset.errors)
         else:
+            messages.add_message(request, messages.error, purchase_order_form.errors)
+            messages.add_message(request, messages.error, po_transaction_inlineformset.errors)
             print(purchase_order_form.errors)
+            print(po_transaction_inlineformset.errors)
 
-    supContext = {
+    context = {
         'po_form': purchase_order_form,
         'po_transaction_inlineformset': po_transaction_inlineformset,
         'title': 'Update Purchase Order',
         'update': True,
 
     }
-    return render(request, 'create-purchase-order.html', supContext)
+    return render(request, 'create-purchase-order.html', context)
 
 
 def delete_purchase_order_view(request, id):
+    """
+        Delete a purchase order :model:`Order.PurchaseOrder`.
+
+    """
     po_order = PurchaseOder.objects.get(pk=id)
     deleted = po_order.delete()
     if deleted:
         return redirect('orders:list-po')
     else:
+        messages.error(request, 'Record could not be deleted')
         print("item not deleted")
 
 
@@ -263,10 +314,10 @@ def get_item(request, id):
 
 
 class ItemAutocomplete(autocomplete.Select2QuerySetView):
-    print("inside ItemAutocomplete")
-
+    """
+    This class is used to search for items in a dropdown list
+    """
     def get_queryset(self):
-        print("inside get_queryset ItemAutocomplete")
         if not self.request.user.is_authenticated:
             return Item.objects.none()
         qs = Item.objects.filter(company=self.request.user.company)
@@ -291,14 +342,34 @@ class SoItemAutocomplete(autocomplete.Select2QuerySetView):
 
 
 def list_purchases_for_receiving(request):
+    """
+    List all purchase orders in the user company that are not drafted :model:`Order.PurchaseOrder`.
+
+    **Context**
+
+    ``purchase_orders_list``
+        A list of purchase orders in user's company :model:`Order.PurchaseOrder`.
+
+    ``receiving``
+        A boolean that takes 'True' value in case purchase orders are listed in receivings page.
+
+     ``title``
+        A string representing the title of the rendered HTML page.
+
+
+    **Template:**
+
+    :template:`orders/templates/list-purchase_orders.html`
+
+    """
     purchase_orders = PurchaseOder.objects.filter(~Q(status='drafted'))
-    subcontext = {
+    context = {
         'purchase_orders_list': purchase_orders,
         'receiving': True,
         'title': "Purchase Orders Transactions",
 
     }
-    return render(request, 'list-purchase_orders.html', context=subcontext)
+    return render(request, 'list-purchase_orders.html', context=context)
 
 
 def list_receiving(request, id, return_to):
@@ -499,8 +570,6 @@ def delete_tax_view(request, id):
 
 def load_uoms(request):
     item_id = request.GET.get('item')
-    print("&&&&&&&&", item_id)
     item = Item.objects.get(id=item_id)
     uoms = Uom.objects.filter(category=item.uom.category)
-    print("***************", uoms)
     return render(request, 'load-uoms.html', {'uoms': uoms, 'default': item.uom})

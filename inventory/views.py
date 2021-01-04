@@ -302,6 +302,38 @@ def delete_uom_view(request, id):
     return redirect('inventory:list-uom', category_id=category.id)
 
 
+def create_stoke_entries_template(type, stoke_take_obj,user):
+    items = []
+    location = stoke_take_obj.location
+    if type == 'location':
+        inventory_balance = Inventory_Balance.objects.filter(location=location)
+        for record in inventory_balance:
+            items.append(record.item)
+    elif type == 'category':
+        category = stoke_take_obj.category
+        descendants = Category.objects.get(id=category.id).get_descendants(include_self=True)
+        products = Product.objects.filter(Q(category__parent__in=descendants) | Q(category__in=descendants))
+        myitems = Item.objects.filter(product__in=products)
+        inventory_balance = Inventory_Balance.objects.filter(location=location, item__in=myitems)
+        for record in inventory_balance:
+            items.append(record.item)
+    elif type == 'random':
+        inventory_balance = Inventory_Balance.objects.filter(location=location)
+        item_list = []
+        for record in inventory_balance:
+            item_list.append(record.item)
+        number_of_items = stoke_take_obj.random_number
+        items = random.sample(item_list, number_of_items)
+    entry_list = []
+    for item in items:
+        entry_list.append(StokeEntry(stoke_take=stoke_take_obj, item=item, created_by=user))
+    try:
+        StokeEntry.objects.bulk_create(entry_list)
+    except BaseException:
+        return False
+    return True
+
+
 def create_stoketake_view(request):
     stoke_form = StokeTakeForm(update=False, user=request.user)
     stoke_context = {}
@@ -320,6 +352,7 @@ def create_stoketake_view(request):
             stoke_context['date'] = date
             stoke_context['type'] = type
             stoke_context['location'] = location
+            # TODO: Need to be refactored to achieve separation of concerns
             if type == 'location':
                 inventory_balance = Inventory_Balance.objects.filter(location=location)
                 for record in inventory_balance:
@@ -503,7 +536,7 @@ def view_stoke(request, id):
 
 
 def list_stoketake_approvals(request):
-    stoke_list = StokeTake.objects.filter(Q(status='Pending Approval') | Q(status='Approved'),
+    stoke_list = StokeTake.objects.filter(Q(status='Pending Approval'),
                                           company=request.user.company)
     context = {"entry_mode": True, 'stoke_list': stoke_list}
     return render(request, 'list-stoke-approvals.html', context=context)
@@ -626,7 +659,6 @@ def update_uom_category(request, id):
         else:
             messages.error(request, 'UOM Category NOT updated')
     return redirect('inventory:list-uom-category')
-
 
 
 def check_balance_difference(stoke_take):

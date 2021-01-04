@@ -7,6 +7,7 @@ from account.models import Customer, Supplier, Company
 
 
 @api_view(['POST', ])
+@permission_classes([AllowAny])
 def api_register_user(request):
     serializer = UserSerializer(data=request.data)
     data = {}
@@ -23,9 +24,9 @@ def api_register_user(request):
         data['response'] = "Successfully registered a new user"
         data['username'] = user.username
         data['email'] = user.email
-        token = Token.objects.get(user=user).key
-        data['token'] = token
 
     else:
+        print("NO WE ARE NOT VALID")
+
         data = serializer.errors
     return Response(data)

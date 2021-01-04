@@ -1,32 +1,24 @@
-from django.core.exceptions import ObjectDoesNotExist
 from django.db import models
-from django.db.models.signals import pre_save, post_save
+from django.db.models.signals import post_save
 from django.dispatch import receiver
-from datetime import datetime, date
+from django.conf import settings
 from django.utils.translation import ugettext_lazy as _
-from decimal import Decimal
-from djmoney.models.fields import MoneyField
+
 from account.models import Supplier, Customer, Company
 from inventory.models import Item, Uom
-from django.conf import settings
-from moneyed import Money, EGP
 from currencies.models import Currency
 from inventory.models import StokeTake
 from location.models import Location
-from decimal import Decimal
 
 
-# import django_filters
-
-
-# Create your models here.
 class PurchaseOder(models.Model):
     company = models.ForeignKey(Company, on_delete=models.CASCADE)
     supplier = models.ForeignKey(Supplier, on_delete=models.CASCADE, )
     order_name = models.CharField(max_length=250)
     purchase_code = models.CharField(max_length=100, help_text='code number of a po', null=True, blank=True, )
-    global_price = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True, default=0)
-    #currency = models.ForeignKey(Currency, on_delete=models.CASCADE, null=True, blank=True, default='EGP')
+    global_price = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True, default=0,
+                                       help_text='total price before discount')
+    # currency = models.ForeignKey(Currency, on_delete=models.CASCADE, null=True, blank=True, default='EGP')
     status = models.CharField(max_length=20,
                               choices=[('drafted', 'Drafted'), ('Partial_receive', 'Partially Received'),
                                        ('closed', 'Closed'), ('open', 'Open')], default='open')
@@ -50,6 +42,7 @@ class PurchaseOder(models.Model):
             discount_amount = self.global_price / 100 * self.discount
             return round(self.global_price - discount_amount, 2)
         elif self.discount_type == 'amount':
+            # TODO:logic needs to be updated
             return round(self.global_price - self.discount, 2)
 
 
@@ -86,8 +79,9 @@ class PurchaseTransaction(models.Model):
     uom = models.ForeignKey(Uom, on_delete=models.CASCADE, blank=True, null=True)
     quantity = models.IntegerField()
     price_per_unit = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True, )
-    total_price = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True, )
-    currency = models.ForeignKey(Currency, on_delete=models.CASCADE, null=True, blank=True, default='EGP')
+    total_price = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True,
+                                      help_text='total price of a transaction before discount')
+    #currency = models.ForeignKey(Currency, on_delete=models.CASCADE, null=True, blank=True, default='EGP')
     discount_percentage = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True, default=0)
     status = models.CharField(max_length=8,
                               choices=[('closed', 'Closed'), ('open', 'Open')], default='open')
@@ -96,7 +90,7 @@ class PurchaseTransaction(models.Model):
                                   blank=True, null=True)
     last_updated_at = models.DateField(null=True, auto_now=True, auto_now_add=False)
     created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, null=True,
-                                   related_name="purchase_transation_created_by")
+                                   related_name="purchase_transaction_created_by")
     last_updated_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, null=True)
 
     def __str__(self):
@@ -236,11 +230,12 @@ class MaterialTransaction(models.Model):
 class Inventory_Balance(models.Model):
     class Meta:
         unique_together = ['item', 'location']
+
     company = models.ForeignKey(Company, on_delete=models.CASCADE)
     item = models.ForeignKey(Item, on_delete=models.CASCADE, related_name='balance')
     location = models.ForeignKey(Location, on_delete=models.CASCADE)
     unit_cost = models.DecimalField(max_digits=9, decimal_places=2)
-    qnt = models.DecimalField(max_digits=9, decimal_places=2,default=0)
+    qnt = models.DecimalField(max_digits=9, decimal_places=2, default=0)
     value = models.DecimalField(max_digits=9, decimal_places=2)
     created_at = models.DateField(auto_now_add=True, null=True)
     last_updated_at = models.DateField(null=True, auto_now=True, auto_now_add=False)

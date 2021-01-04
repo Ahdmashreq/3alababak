@@ -73,7 +73,7 @@ class UomListView(ListAPIView):
 @api_view(['POST', ])
 @permission_classes((IsAuthenticated,))
 def api_add_uom_category(request):
-    uom_category_serializer = UomCategorySerializer(data=request.data)
+    uom_category_serializer = UomCategorySerializer(data=request.data,context={'request': request})
     if uom_category_serializer.is_valid():
         try:
             uom_category_serializer.save(company=request.user.company, created_by=request.user)
@@ -90,7 +90,7 @@ def api_add_uom_category(request):
 @api_view(['POST', ])
 @permission_classes((IsAuthenticated,))
 def api_add_uom(request):
-    uom_serializer = UomSerializer(data=request.data)
+    uom_serializer = UomSerializer(data=request.data,context={'request': request})
     if uom_serializer.is_valid():
         try:
             uom_serializer.save(company=request.user.company, created_by=request.user)
@@ -215,7 +215,7 @@ def api_view_uom(request, slug):
     except Uom.DoesNotExist:
         data = {"success": False, "error": {"code": 404, "message": "record not found"}}
         return Response(data=data, status=status.HTTP_404_NOT_FOUND)
-    serializer = UomSerializer(uom, many=False)
+    serializer = UomSerializer(uom, many=False,context={'request': request})
     data = {"success": True, "data": serializer.data}
     return Response(data, status=status.HTTP_200_OK)
 
@@ -249,7 +249,7 @@ class CategoriesListView(ListAPIView):
 @api_view(['POST', ])
 @permission_classes((IsAuthenticated,))
 def api_add_category(request):
-    category_serializer = CategorySerializer(data=request.data)
+    category_serializer = CategorySerializer(data=request.data,context={'request': request})
     if category_serializer.is_valid():
         try:
             category_serializer.save(company=request.user.company, created_by=request.user)
@@ -316,7 +316,7 @@ def api_view_category(request, slug):
     except Category.DoesNotExist:
         data = {"success": False, "error": {"code": 404, "message": "record not found"}}
         return Response(data=data, status=status.HTTP_404_NOT_FOUND)
-    serializer = CategorySerializer(category, many=False)
+    serializer = CategorySerializer(category, many=False,context={'request': request})
     data = {"success": True, "data": serializer.data}
     return Response(data, status=status.HTTP_200_OK)
 
@@ -552,7 +552,7 @@ class StokeTakeListView(ListAPIView):
 @api_view(['POST', ])
 @permission_classes((IsAuthenticated,))
 def api_add_stoke(request):
-    stoke_serializer = StokeTakeSerializer(data=request.data)
+    stoke_serializer = StokeTakeSerializer(data=request.data, context={'request': request})
     if stoke_serializer.is_valid():
         try:
             instance = stoke_serializer.save(company=request.user.company, created_by=request.user)
