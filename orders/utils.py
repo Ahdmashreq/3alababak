@@ -1,7 +1,9 @@
 from django.http import HttpResponse
+from django.forms import model_to_dict
+
 from rest_framework.renderers import JSONRenderer
 from rest_framework import serializers
-from django.forms import model_to_dict
+
 from inventory.models import Item
 
 
@@ -25,9 +27,6 @@ class ItemSerializer(serializers.ModelSerializer):
     class Meta:
         model = Item
         fields = ('uom', 'balance',)
-
-
-
 
 
 def get_seq(n):

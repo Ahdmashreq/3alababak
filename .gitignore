@@ -124,4 +124,5 @@ db.sqlite3
 alababak/__pycache__/settings.cpython-37.pyc
 /custom_user/migrations/0001_initial.py
 /inventory/migrations/0001_initial.py
+migrations/
 *.pyc

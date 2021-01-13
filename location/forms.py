@@ -2,11 +2,14 @@ from django import forms
 from django.forms import inlineformset_factory
 from location.models import Location
 
+
 class LocationCreationForm(forms.ModelForm):
     class Meta:
         model = Location
         fields = '__all__'
-        exclude = ('slug','number_of_products','type','code','company', 'created_at', 'last_updated_at', 'created_by', 'last_updated_by')
+        exclude = (
+        'slug', 'number_of_products', 'type', 'code', 'company', 'created_at', 'last_updated_at', 'created_by',
+        'last_updated_by')
 
     def __init__(self, *args, **kwargs):
         super(LocationCreationForm, self).__init__(*args, **kwargs)

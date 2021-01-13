@@ -1,32 +1,24 @@
-from django.core.exceptions import ObjectDoesNotExist
 from django.db import models
-from django.db.models.signals import pre_save, post_save
+from django.db.models.signals import post_save
 from django.dispatch import receiver
-from datetime import datetime, date
+from django.conf import settings
 from django.utils.translation import ugettext_lazy as _
-from decimal import Decimal
-from djmoney.models.fields import MoneyField
+
 from account.models import Supplier, Customer, Company
 from inventory.models import Item, Uom
-from django.conf import settings
-from moneyed import Money, EGP
 from currencies.models import Currency
 from inventory.models import StokeTake
 from location.models import Location
-from decimal import Decimal
 
 
-# import django_filters
-
-
-# Create your models here.
 class PurchaseOder(models.Model):
     company = models.ForeignKey(Company, on_delete=models.CASCADE)
     supplier = models.ForeignKey(Supplier, on_delete=models.CASCADE, )
     order_name = models.CharField(max_length=250)
     purchase_code = models.CharField(max_length=100, help_text='code number of a po', null=True, blank=True, )
-    global_price = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True, default=0)
-    #currency = models.ForeignKey(Currency, on_delete=models.CASCADE, null=True, blank=True, default='EGP')
+    global_price = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True, default=0,
+                                       help_text='total price before discount')
+    # currency = models.ForeignKey(Currency, on_delete=models.CASCADE, null=True, blank=True, default='EGP')
     status = models.CharField(max_length=20,
                               choices=[('drafted', 'Drafted'), ('Partial_receive', 'Partially Received'),
                                        ('closed', 'Closed'), ('open', 'Open')], default='open')
@@ -50,6 +42,7 @@ class PurchaseOder(models.Model):
             discount_amount = self.global_price / 100 * self.discount
             return round(self.global_price - discount_amount, 2)
         elif self.discount_type == 'amount':
+            # TODO:logic needs to be updated
             return round(self.global_price - self.discount, 2)
 
 
@@ -59,7 +52,7 @@ class SalesOrder(models.Model):
     order_name = models.CharField(max_length=10)
     sale_code = models.CharField(max_length=100, help_text='code number of a so', null=True, blank=True, )
     subtotal_price = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True, default=0)
-    currency = models.ForeignKey(Currency, on_delete=models.CASCADE, null=True, blank=True, default='EGP')
+    #currency = models.ForeignKey(Currency, on_delete=models.CASCADE, null=True, blank=True, default='EGP')
     # status = models.CharField(max_length=8,
     #                           choices=[('received', 'Received'), ('returned', 'Returned'), ('shipping', 'Shipping')],
     #                           default='drafted')
@@ -86,8 +79,9 @@ class PurchaseTransaction(models.Model):
     uom = models.ForeignKey(Uom, on_delete=models.CASCADE, blank=True, null=True)
     quantity = models.IntegerField()
     price_per_unit = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True, )
-    total_price = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True, )
-    currency = models.ForeignKey(Currency, on_delete=models.CASCADE, null=True, blank=True, default='EGP')
+    total_price = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True,
+                                      help_text='total price of a transaction before discount')
+    # currency = models.ForeignKey(Currency, on_delete=models.CASCADE, null=True, blank=True, default='EGP')
     discount_percentage = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True, default=0)
     status = models.CharField(max_length=8,
                               choices=[('closed', 'Closed'), ('open', 'Open')], default='open')
@@ -96,7 +90,7 @@ class PurchaseTransaction(models.Model):
                                   blank=True, null=True)
     last_updated_at = models.DateField(null=True, auto_now=True, auto_now_add=False)
     created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, null=True,
-                                   related_name="purchase_transation_created_by")
+                                   related_name="purchase_transaction_created_by")
     last_updated_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, null=True)
 
     def __str__(self):
@@ -175,18 +169,18 @@ class MaterialTransactionLines(models.Model):
 
 @receiver(post_save, sender=MaterialTransactionLines)
 def create_or_update_inventory_balance(sender, instance, created, *args, **kwargs):
-    if instance.material_transaction.purchase_order is not None:
+    if instance.material_transaction.purchase_order is not None:  # if it's a po
         new_quantity = convert_quantity(instance)
-        print(new_quantity)
         po_unit_cost = PurchaseTransaction.objects.filter(
-            purchase_order=instance.material_transaction.purchase_order).get(item=instance.item)
+            purchase_order=instance.material_transaction.purchase_order).get(
+            item=instance.item)  # supposing item could not be
+        # repeated in the same po
         try:
             inventory_item_obj = Inventory_Balance.objects.get(item=instance.item, location=instance.location)
             inventory_item_obj.qnt += new_quantity
             new_item_recieved_value = instance.quantity * po_unit_cost.price_per_unit
             inventory_item_obj.unit_cost = (inventory_item_obj.value + new_item_recieved_value) / inventory_item_obj.qnt
             new_value = inventory_item_obj.qnt * inventory_item_obj.unit_cost
-            print(new_value)
             inventory_item_obj.value = new_value
             inventory_item_obj.save()
         except Inventory_Balance.DoesNotExist:
@@ -194,9 +188,9 @@ def create_or_update_inventory_balance(sender, instance, created, *args, **kwarg
                 company=instance.material_transaction.company,
                 item=instance.item,
                 location=instance.location,
-                unit_cost=po_unit_cost.price_per_unit,
+                unit_cost=new_quantity * po_unit_cost.price_per_unit/instance.quantity,
                 qnt=new_quantity,
-                value=new_quantity * po_unit_cost.price_per_unit,
+                value=instance.quantity * po_unit_cost.price_per_unit,
             )
             inventory_item_obj.save()
 
@@ -236,11 +230,12 @@ class MaterialTransaction(models.Model):
 class Inventory_Balance(models.Model):
     class Meta:
         unique_together = ['item', 'location']
+
     company = models.ForeignKey(Company, on_delete=models.CASCADE)
     item = models.ForeignKey(Item, on_delete=models.CASCADE, related_name='balance')
     location = models.ForeignKey(Location, on_delete=models.CASCADE)
     unit_cost = models.DecimalField(max_digits=9, decimal_places=2)
-    qnt = models.DecimalField(max_digits=9, decimal_places=2,default=0)
+    qnt = models.DecimalField(max_digits=9, decimal_places=2, default=0)
     value = models.DecimalField(max_digits=9, decimal_places=2)
     created_at = models.DateField(auto_now_add=True, null=True)
     last_updated_at = models.DateField(null=True, auto_now=True, auto_now_add=False)
@@ -250,7 +245,7 @@ class Inventory_Balance(models.Model):
                                         related_name="inventory_last_updated_by")
 
     def __str__(self):
-        return self.item.name + ' ' + str(self.value)
+        return self.item.name
 
     def __unicode__(self):
         return '%s: %s' % (self.item.name, str(self.value))

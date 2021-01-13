@@ -3,6 +3,7 @@ from django.conf import settings
 from django.template.defaultfilters import slugify
 
 from cities_light.models import Country, City
+from django.utils.text import slugify as slugy
 
 
 class Customer(models.Model):
@@ -41,7 +42,7 @@ class Customer(models.Model):
         super(Customer, self).save(*args, **kwargs)
 
     def create_slug(self):
-        self.slug = slugify(self.first_name + self.last_name + str(self.company.id))
+        self.slug = slugy(self.first_name + self.last_name + str(self.company.id),allow_unicode=True)
         # cut_number = Customer.objects.filter(slug__startswith=self.slug).count()
         # slug_tail = cut_number + 1
         # self.slug = self.slug + str(slug_tail)
@@ -79,7 +80,7 @@ class Supplier(models.Model):
         super(Supplier, self).save(*args, **kwargs)
 
     def create_slug(self):
-        self.slug = slugify(self.first_name + self.last_name + str(self.company.id))
+        self.slug = slugy(self.first_name + self.last_name + str(self.company.id),allow_unicode=True)
         # supp_number = Supplier.objects.filter(slug__startswith=self.slug).count()
         # slug_tail = supp_number + 1
         # self.slug = self.slug + str(slug_tail)
@@ -88,7 +89,7 @@ class Supplier(models.Model):
 class Address(models.Model):
     customer = models.ForeignKey('Customer', on_delete=models.CASCADE, blank=True, null=True, related_name='address')
     supplier = models.ForeignKey('Supplier', on_delete=models.CASCADE, blank=True, null=True,
-                                 related_name='supp_address')
+                                 related_name='address')
     address = models.CharField(max_length=30, blank=True, null=True)
     country = models.ForeignKey(Country, on_delete=models.CASCADE, blank=True, null=True)
     city = models.CharField(max_length=30, blank=True, null=True)

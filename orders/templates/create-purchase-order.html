@@ -201,7 +201,6 @@ for (i = 0; i < $('#id_purchasetransaction_set-TOTAL_FORMS').val(); i++) {
 </script>
 <script>
     function myAction(object) {
-           console.log("HIIIIIIIIIIIIIIIIIIIIIIII")
           item = object.value
           var endpoint = '{% url "orders:get-item" -1 %}'.replace('-1', item);
           if ( item !==""){

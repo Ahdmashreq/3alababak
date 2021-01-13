@@ -124,7 +124,6 @@
 
 <script>
   $('#add_item').click(function() {
-    console.log("ooooops")
     var form_idx = $('#id_materialtransactionlines_set-TOTAL_FORMS').val();
     $('#purchase_set').append($('#empty_form').html().replace(/__prefix__/g, form_idx));
     $('#id_materialtransactionlines_set-TOTAL_FORMS').val(parseInt(form_idx) + 1);
@@ -150,7 +149,8 @@ function myFunction(object){
                 console.log(myitem)
                 if ({{purchase.item.id}} == myitem) {
                      console.log("in");
-                    document.getElementById(remaining_id).value = {{purchase.balance}} - object.value;}
+                    document.getElementById(remaining_id).value = {{purchase.balance}} - object.value
+                    ;}
 
                 {% endfor %}
 

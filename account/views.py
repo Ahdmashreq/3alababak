@@ -109,7 +109,7 @@ def create_supplier_address_account(request):
                 supplier_obj.save()
             except IntegrityError:
                 # Slug field value is duplicated
-                messages.error(request, "Supplier first name and address already exist")
+                messages.error(request, "Supplier first name and last name already exist")
             if flag:
                 # save address only if supplier account is saved
                 address_inlineformset = supplier_address_formset(request.POST, instance=supplier_obj)
@@ -123,7 +123,7 @@ def create_supplier_address_account(request):
                     if 'Save and exit' in request.POST:
                         return redirect('account:list-suppliers')
                     elif 'Save and add' in request.POST:
-                        return redirect('account:create-account')
+                        return redirect('account:create-supplier')
                 else:
                     messages.error(request, address_inlineformset.errors)
                     print(address_inlineformset.errors)
@@ -309,7 +309,8 @@ def update_supplier_view(request, slug):
                         address.last_updated_by = request.user
                         address.save()
                     messages.success(request, 'Saved Successfully')
-                    return redirect('account:list-suppliers')
+                    if 'Save and exit' in request.POST:
+                        return redirect('account:list-suppliers')
 
                 else:
                     messages.error(request, address_inlineformset.errors)
