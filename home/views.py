@@ -71,12 +71,12 @@ def user_login(request):
         return render(request, 'login.html')
 
 
-@login_required(login_url='/login')
+@login_required(login_url='home:user-login')
 def homepage(request):
     return render(request, 'index.html', context=None)
 
 
-@login_required(login_url='/login')
+@login_required(login_url='home:user-login')
 def user_logout(request):
     logout(request)
     return HttpResponseRedirect(reverse('home:user-login'))
