@@ -87,12 +87,14 @@ item_attribute_model_formset = inlineformset_factory(Item, ItemAttributeValue, f
 
 class UOMForm(forms.ModelForm):
     class Meta:
+        #changeTest
         model = Uom
         fields = '__all__'
         exclude = ('category','company', 'created_at', 'last_updated_at', 'created_by', 'last_updated_by')
         widgets = {
             'type': forms.Select(attrs={'onchange': 'myFunction()'}),
-        }
+            #'ratio':forms.NumberInput(attrs={'onchange':'changeTest()'})
+        } 
         help_texts = {'ratio': "1*(this unit) = ratio * Reference unit of measurement", }
 
     def __init__(self, *args, **kwargs):

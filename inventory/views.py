@@ -818,12 +818,11 @@ def delete_attribute(request, id):
 def create_attribute_ajax(request):
     if request.method == 'POST':
         name = request.POST.get('name')
-        display_name = request.POST.get('display_name')
         att_type = request.POST.get('att_type')
 
         response_data = {}
         try:
-            attribute = Attribute(name=name, display_name=display_name, att_type=att_type, created_by=request.user,
+            attribute = Attribute(name=name, att_type=att_type, created_by=request.user,
                                   company=request.user.company)
             attribute.save()
             response_data['result'] = 'Create attribute successful!'
