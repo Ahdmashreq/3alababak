@@ -2,14 +2,14 @@ from django.core.exceptions import ValidationError
 from django.db import models
 from django.conf import settings
 from django.template.defaultfilters import slugify
-
+from unidecode import unidecode
 from account.models import Company
 from alababak.utils import arabic_slugify
 from inventory.manager import UomCategoryManager, UomManager
 from location.models import Location
 from mptt.models import MPTTModel
 from mptt.fields import TreeForeignKey
-
+from django.utils.text import slugify as slugy
 
 class Brand(models.Model):
     name = models.CharField(max_length=30)
@@ -39,7 +39,7 @@ class Brand(models.Model):
         super(Brand, self).save(*args, **kwargs)
 
     def create_slug(self):
-        self.slug = slugify(self.name + '-' + str(self.company.id))
+        self.slug = slugy(self.name + '-' + str(self.company.id),allow_unicode=True)
 
 
 class Category(MPTTModel):
@@ -75,7 +75,7 @@ class Category(MPTTModel):
         super(Category, self).save(*args, **kwargs)
 
     def create_slug(self):
-        self.slug = slugify(self.name + '-' + str(self.company.id))
+        self.slug = slugy(self.name + '-' + str(self.company.id),allow_unicode=True)
 
 
 class UomCategory(models.Model):
@@ -108,7 +108,7 @@ class UomCategory(models.Model):
         super(UomCategory, self).save(*args, **kwargs)
 
     def create_slug(self):
-        self.slug = slugify(self.name + '-' + str(self.company.id))
+        self.slug = slugy(self.name + '-' + str(self.company.id),allow_unicode=True)
 
 
 class Uom(models.Model):
@@ -155,7 +155,7 @@ class Uom(models.Model):
         super(Uom, self).save(*args, **kwargs)
 
     def create_slug(self):
-        self.slug = slugify(self.name + '-' + str(self.company.id))
+        self.slug = slugy(self.name + '-' + str(self.company.id), allow_unicode=True)
 
 
 class Product(models.Model):
@@ -205,7 +205,7 @@ class Attribute(models.Model):
         super(Attribute, self).save(*args, **kwargs)
 
     def create_slug(self):
-        self.slug = slugify(self.name + '-' + str(self.att_type) + '-' + str(self.company.id))
+        self.slug = slugy(self.name + '-' + str(self.att_type) + '-' + str(self.company.id),allow_unicode=True)
 
 
 class ProductAttribute(models.Model):
@@ -294,7 +294,7 @@ class StokeTake(models.Model):
         super(StokeTake, self).save(*args, **kwargs)
 
     def create_slug(self):
-        self.slug = slugify(self.name + '-' + str(self.company.id))
+        self.slug = slugy(self.name + '-' + str(self.company.id),allow_unicode=True)
 
 
 class StokeEntry(models.Model):

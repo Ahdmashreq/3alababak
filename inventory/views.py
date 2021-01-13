@@ -515,21 +515,23 @@ def view_stoke(request, id):
     stoke_context['date'] = date
     stoke_context['type'] = type
     stoke_context['location'] = location
-
+    stoke_entries = StokeEntry.objects.select_related().filter(stoke_take=stoke_obj)
+    items = [stoke_entry.item for stoke_entry in stoke_entries]
     if type == 'location':
         location = stoke_obj.location
-        items = Inventory_Balance.objects.filter(location=location)
+        #items = Inventory_Balance.objects.filter(location=location)
     elif type == 'category':
         category = stoke_obj.category
         descendants = Category.objects.get(name=category).get_descendants(include_self=True)
         products = Product.objects.filter(Q(category__parent__in=descendants) | Q(category__in=descendants))
-        items = Inventory_Balance.objects.filter(item__product__in=products)
+        #items = Inventory_Balance.objects.filter(item__product__in=products)
         stoke_context['category'] = category
     elif type == 'all':
-        items = Inventory_Balance.objects.all()
+        pass
+        #items = Inventory_Balance.objects.all()
     elif type == 'random':
         stoke_entries = StokeEntry.objects.select_related().filter(stoke_take=stoke_obj)
-        items = [stoke_entry.item for stoke_entry in stoke_entries]
+        #items = [stoke_entry.item for stoke_entry in stoke_entries]
 
     stoke_context['items'] = items
     return render(request, 'stoke-entry-template.html', context=stoke_context)

@@ -52,7 +52,7 @@ class SalesOrder(models.Model):
     order_name = models.CharField(max_length=10)
     sale_code = models.CharField(max_length=100, help_text='code number of a so', null=True, blank=True, )
     subtotal_price = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True, default=0)
-    currency = models.ForeignKey(Currency, on_delete=models.CASCADE, null=True, blank=True, default='EGP')
+    #currency = models.ForeignKey(Currency, on_delete=models.CASCADE, null=True, blank=True, default='EGP')
     # status = models.CharField(max_length=8,
     #                           choices=[('received', 'Received'), ('returned', 'Returned'), ('shipping', 'Shipping')],
     #                           default='drafted')
@@ -81,7 +81,7 @@ class PurchaseTransaction(models.Model):
     price_per_unit = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True, )
     total_price = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True,
                                       help_text='total price of a transaction before discount')
-    #currency = models.ForeignKey(Currency, on_delete=models.CASCADE, null=True, blank=True, default='EGP')
+    # currency = models.ForeignKey(Currency, on_delete=models.CASCADE, null=True, blank=True, default='EGP')
     discount_percentage = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True, default=0)
     status = models.CharField(max_length=8,
                               choices=[('closed', 'Closed'), ('open', 'Open')], default='open')
@@ -169,18 +169,18 @@ class MaterialTransactionLines(models.Model):
 
 @receiver(post_save, sender=MaterialTransactionLines)
 def create_or_update_inventory_balance(sender, instance, created, *args, **kwargs):
-    if instance.material_transaction.purchase_order is not None:
+    if instance.material_transaction.purchase_order is not None:  # if it's a po
         new_quantity = convert_quantity(instance)
-        print(new_quantity)
         po_unit_cost = PurchaseTransaction.objects.filter(
-            purchase_order=instance.material_transaction.purchase_order).get(item=instance.item)
+            purchase_order=instance.material_transaction.purchase_order).get(
+            item=instance.item)  # supposing item could not be
+        # repeated in the same po
         try:
             inventory_item_obj = Inventory_Balance.objects.get(item=instance.item, location=instance.location)
             inventory_item_obj.qnt += new_quantity
             new_item_recieved_value = instance.quantity * po_unit_cost.price_per_unit
             inventory_item_obj.unit_cost = (inventory_item_obj.value + new_item_recieved_value) / inventory_item_obj.qnt
             new_value = inventory_item_obj.qnt * inventory_item_obj.unit_cost
-            print(new_value)
             inventory_item_obj.value = new_value
             inventory_item_obj.save()
         except Inventory_Balance.DoesNotExist:
@@ -188,9 +188,9 @@ def create_or_update_inventory_balance(sender, instance, created, *args, **kwarg
                 company=instance.material_transaction.company,
                 item=instance.item,
                 location=instance.location,
-                unit_cost=po_unit_cost.price_per_unit,
+                unit_cost=new_quantity * po_unit_cost.price_per_unit/instance.quantity,
                 qnt=new_quantity,
-                value=new_quantity * po_unit_cost.price_per_unit,
+                value=instance.quantity * po_unit_cost.price_per_unit,
             )
             inventory_item_obj.save()
 
@@ -245,7 +245,7 @@ class Inventory_Balance(models.Model):
                                         related_name="inventory_last_updated_by")
 
     def __str__(self):
-        return self.item.name + ' ' + str(self.value)
+        return self.item.name
 
     def __unicode__(self):
         return '%s: %s' % (self.item.name, str(self.value))
