@@ -735,9 +735,10 @@ def view_item(request, id):
     subcontext = {
         'item': item,
         'attributes': attributes,
-        'image': item_image,
+        'image': item_image[0],
 
     }
+    print(item_image[0].image)
     return render(request, 'view-item.html', context=subcontext)
 
 
