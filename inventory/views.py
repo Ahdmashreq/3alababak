@@ -1,6 +1,8 @@
 import json
 from datetime import date
 
+from django.http import JsonResponse
+
 from django.core.exceptions import ValidationError
 from django.db import IntegrityError
 from django.db.models import Q, ProtectedError
@@ -17,6 +19,8 @@ from orders.models import Inventory_Balance, MaterialTransaction1, MaterialTrans
 import random
 from orders.utils import get_seq, ItemSerializer, JSONResponse
 from django.http import HttpResponse
+from dal import autocomplete
+
 
 
 def create_category_view(request):
@@ -166,6 +170,12 @@ def create_product_item_view(request):
     item_attribute_form = item_attribute_model_formset()
     attribute_form = AttributeForm()
     image_form = ItemImageForm()
+    if request.is_ajax():
+
+        term = request.GET.get('term')
+        uom = Uom.objects.all()
+        return JsonResponse(list(uom.values()), safe=False)
+
     if request.method == 'POST':
 
         product_form = ProductForm(request.POST, user=request.user)
@@ -839,3 +849,17 @@ def create_attribute_ajax(request):
         # response_data['text'] = post.text
         # response_data['created'] = post.created.strftime('%B %d, %Y %I:%M %p')
         # response_data['author'] = post.author.username
+
+
+
+class UomAutocomplete(autocomplete.Select2QuerySetView):
+    def get_queryset(self):
+        if not self.request.user.is_authenticated:
+            return Uom.objects.none()
+
+        qs = Uom.objects.all()
+
+        if self.q:
+            qs = qs.filter(name__istartswith=self.q)
+
+        return qs

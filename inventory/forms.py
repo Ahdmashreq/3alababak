@@ -5,6 +5,9 @@ from inventory.models import (Category, Brand, Attribute, Uom, Item, Product, St
 from location.models import Location
 from orders.models import Inventory_Balance
 from mptt.forms import TreeNodeChoiceField
+from dal import autocomplete
+
+
 
 
 class CategoryForm(forms.ModelForm):
@@ -87,14 +90,12 @@ item_attribute_model_formset = inlineformset_factory(Item, ItemAttributeValue, f
 
 class UOMForm(forms.ModelForm):
     class Meta:
-        #changeTest
         model = Uom
         fields = '__all__'
         exclude = ('category','company', 'created_at', 'last_updated_at', 'created_by', 'last_updated_by')
         widgets = {
             'type': forms.Select(attrs={'onchange': 'myFunction()'}),
-            #'ratio':forms.NumberInput(attrs={'onchange':'changeTest()'})
-        } 
+        }
         help_texts = {'ratio': "1*(this unit) = ratio * Reference unit of measurement", }
 
     def __init__(self, *args, **kwargs):
@@ -119,7 +120,7 @@ class UOMForm(forms.ModelForm):
 uom_formset = modelformset_factory(Uom, form=UOMForm, extra=3, can_delete=False)
 
 
-class ProductForm(forms.ModelForm):
+class ProductForm(forms.ModelForm):       
     class Meta:
         model = Product
         fields = '__all__'
@@ -157,14 +158,8 @@ class ItemForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         user = kwargs.pop('user')
         super(ItemForm, self).__init__(*args, **kwargs)
-        self.fields["uom"].queryset = Uom.objects.filter(company=user.company)
-        for field in self.fields:
-            if field == 'description':
-                self.fields[field].widget.attrs['class'] = 'form-control'
-            elif self.fields[field].widget.input_type == 'select':
-                self.fields[field].widget.attrs['class'] = 'form-control  custom-select'
-            else:
-                self.fields[field].widget.attrs['class'] = 'form-control'
+        self.fields['uom'].queryset = Uom.objects.all()
+               
 
 
 # product_item_inlineformset = inlineformset_factory(Product, Item, form=ItemForm, extra=3, can_delete=False)

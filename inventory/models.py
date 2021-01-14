@@ -158,7 +158,7 @@ class Uom(models.Model):
         self.slug = slugy(self.name + '-' + str(self.company.id), allow_unicode=True)
 
 
-class Product(models.Model):
+class Product(models.Model): 
     company = models.ForeignKey(Company, on_delete=models.CASCADE, )
     brand = models.ForeignKey(Brand, on_delete=models.CASCADE, blank=True, null=True)
     category = TreeForeignKey(Category, on_delete=models.CASCADE, null=True, blank=True,

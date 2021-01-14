@@ -1,5 +1,7 @@
 from django.urls import path
 from inventory import views
+from dal import autocomplete
+
 
 app_name = 'inventory'
 urlpatterns = [
@@ -18,6 +20,7 @@ urlpatterns = [
                path('attribute/delete/<int:id>', views.delete_attribute, name='delete-attribute'),
                path('attribute/get-type/<id>', views.get_attribute_type, name='get-attribute-type'),
                path('product/list/', views.list_products_view, name='list-products'),
+               path('uom/auto/', views.UomAutocomplete.as_view(), name='auto-list-uom'),
                path('product/create/', views.create_product_item_view, name='create-product'),
                path('product/view/<int:id>', views.view_item, name='view-item'),
                path('product/update/<int:id>', views.update_item, name='update-item'),
@@ -41,4 +44,3 @@ urlpatterns = [
 
 
 ]
-

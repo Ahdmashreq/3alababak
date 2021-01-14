@@ -5,7 +5,7 @@ from django.contrib import messages
 
 from dal import autocomplete
 from datetime import date
-from decimal import Decimal
+from decimal import Decimal 
 
 from orders.forms import (PurchaseOrderCreationForm,
                           purchase_transaction_formset,
@@ -319,7 +319,7 @@ class ItemAutocomplete(autocomplete.Select2QuerySetView):
     """
     def get_queryset(self):
         if not self.request.user.is_authenticated:
-            return Item.objects.none()
+            return Item.objects.none()  
         qs = Item.objects.filter(company=self.request.user.company)
         if self.q:
             qs = qs.filter(name__istartswith=self.q)
