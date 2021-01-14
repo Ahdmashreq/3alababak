@@ -14,7 +14,7 @@ from location.models import Location
 class PurchaseOder(models.Model):
     company = models.ForeignKey(Company, on_delete=models.CASCADE)
     supplier = models.ForeignKey(Supplier, on_delete=models.CASCADE, )
-    # order_name = models.CharField(max_length=250)
+    supplier_code = models.CharField(max_length=250, help_text='code number of a supplier', null=True, blank=True)
     purchase_code = models.CharField(max_length=100, help_text='code number of a po', null=True, blank=True, )
     global_price = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True, default=0,
                                        help_text='total price before discount')
