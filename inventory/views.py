@@ -731,14 +731,15 @@ def get_attribute_type(request, id):
 def view_item(request, id):
     item = Item.objects.get(id=id)
     item_image = ItemImage.objects.filter(item=item)
+    if len(item_image) != 0:
+        item_image = item_image[0]
     attributes = ItemAttributeValue.objects.filter(item__id=id)
-    subcontext = {
+    subcontext = {  
         'item': item,
         'attributes': attributes,
-        'image': item_image[0],
+        'image': item_image,
 
     }
-    print(item_image[0].image)
     return render(request, 'view-item.html', context=subcontext)
 
 
@@ -762,7 +763,7 @@ def update_item(request, id):
         product_form = ProductForm(request.POST, instance=product, user=request.user)
         item_form = ItemForm(request.POST, instance=item, user=request.user)
         item_attribute_form = item_attribute_model_formset(request.POST, instance=item)
-
+        image_form = ItemImageForm(request.POST, request.FILES)
         if product_form.is_valid() and item_form.is_valid() and item_attribute_form.is_valid():
             product_obj = product_form.save(commit=False)
             product_obj.last_updated_by = request.user
@@ -783,6 +784,10 @@ def update_item(request, id):
 
                 }
                 return render(request, 'create-product-item.html', context=attributeContext)
+            image_obj = image_form.save(commit=False)
+            image_obj.created_by = request.user
+            image_obj.item = item_obj
+            image_obj.save()
             item_attribute_form = item_attribute_model_formset(request.POST, instance=item_obj)
             if item_attribute_form.is_valid():
                 for form in item_attribute_form:
