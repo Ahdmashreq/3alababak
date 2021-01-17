@@ -781,6 +781,7 @@ def update_item(request, id):
                         'item_attribute_formset': item_attribute_form,
                         'attribute_form': attribute_form,
                         'image_form': image_form,
+                        'item_image':item_image,
 
                 }
                 return render(request, 'create-product-item.html', context=attributeContext)
@@ -811,6 +812,7 @@ def update_item(request, id):
         'attribute_form': attribute_form,
         'update': True,
         'image_form': image_form,
+        'item_image':item_image,
 
     }
     return render(request, 'create-product-item.html', context=attributeContext)
