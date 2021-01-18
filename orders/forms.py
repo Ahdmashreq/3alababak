@@ -102,6 +102,9 @@ class SaleOrderCreationForm(forms.ModelForm):
         self.fields['sale_code'].widget.attrs['readonly'] = True
         self.fields['subtotal_price'].widget.attrs['readonly'] = True
         self.fields['subtotal_price'].widget.attrs['disabled'] = True
+        self.fields['total_after_tax'].widget.attrs['readonly'] = True
+        self.fields['total_after_tax'].widget.attrs['disabled'] = True
+
         self.fields["customer"].queryset = Customer.objects.filter(company=user.company)
 
         for field in self.fields:
@@ -120,6 +123,7 @@ class SaleTransactionCreationForm(forms.ModelForm):
             'quantity': forms.TextInput(attrs={'onchange': 'myFunction(this)'}),
             'item': autocomplete.ModelSelect2(url="orders:sell-items",
                                               attrs={'onchange': 'myAction(this)'}),
+            'price_per_unit' : forms.TextInput (attrs={'onchange': 'calculate_tex(this)'}),                          
 
         }
 
