@@ -221,12 +221,18 @@ def create_sales_order_view(request):
                 tax_percentage = Decimal(0.14)
             so_obj.tax = tax_percentage
             so_obj.save()
+            print(so_obj.subtotal_price_after_discount)
             so_transaction_inlineformset = sale_transaction_formset(request.POST, instance=so_obj,
                                                                     form_kwargs={'user': request.user})
             if so_transaction_inlineformset.is_valid():
                 so_transaction_obj = so_transaction_inlineformset.save(commit=False)
                 for so_transaction in so_transaction_obj:
                     so_transaction.created_by = request.user
+                    if so_obj.discount_type == "percentage":
+                        so_transaction_obj.discount_percentage = so_obj.discount
+                    elif so_obj.discount_type == "amount":   
+                        #TODO :implement this 
+                         so_transaction_obj.discount_percentage =  so_obj.discount
                     so_transaction.save()
                 messages.success(request, 'Saved Successfully')
                 if 'Save and exit' in request.POST:
