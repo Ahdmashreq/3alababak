@@ -129,15 +129,17 @@ class ProductForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         user = kwargs.pop('user')
         super(ProductForm, self).__init__(*args, **kwargs)
-        self.fields["uom"].queryset = Uom.objects.filter(company=user.company)
+        self.fields["category"].queryset = Category.objects.filter(company=user.company)
+        self.fields["brand"].queryset = Brand.objects.filter(company=user.company)
+
         for field in self.fields:
-            if field == 'description':
-                self.fields[field].widget.attrs['class'] = 'form-control'
-            elif self.fields[field].widget.input_type == 'select':
+
+            if self.fields[field].widget.input_type == 'select':
                 self.fields[field].widget.attrs['class'] = 'form-control  custom-select'
             else:
                 self.fields[field].widget.attrs['class'] = 'form-control'
 
+        
 
 
 class ItemImageForm(forms.ModelForm):
@@ -145,7 +147,7 @@ class ItemImageForm(forms.ModelForm):
         model = ItemImage
         exclude = ('item','created_at', 'last_updated_at', 'created_by', 'last_updated_by')
 
-        def __init__(self, *args, **kwargs):
+    def __init__(self, *args, **kwargs):
             super(ItemImageForm, self).__init__(*args, **kwargs)
             self.fields["image"].widget.attrs['class'] = 'form-control'
 
@@ -158,7 +160,6 @@ class ItemForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         user = kwargs.pop('user')
         super(ItemForm, self).__init__(*args, **kwargs)
-        #self.fields['uom'].queryset = Uom.objects.all()
         self.fields["uom"].queryset = Uom.objects.filter(company=user.company)
         for field in self.fields:
             if field == 'description':
