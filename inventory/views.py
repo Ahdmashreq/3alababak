@@ -19,6 +19,7 @@ from orders.models import Inventory_Balance, MaterialTransaction1, MaterialTrans
 import random
 from orders.utils import get_seq, ItemSerializer, JSONResponse
 from django.http import HttpResponse
+from django.db import IntegrityError
 from dal import autocomplete
 
 
@@ -192,13 +193,25 @@ def create_product_item_view(request):
             item_obj.company = request.user.company
             item_obj.product = product_obj
             item_obj.created_by = request.user
-            item_obj.save()
+            try:
+                item_obj.save()
+            except IntegrityError as e:
+                messages.error(request , 'SKU must be unique')
+                attributeContext = {
+                    'title': "New Item",
+                        'product_form': product_form,
+                        'item_form': item_form,
+                        'item_attribute_formset': item_attribute_form,
+                        'attribute_form': attribute_form,
+                        'image_form': image_form,
+
+                }
+                return render(request, 'create-product-item.html', context=attributeContext)
             image_obj = image_form.save(commit=False)
             image_obj.created_by = request.user
             image_obj.item = item_obj
             image_obj.save()
-            item_attribute_form = item_attribute_model_formset(
-                request.POST, instance=item_obj)
+            item_attribute_form = item_attribute_model_formset(request.POST, instance=item_obj)
             if item_attribute_form.is_valid():
                 for form in item_attribute_form:
                     temp_value = form.cleaned_data['temp_value']
@@ -206,13 +219,15 @@ def create_product_item_view(request):
                     att_obj.value = temp_value
                     att_obj.created_by = request.user
                     att_obj.save()
-
                 if 'Save and exit' in request.POST:
                     return redirect('inventory:list-products')
                 elif 'Save and add' in request.POST:
                     return redirect('inventory:create-product')
                 else:
                     return redirect('inventory:view-item', id=item_obj.id)
+        elif item_form.is_valid() == False:
+            messages.error(request , item_form.errors)
+
     attributeContext = {
         'title': "New Item",
         'product_form': product_form,
@@ -222,7 +237,7 @@ def create_product_item_view(request):
         'image_form': image_form,
         'uom_category_form': uom_category_form,
 
-    }
+        }
     return render(request, 'create-product-item.html', context=attributeContext)
 
 
@@ -254,8 +269,7 @@ def create_uom_view(request, category_id):
             except IntegrityError:
                 messages.error(request, "UOM name already exists")
         else:
-            messages.error(
-                request, "UOM is not valid :{}".format(uom_form.errors))
+            messages.error(request, "UOM is not valid :{}".format(uom_form.errors))
             print(uom_form.errors)
     uom_context = {
         'uom_from': uom_form,
@@ -266,8 +280,7 @@ def create_uom_view(request, category_id):
 
 
 def list_uom_view(request, category_id):
-    uom_list = Uom.objects.filter(
-        company=request.user.company, category=category_id)
+    uom_list = Uom.objects.filter(company=request.user.company, category=category_id)
     category = UomCategory.objects.get(id=category_id)
     uom_context = {
         'uom_list': uom_list,
@@ -293,8 +306,7 @@ def update_uom_view(request, id):
             except IntegrityError:
                 messages.error(request, "UOM name already exists")
         else:
-            messages.error(
-                request, "UOM is not valid :{}".format(uom_form.errors))
+            messages.error(request, "UOM is not valid :{}".format(uom_form.errors))
             print(uom_form.errors)
     uom_context = {
         'uom_from': uom_form,
@@ -317,7 +329,7 @@ def delete_uom_view(request, id):
     return redirect('inventory:list-uom', category_id=category.id)
 
 
-def create_stoke_entries_template(type, stoke_take_obj, user):
+def create_stoke_entries_template(type, stoke_take_obj,user):
     items = []
     location = stoke_take_obj.location
     if type == 'location':
@@ -326,13 +338,10 @@ def create_stoke_entries_template(type, stoke_take_obj, user):
             items.append(record.item)
     elif type == 'category':
         category = stoke_take_obj.category
-        descendants = Category.objects.get(
-            id=category.id).get_descendants(include_self=True)
-        products = Product.objects.filter(
-            Q(category__parent__in=descendants) | Q(category__in=descendants))
+        descendants = Category.objects.get(id=category.id).get_descendants(include_self=True)
+        products = Product.objects.filter(Q(category__parent__in=descendants) | Q(category__in=descendants))
         myitems = Item.objects.filter(product__in=products)
-        inventory_balance = Inventory_Balance.objects.filter(
-            location=location, item__in=myitems)
+        inventory_balance = Inventory_Balance.objects.filter(location=location, item__in=myitems)
         for record in inventory_balance:
             items.append(record.item)
     elif type == 'random':
@@ -344,8 +353,7 @@ def create_stoke_entries_template(type, stoke_take_obj, user):
         items = random.sample(item_list, number_of_items)
     entry_list = []
     for item in items:
-        entry_list.append(StokeEntry(
-            stoke_take=stoke_take_obj, item=item, created_by=user))
+        entry_list.append(StokeEntry(stoke_take=stoke_take_obj, item=item, created_by=user))
     try:
         StokeEntry.objects.bulk_create(entry_list)
     except BaseException:
@@ -358,8 +366,7 @@ def create_stoketake_view(request):
     stoke_context = {}
     items = []
     if request.method == 'POST':
-        stoke_form = StokeTakeForm(
-            request.POST, update=False, user=request.user)
+        stoke_form = StokeTakeForm(request.POST, update=False, user=request.user)
         if stoke_form.is_valid():
             stoke_obj = stoke_form.save(commit=False)
             stoke_obj.created_by = request.user
@@ -374,25 +381,20 @@ def create_stoketake_view(request):
             stoke_context['location'] = location
             # TODO: Need to be refactored to achieve separation of concerns
             if type == 'location':
-                inventory_balance = Inventory_Balance.objects.filter(
-                    location=location)
+                inventory_balance = Inventory_Balance.objects.filter(location=location)
                 for record in inventory_balance:
                     items.append(record.item)
             elif type == 'category':
                 category = stoke_obj.category
-                descendants = Category.objects.get(
-                    id=category.id).get_descendants(include_self=True)
-                products = Product.objects.filter(
-                    Q(category__parent__in=descendants) | Q(category__in=descendants))
+                descendants = Category.objects.get(id=category.id).get_descendants(include_self=True)
+                products = Product.objects.filter(Q(category__parent__in=descendants) | Q(category__in=descendants))
                 myitems = Item.objects.filter(product__in=products)
-                inventory_balance = Inventory_Balance.objects.filter(
-                    location=location, item__in=myitems)
+                inventory_balance = Inventory_Balance.objects.filter(location=location, item__in=myitems)
                 for record in inventory_balance:
                     items.append(record.item)
                 stoke_context['category'] = category
             elif type == 'random':
-                inventory_balance = Inventory_Balance.objects.filter(
-                    location=location)
+                inventory_balance = Inventory_Balance.objects.filter(location=location)
                 item_list = []
                 for record in inventory_balance:
                     item_list.append(record.item)
@@ -401,8 +403,7 @@ def create_stoketake_view(request):
             stoke_obj.save()
             entry_list = []
             for item in items:
-                entry_list.append(StokeEntry(
-                    stoke_take=stoke_obj, item=item, created_by=request.user))
+                entry_list.append(StokeEntry(stoke_take=stoke_obj, item=item, created_by=request.user))
             StokeEntry.objects.bulk_create(entry_list)
             stoke_context['items'] = items
             messages.success(request, 'Stoke Take created successfully')
@@ -425,51 +426,42 @@ def create_stoketake_view(request):
 
 def update_stoke_take_view(request, id):
     stoke_inst = StokeTake.objects.get(id=id)
-    stoke_form = StokeTakeForm(
-        update=False, instance=stoke_inst, user=request.user)
+    stoke_form = StokeTakeForm(update=False, instance=stoke_inst, user=request.user)
     items = []
 
     if request.method == 'POST':
-        stoke_form = StokeTakeForm(
-            request.POST, update=False, instance=stoke_inst, user=request.user)
+        stoke_form = StokeTakeForm(request.POST, update=False, instance=stoke_inst, user=request.user)
         if stoke_form.is_valid():
             stoke_obj = stoke_form.save(commit=False)
             stoke_obj.last_updated_by = request.user
             location = stoke_obj.location
             if stoke_obj.type == 'location':
                 stoke_obj.category = None
-                inventory_balance = Inventory_Balance.objects.filter(
-                    location=location)
+                inventory_balance = Inventory_Balance.objects.filter(location=location)
                 for record in inventory_balance:
                     items.append(record.item)
             elif stoke_obj.type == 'category':
                 category = stoke_obj.category
-                descendants = Category.objects.get(
-                    name=category).get_descendants(include_self=True)
-                products = Product.objects.filter(
-                    Q(category__parent__in=descendants) | Q(category__in=descendants))
+                descendants = Category.objects.get(name=category).get_descendants(include_self=True)
+                products = Product.objects.filter(Q(category__parent__in=descendants) | Q(category__in=descendants))
                 myitems = Item.objects.filter(product__in=products)
-                inventory_balance = Inventory_Balance.objects.filter(
-                    location=location, item__in=myitems)
+                inventory_balance = Inventory_Balance.objects.filter(location=location, item__in=myitems)
                 for record in inventory_balance:
                     items.append(record.item)
             elif stoke_obj.type == 'random':
                 stoke_obj.category = None
-                inventory_balance = Inventory_Balance.objects.filter(
-                    location=location)
+                inventory_balance = Inventory_Balance.objects.filter(location=location)
                 item_list = []
                 for record in inventory_balance:
                     item_list.append(record.item)
                 number_of_items = stoke_form.cleaned_data['random_number']
                 items = random.sample(item_list, number_of_items)
             stoke_obj.save()
-            stoke_entry_instances = StokeEntry.objects.filter(
-                stoke_take=stoke_obj)
+            stoke_entry_instances = StokeEntry.objects.filter(stoke_take=stoke_obj)
             stoke_entry_instances.delete()
             entry_list = []
             for item in items:
-                entry_list.append(StokeEntry(
-                    stoke_take=stoke_obj, item=item, created_by=request.user))
+                entry_list.append(StokeEntry(stoke_take=stoke_obj, item=item, created_by=request.user))
             StokeEntry.objects.bulk_create(entry_list)
             messages.success(request, 'Updated Successfully')
             if 'Save and exit' in request.POST:
@@ -484,20 +476,16 @@ def update_stoke_take_view(request, id):
 
 
 def list_stoketake_entries(request):
-    stoke_list = StokeTake.objects.filter(
-        company=request.user.company).exclude(status='Approved')
-    context = {"title": "Stoke Taking Entries",
-               "entry_mode": True, 'stoke_list': stoke_list}
+    stoke_list = StokeTake.objects.filter(company=request.user.company).exclude(status='Approved')
+    context = {"title": "Stoke Taking Entries", "entry_mode": True, 'stoke_list': stoke_list}
 
     return render(request, 'list-stokes.html', context=context)
 
 
 def update_stoke_entry_view(request, id):
     stoke_obj = StokeTake.objects.get(id=id)
-    stoke_take_form = StokeTakeForm(
-        update=True, instance=stoke_obj, user=request.user)
-    stoke_entry_inline_formset = stoke_entry_formset(
-        instance=stoke_obj, form_kwargs={'approve': False})
+    stoke_take_form = StokeTakeForm(update=True, instance=stoke_obj, user=request.user)
+    stoke_entry_inline_formset = stoke_entry_formset(instance=stoke_obj, form_kwargs={'approve': False})
 
     if request.method == 'POST':
         stoke_entry_inline_formset = stoke_entry_formset(request.POST, instance=stoke_obj,
@@ -533,8 +521,7 @@ def delete_stoke_take(request, id):
     stoke_take = StokeTake.objects.get(pk=id)
     print(stoke_take.status)
     if stoke_take.status == 'In Progress' or stoke_take.status == 'Done':
-        messages.error(
-            request, "Stoke taking cannot be deleted while in progress")
+        messages.error(request, "Stoke taking cannot be deleted while in progress")
     else:
         deleted = stoke_take.delete()
         if deleted:
@@ -562,10 +549,8 @@ def view_stoke(request, id):
         #items = Inventory_Balance.objects.filter(location=location)
     elif type == 'category':
         category = stoke_obj.category
-        descendants = Category.objects.get(
-            name=category).get_descendants(include_self=True)
-        products = Product.objects.filter(
-            Q(category__parent__in=descendants) | Q(category__in=descendants))
+        descendants = Category.objects.get(name=category).get_descendants(include_self=True)
+        products = Product.objects.filter(Q(category__parent__in=descendants) | Q(category__in=descendants))
         #items = Inventory_Balance.objects.filter(item__product__in=products)
         stoke_context['category'] = category
     elif type == 'all':
@@ -591,8 +576,7 @@ def approve_stoke_view(request, id):
     stoke_entries = StokeEntry.objects.filter(stoke_take=stoke_obj)
     entries = []
     for stoke_entry in stoke_entries:
-        inventory = Inventory_Balance.objects.filter(
-            item=stoke_entry.item, location=stoke_obj.location)
+        inventory = Inventory_Balance.objects.filter(item=stoke_entry.item, location=stoke_obj.location)
         on_hand = inventory[0].qnt
         category = stoke_entry.item.product.category
         entries.append({'category': category, 'brand': stoke_entry.item.product.brand,
@@ -606,15 +590,13 @@ def approve_stoke_view(request, id):
             success = create_stoke_transaction(stoke_obj, request.user)
             if success:
                 StokeTake.objects.filter(id=id).update(status='Approved')
-                messages.success(
-                    request, 'Stoke record is approved, Inventory is updated')
+                messages.success(request, 'Stoke record is approved, Inventory is updated')
             else:
                 messages.error(request, 'Error in updating inventory')
 
         elif 'disapprove' in request.POST:
             StokeTake.objects.filter(id=id).update(status='In Progress')
-            messages.success(
-                request, 'Stoke record sent back to stoke entry page')
+            messages.success(request, 'Stoke record sent back to stoke entry page')
         return redirect('inventory:list-stokes-for-approval')
 
     sub_context = {'title': "Approve Stoke Taking",
@@ -636,8 +618,7 @@ def update_category_view(request, id):
     category = Category.objects.get(id=id)
     category_form = CategoryForm(instance=category, user=request.user)
     if request.method == 'POST':
-        category_form = CategoryForm(
-            request.POST, instance=category, user=request.user)
+        category_form = CategoryForm(request.POST, instance=category, user=request.user)
         if category_form.is_valid():
             category_obj = category_form.save(commit=False)
             category_obj.last_updated_by = request.user
@@ -688,8 +669,7 @@ def list_uom_category(request):
     uom_categories = UomCategory.objects.filter(company=request.user.company)
     # this form is for the modal used to create and update a record
     uom_category_form = UomCategoryForm()
-    context = {"uom_category_list": uom_categories,
-               'category_from': uom_category_form}
+    context = {"uom_category_list": uom_categories, 'category_from': uom_category_form}
     return render(request, 'list-uom-categories.html', context=context)
 
 
@@ -716,17 +696,14 @@ def check_balance_difference(stoke_take):
     for stoke_entry in stoke_entries:
         item = stoke_entry.item
         location = stoke_entry.stoke_take.location
-        on_hand_item = Inventory_Balance.objects.get(
-            item=item, location=location)
+        on_hand_item = Inventory_Balance.objects.get(item=item, location=location)
         on_hand_quantity = on_hand_item.qnt
         stoked_quantity = stoke_entry.quantity
         difference_quantity = on_hand_quantity - stoked_quantity
         if difference_quantity > 0:
-            result.append({'item': item, 'type': 'out', 'quantity': abs(
-                difference_quantity), 'location': location})
+            result.append({'item': item, 'type': 'out', 'quantity': abs(difference_quantity), 'location': location})
         elif difference_quantity < 0:
-            result.append({'item': item, 'type': 'in', 'quantity': abs(
-                difference_quantity), 'location': location})
+            result.append({'item': item, 'type': 'in', 'quantity': abs(difference_quantity), 'location': location})
 
     return result
 
@@ -735,8 +712,7 @@ def create_stoke_transaction(stoke_take, user):
     result = check_balance_difference(stoke_take)
     if result:
         rows_number = MaterialTransaction1.objects.all().count()
-        transaction_code = "STK-" + \
-            str(date.today()) + "-" + get_seq(rows_number)
+        transaction_code = "STK-" + str(date.today()) + "-" + get_seq(rows_number)
         try:
             stoke_transaction = MaterialTransaction1(transaction_code=transaction_code, stoke_take=stoke_take,
                                                      date=date.today(), created_by=user, company=user.company)
@@ -768,6 +744,8 @@ def get_attribute_type(request, id):
 def view_item(request, id):
     item = Item.objects.get(id=id)
     item_image = ItemImage.objects.filter(item=item)
+    if len(item_image) != 0:
+        item_image = item_image[0]
     attributes = ItemAttributeValue.objects.filter(item__id=id)
     subcontext = {
         'item': item,
@@ -798,18 +776,34 @@ def update_item(request, id):
         product_form = ProductForm(
             request.POST, instance=product, user=request.user)
         item_form = ItemForm(request.POST, instance=item, user=request.user)
-        item_attribute_form = item_attribute_model_formset(
-            request.POST, instance=item)
-
+        item_attribute_form = item_attribute_model_formset(request.POST, instance=item)
+        image_form = ItemImageForm(request.POST, request.FILES)
         if product_form.is_valid() and item_form.is_valid() and item_attribute_form.is_valid():
             product_obj = product_form.save(commit=False)
             product_obj.last_updated_by = request.user
             product_obj.save()
             item_obj = item_form.save(commit=False)
             item_obj.last_updated_by = request.user
-            item_obj.save()
-            item_attribute_form = item_attribute_model_formset(
-                request.POST, instance=item_obj)
+            try:
+                item_obj.save()
+            except IntegrityError as e:
+                messages.error(request , 'SKU must be unique')
+                attributeContext = {
+                    'title': "New Item",
+                        'product_form': product_form,
+                        'item_form': item_form,
+                        'item_attribute_formset': item_attribute_form,
+                        'attribute_form': attribute_form,
+                        'image_form': image_form,
+                        'item_image':item_image,
+
+                }
+                return render(request, 'create-product-item.html', context=attributeContext)
+            image_obj = image_form.save(commit=False)
+            image_obj.created_by = request.user
+            image_obj.item = item_obj
+            image_obj.save()
+            item_attribute_form = item_attribute_model_formset(request.POST, instance=item_obj)
             if item_attribute_form.is_valid():
                 for form in item_attribute_form:
                     temp_value = form.cleaned_data['temp_value']
@@ -822,6 +816,8 @@ def update_item(request, id):
                     return redirect('inventory:list-products')
                 else:
                     return redirect('inventory:view-item', id=id)
+        elif item_form.is_valid() == False:
+            messages.error(request , item_form.errors)
     attributeContext = {
         'title': "Update Item",
         'product_form': product_form,
@@ -830,6 +826,7 @@ def update_item(request, id):
         'attribute_form': attribute_form,
         'update': True,
         'image_form': image_form,
+        'item_image':item_image,
 
     }
     return render(request, 'create-product-item.html', context=attributeContext)
