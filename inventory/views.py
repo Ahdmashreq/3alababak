@@ -20,7 +20,6 @@ import random
 from orders.utils import get_seq, ItemSerializer, JSONResponse
 from django.http import HttpResponse
 from django.db import IntegrityError
-from dal import autocomplete
 
 
 def create_category_view(request):
@@ -172,9 +171,7 @@ def create_product_item_view(request):
     attribute_form = AttributeForm()
     image_form = ItemImageForm()
     if request.is_ajax():
-
-        term = request.GET.get('term')
-        uom = Uom.objects.all()
+        uom = Uom.objects.filter(company=request.user.comapny)
         return JsonResponse(list(uom.values()), safe=False)
 
     if request.method == 'POST':
@@ -892,14 +889,3 @@ def create_attribute_ajax(request):
         # response_data['author'] = post.author.username
 
 
-class UomAutocomplete(autocomplete.Select2QuerySetView):
-    def get_queryset(self):
-        if not self.request.user.is_authenticated:
-            return Uom.objects.none()
-
-        qs = Uom.objects.filter(company=self.request.user.company)
-
-        if self.q:
-            qs = qs.filter(name__istartswith=self.q)
-
-        return qs
