@@ -47,6 +47,10 @@
                             <label>Customer</label>
                             {{so_form.customer}}
                         </div>
+                         <div class="form-group col-md-3">
+                            <label>Name</label>
+                            {{so_form.order_name}}
+                        </div>
                         <div class="form-group col-md-3">
                             <label>Code</label>
                             {{so_form.sale_code}}
@@ -56,28 +60,9 @@
                             {{so_form.date}}
                         </div>
                         <div class="form-group col-md-3">
-                            <label>Discount</label>
-                            {{so_form.discount}}
-                        </div>
-                        <div class="form-group col-md-3">
-                            <label>Discount Type</label>
-                            {{so_form.discount_type}}
-                        </div>
-                        <button class="btn btn-lg col-md-2" type="button" onclick="calculate()">Apply Discount</button>
-
-                        <div class="form-group col-md-3">
-                            <label>Shipping Cost</label> 
-                            {{so_form.shipping_cost}}
-                        </div>
-                        <div class="form-group col-md-3">
-                            <label>Subtotal Price</label>
+                             <label>Grand Total (EGP)</label>
                             {{so_form.subtotal_price}}
                         </div>
-                        <div class="form-group col-md-3">
-                            <label>after_tax (EGP)</label>
-                            {{so_form.total_after_tax}}
-                        </div>
-                     
 
 
                     </div>
@@ -193,17 +178,7 @@
 {% endblock body %}
 
 {% block js %}
-<script>
-    function calculate_tex(object){
-    var total;
-    total = document.getElementById(id_salestransaction_set-0-total_price).val();
-    console.log(total)
-    tax = total- 14
-    console.log(tax)
-    document.getElementById(id_total_after_tax).value = tax;
-    }
 
-    
 </script>
 
 
@@ -403,18 +378,5 @@ window.onload = function() {
 };
 </script>
 
-<script>
-    $('#myform').on('submit', function() {
-        calculate() ;
- for (i = 0; i < $('#id_salestransaction_set-TOTAL_FORMS').val(); i++) {
- 
-     $('#id_salestransaction_set-'+i+'-total_price').prop('disabled', false);
-      $('#id_salestransaction_set-'+i+'-after_discount').prop('disabled', false);
-     }
-  $('#id_salestransaction_set-0-temp_unit_cost').prop('disabled', false);
-  $('#id_total_after_tax').prop('disabled', false);
- });
- 
- </script>
 
 {% endblock js %}

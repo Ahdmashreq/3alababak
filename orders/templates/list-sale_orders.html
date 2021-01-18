@@ -39,6 +39,7 @@
                 {% for order in sale_orders_list %}
                 <tr role="row" class="odd">
                   <td class="sorting_1">{{ forloop.counter }}</td>
+                 <td>{{ order.order_name }}</td>
                   <td>{{ order.date }}</td>
                    <td>
                    <div class="d-inline-block">

@@ -49,6 +49,7 @@ class PurchaseOder(models.Model):
 class SalesOrder(models.Model):
     company = models.ForeignKey(Company, on_delete=models.CASCADE)
     customer = models.ForeignKey(Customer, on_delete=models.CASCADE, )
+    order_name = models.CharField(max_length=10)
     sale_code = models.CharField(max_length=100, help_text='code number of a so', null=True, blank=True, )
     subtotal_price = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True, default=0)
     #currency = models.ForeignKey(Currency, on_delete=models.CASCADE, null=True, blank=True, default='EGP')
@@ -58,12 +59,6 @@ class SalesOrder(models.Model):
     #subtotal_price_after_tax
     #subtotal_price_after_dic
     #grand_total= models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True, default=0)
-
-    total_after_tax = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True, default=0)
-    shipping_cost = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True, default=0)
-    discount = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True, default=0)
-    discount_type = models.CharField(max_length=11,
-                                     choices=[('percentage', '%'), ('amount', 'EGP')], default='percentage')
     tax = models.DecimalField(max_digits=4, decimal_places=3)
     date = models.DateField(null=True, blank=True) 
     created_at = models.DateField(auto_now_add=True, null=True)

@@ -19,6 +19,10 @@
     text-align: right;
     overflow: hidden;
 }
+
+
+
+
 </style>
 {% endblock style  %}
 {% block body%}
@@ -52,7 +56,10 @@
                                 <label>Attribute Name <span class="required">*</span></label>
                                 {{attribute_form.name}}
                             </div>
-                           
+                            <div class="form-group col-md-12">
+                                <label>Attribute Display Name </label>
+                                {{attribute_form.display_name}}
+                            </div>
                             <div class="form-group col-md-12">
                                 <label>Attribute Type </label>
                                 {{attribute_form.att_type}}
@@ -101,41 +108,14 @@
                             <span class="input-group-text">Item Name</span>
                             {{item_form.name}}
                         </div>
-
                         <div class="input-group-prepend input-group-sm col-md-6">
+
                             <span class="input-group-text">UOM</span>
-                            {{ item_form.uom }}
+                            {{item_form.uom}}
                         </div>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-                               </div>
-
                     </div>
                 </div>
-               
+
 
                 <div class="form-row">
                     <div class="input-group mb-3">
@@ -255,7 +235,6 @@
                         </div>
                     </table>
                 </div>
-    </div>
 
                 <button type="button" id="add_item" class="btn cur-p btn-success">{% trans "Add Attribute "%}
                 </button>
@@ -277,11 +256,9 @@
     </div>
 
 </div>
+
 {% endblock body%}
 {% block js %}
-
-
-
 
 <script>
   $('#add_item').click(function() {
@@ -422,7 +399,7 @@ function create_attribute(){
 
         url : '{% url "inventory:create-attribute-ajax" %}',
         type : "POST", // http method
-        data : { name : $('#id_name').val(),att_type: $('#id_att_type').val() }, // data sent with the post request
+        data : { name : $('#id_name').val(),display_name: $('#id_display_name').val(),att_type: $('#id_att_type').val() }, // data sent with the post request
 
         // handle a successful response
         success : function(json) {
@@ -440,6 +417,9 @@ function create_attribute(){
         }
     });
 }
+
+
+
 </script>
 
 <script>

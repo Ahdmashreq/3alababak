@@ -104,6 +104,7 @@ def list_purchase_order_view(request):
 
     """
     purchase_orders = PurchaseOder.objects.filter(company=request.user.company)
+    print("&&&&&&&&&&&&&7")
     context = {
         'purchase_orders_list': purchase_orders,
         'title': "Purchase Orders",
@@ -135,7 +136,7 @@ def update_purchase_order_view(request, id):
     order = PurchaseOder.objects.get(pk=id)
     purchase_order_form = PurchaseOrderCreationForm(instance=order, user=request.user)
     po_transaction_inlineformset = purchase_transaction_formset(instance=order, form_kwargs={'user': request.user})
-    purchase_order_form.fields["my_         _after_discount"].initial = order.global_price_after_discount
+    purchase_order_form.fields["my_total_price_after_discount"].initial = order.global_price_after_discount
     for form in po_transaction_inlineformset:
         form.fields["after_discount"].initial = form.instance.total_price_after_discount
 
@@ -210,16 +211,9 @@ def create_sales_order_view(request):
         so_transaction_inlineformset = sale_transaction_formset(request.POST, form_kwargs={'user': request.user})
         if so_form.is_valid() and so_transaction_inlineformset.is_valid():
             so_obj = so_form.save(commit=False)
-            if so_obj.discount_type == "percentage":
-                so_transaction_inlineformset.discount_percentage = so_obj.discount
-            elif po_obj.discount_type == "amount":
-                # TODO: implement this
-                so_transaction_inlineformset.discount_percentage = so_obj.discount
             so_obj.created_by = request.user
             so_obj.company = request.user.company
             so_obj.sale_code = so_code
-            total = so_obj.subtotal_price
-            after_tax= so_obj.total_after_tax
             try:
                 tax = Tax.objects.get(name='VAT')
                 tax_percentage = tax.value / 100
@@ -227,7 +221,6 @@ def create_sales_order_view(request):
                 print(ObjectDoesNotExist)
                 tax_percentage = Decimal(0.14)
             so_obj.tax = tax_percentage
-            after_tax = total - tax
             so_obj.save()
             so_transaction_inlineformset = sale_transaction_formset(request.POST, instance=so_obj,
                                                                     form_kwargs={'user': request.user})
