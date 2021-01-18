@@ -1,6 +1,8 @@
 import json
 from datetime import date
 
+from django.http import JsonResponse
+
 from django.core.exceptions import ValidationError
 from django.db import IntegrityError
 from django.db.models import Q, ProtectedError
@@ -18,6 +20,7 @@ import random
 from orders.utils import get_seq, ItemSerializer, JSONResponse
 from django.http import HttpResponse
 from django.db import IntegrityError
+
 
 def create_category_view(request):
     category_form = CategoryForm(user=request.user)
@@ -161,17 +164,23 @@ def list_products_view(request):
 
 
 def create_product_item_view(request):
-
     product_form = ProductForm(user=request.user)
+    uom_category_form = UomCategoryForm()
     item_form = ItemForm(user=request.user)
     item_attribute_form = item_attribute_model_formset()
     attribute_form = AttributeForm()
     image_form = ItemImageForm()
+    if request.is_ajax():
+        uom = Uom.objects.filter(company=request.user.comapny)
+        return JsonResponse(list(uom.values()), safe=False)
+
     if request.method == 'POST':
+
         product_form = ProductForm(request.POST, user=request.user)
         item_form = ItemForm(request.POST, user=request.user)
         item_attribute_form = item_attribute_model_formset(request.POST)
         image_form = ItemImageForm(request.POST, request.FILES)
+
         if product_form.is_valid() and item_form.is_valid() and item_attribute_form.is_valid() and image_form.is_valid():
             product_obj = product_form.save(commit=False)
             product_obj.company = request.user.company
@@ -194,7 +203,7 @@ def create_product_item_view(request):
                         'image_form': image_form,
 
                 }
-                return render(request, 'create-product-item.html', context=attributeContext)    
+                return render(request, 'create-product-item.html', context=attributeContext)
             image_obj = image_form.save(commit=False)
             image_obj.created_by = request.user
             image_obj.item = item_obj
@@ -215,17 +224,18 @@ def create_product_item_view(request):
                     return redirect('inventory:view-item', id=item_obj.id)
         elif item_form.is_valid() == False:
             messages.error(request , item_form.errors)
-    
+
     attributeContext = {
         'title': "New Item",
-            'product_form': product_form,
-            'item_form': item_form,
-            'item_attribute_formset': item_attribute_form,
-            'attribute_form': attribute_form,
-            'image_form': image_form,
+        'product_form': product_form,
+        'item_form': item_form,
+        'item_attribute_formset': item_attribute_form,
+        'attribute_form': attribute_form,
+        'image_form': image_form,
+        'uom_category_form': uom_category_form,
 
         }
-    return render(request, 'create-product-item.html', context=attributeContext)    
+    return render(request, 'create-product-item.html', context=attributeContext)
 
 
 def list_stoketake_view(request):
@@ -734,7 +744,7 @@ def view_item(request, id):
     if len(item_image) != 0:
         item_image = item_image[0]
     attributes = ItemAttributeValue.objects.filter(item__id=id)
-    subcontext = {  
+    subcontext = {
         'item': item,
         'attributes': attributes,
         'image': item_image,
@@ -760,7 +770,8 @@ def update_item(request, id):
         value = form.instance.value
         form.fields["temp_value"].initial = value
     if request.method == 'POST':
-        product_form = ProductForm(request.POST, instance=product, user=request.user)
+        product_form = ProductForm(
+            request.POST, instance=product, user=request.user)
         item_form = ItemForm(request.POST, instance=item, user=request.user)
         item_attribute_form = item_attribute_model_formset(request.POST, instance=item)
         image_form = ItemImageForm(request.POST, request.FILES)
@@ -855,12 +866,11 @@ def delete_attribute(request, id):
 def create_attribute_ajax(request):
     if request.method == 'POST':
         name = request.POST.get('name')
-        display_name = request.POST.get('display_name')
         att_type = request.POST.get('att_type')
 
         response_data = {}
         try:
-            attribute = Attribute(name=name, display_name=display_name, att_type=att_type, created_by=request.user,
+            attribute = Attribute(name=name, att_type=att_type, created_by=request.user,
                                   company=request.user.company)
             attribute.save()
             response_data['result'] = 'Create attribute successful!'
@@ -877,3 +887,5 @@ def create_attribute_ajax(request):
         # response_data['text'] = post.text
         # response_data['created'] = post.created.strftime('%B %d, %Y %I:%M %p')
         # response_data['author'] = post.author.username
+
+

@@ -102,6 +102,8 @@ class SaleOrderCreationForm(forms.ModelForm):
         self.fields['sale_code'].widget.attrs['readonly'] = True
         self.fields['subtotal_price'].widget.attrs['readonly'] = True
         self.fields['subtotal_price'].widget.attrs['disabled'] = True
+
+
         self.fields["customer"].queryset = Customer.objects.filter(company=user.company)
 
         for field in self.fields:
