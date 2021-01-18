@@ -900,7 +900,7 @@ class UomAutocomplete(autocomplete.Select2QuerySetView):
         if not self.request.user.is_authenticated:
             return Uom.objects.none()
 
-        qs = Uom.objects.all()
+        qs = Uom.objects.filter(company=self.request.user.company)
 
         if self.q:
             qs = qs.filter(name__istartswith=self.q)
