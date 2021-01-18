@@ -49,7 +49,6 @@ class PurchaseOder(models.Model):
 class SalesOrder(models.Model):
     company = models.ForeignKey(Company, on_delete=models.CASCADE)
     customer = models.ForeignKey(Customer, on_delete=models.CASCADE, )
-    order_name = models.CharField(max_length=10)
     sale_code = models.CharField(max_length=100, help_text='code number of a so', null=True, blank=True, )
     subtotal_price = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True, default=0)
     #currency = models.ForeignKey(Currency, on_delete=models.CASCADE, null=True, blank=True, default='EGP')
@@ -65,7 +64,7 @@ class SalesOrder(models.Model):
     last_updated_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, null=True)
 
     def __str__(self):
-        return self.order_name
+        return self.sale_code
 
     @property
     def global_price(self):
