@@ -411,7 +411,7 @@ def create_receiving(request, id):
             receiving_objs = material_lines_formset.save(commit=False)
             for obj in receiving_objs:
                 obj.created_by = request.user
-                obj.transaction_type = 'in'
+                obj.transaction_type = 'inbound'
                 obj.save()
                 po_line = PurchaseTransaction.objects.filter(purchase_order__id=id, item=obj.item)
                 new_balance = po_line[0].balance - obj.quantity
