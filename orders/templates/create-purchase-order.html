@@ -104,14 +104,17 @@
                                         <div class="form-group col-md-1">
                                             <label>{% trans "Unit" %}</label>
                                         </div>
-                                        <div class="form-group col-md-2">
+                                        <div class="form-group col-md-1">
                                             <label>{% trans "Price per unit (EGP)" %}</label>
                                         </div>
-                                        <div class="form-group col-md-2">
-                                            <label>{% trans "Total Price (EGP)" %}</label>
+                                        <div class="form-group col-md-1">
+                                            <label>{% trans "Subtotal Price (EGP)" %}</label>
                                         </div>
-                                        <div class="form-group col-md-2">
-                                            <label>Total after discount (EGP)</label>
+                                        <div class="form-group col-md-1">
+                                            <label>{% trans "Tax (EGP)" %}</label>
+                                        </div>
+                                        <div class="form-group col-md-1">
+                                            <label>Total Price (EGP)</label>
                                         </div>
                                     </div>
                                     {{ po_transaction_inlineformset.management_form }}
@@ -128,14 +131,17 @@
                                         <div class="form-group col-md-1">
                                             {{form.uom}}
                                         </div>
-                                        <div class="form-group col-md-2">
+                                        <div class="form-group col-md-1">
                                             {{form.price_per_unit}}
                                         </div>
-                                        <div class="form-group col-md-2">
+                                        <div class="form-group col-md-1">
 
                                             {{ form.total_price }}
                                         </div>
-                                        <div class="form-group col-md-2">
+                                        <div class="form-group col-md-1">
+                                            {{ form.item_tax }}
+                                        </div>
+                                        <div class="form-group col-md-1">
                                             {{ form.after_discount }}
                                         </div>
                                     </div>
@@ -162,13 +168,16 @@
                                 <div class="form-group col-md-1">
                                     {{ po_transaction_inlineformset.empty_form.uom}}
                                 </div>
-                                <div class="form-group col-md-2">
+                                <div class="form-group col-md-1">
                                     {{ po_transaction_inlineformset.empty_form.price_per_unit }}
                                 </div>
-                                <div class="form-group col-md-2">
+                                <div class="form-group col-md-1">
                                     {{ po_transaction_inlineformset.empty_form.total_price}}
                                 </div>
-                                <div class="form-group col-md-2">
+                                <div class="form-group col-md-1">
+                                    {{ po_transaction_inlineformset.empty_form.item_tax}}
+                                </div>
+                                <div class="form-group col-md-1">
                                     {{ po_transaction_inlineformset.empty_form.after_discount}}
                                 </div>
 
@@ -203,9 +212,16 @@
 
             $('#id_purchasetransaction_set-' + i + '-total_price').prop('disabled', false);
             $('#id_purchasetransaction_set-' + i + '-after_discount').prop('disabled', false);
+            $('#id_purchasetransaction_set-' + i + '-item_tax').prop('disabled', false);
+            $('#id_purchasetransaction_set-' + i + '-item_shipping_cost').prop('disabled', false);
+            
         }
         $('#id_subtotal_price').prop('disabled', false);
         $('#id_my_total_price_after_discount').prop('disabled', false);
+        $('#id_tax').prop('disabled', false);
+        $('#id_total_price_after_tax').prop('disabled', false);
+        $('#id_total_discount').prop('disabled', false);
+        
     });
 
 </script>
@@ -313,7 +329,7 @@
         var total_tax = 0;
         for (i = 0; i < x.length; i++) {
             if (x[i].value) {
-                item_tax = 0.14* x[i].value
+                item_tax = {{tax}}* x[i].value
                 total_tax = total_tax + item_tax;
             };
         };
@@ -351,9 +367,8 @@
             };
         }
         total_without_shipping = subtotal - discount_amount
-        console.log("add shipping here " + total_without_shipping);
         document.getElementById('id_my_total_price_after_discount').value = total_without_shipping + shipping_cost
-        
+        return shipping_cost
     }
 </script>
 <script>
@@ -362,6 +377,7 @@
         discount_percentage = document.getElementById('id_discount').value;
         grand_total = total_after_tax()
         discount_type = document.getElementById("id_discount_type").value;
+        shipping_cost = Number(add_shipping())
         var x = document.getElementsByClassName("unique-class");
         if (discount_percentage >= 0) {
             if (discount_type == 'percentage') {
@@ -379,15 +395,25 @@
                     price_id = id_prefix + '-' + 'price_per_unit'
                     quantity_id = id_prefix + '-' + 'quantity'
                     item_total_afer_discount_id = id_prefix + '-' + 'after_discount';
+                    item_tax_id = id_prefix + '-' + 'item_tax';
+                    item_shipphing_cost_id = id_prefix + '-' + 'item_shipping_cost'
                     unit_price = document.getElementById(price_id).value
                     quantity = document.getElementById(quantity_id).value
                     total_price = unit_price * quantity
-                    item_total_discount_amount = discount_percentage * total_price / 100;
-                    item_total_afer_discount = total_price - item_total_discount_amount;
-                    document.getElementById(item_total_afer_discount_id).value = item_total_afer_discount;
+                    tax_amount = total_price * {{tax}}
+                    total_price_after_tax = total_price + tax_amount
+                    item_total_discount_amount = discount_percentage * total_price_after_tax / 100;
+                    item_total_afer_discount = total_price_after_tax - item_total_discount_amount;
+                    // shipping_cost_percentage = shipping_cost/(Number(document.getElementById('id_my_total_price_after_discount').value).toFixed(0))
+                    // item_shipphing_cost = Number((item_total_afer_discount * shipping_cost_percentage)).toFixed(0)
+                    // console.log(item_shipphing_cost +" mmmmmm");
+                    // item_total_afer_shipping = item_total_afer_discount
+                    // document.getElementById(item_shipphing_cost_id).value = item_shipphing_cost
+                    document.getElementById(item_tax_id).value = tax_amount
+                    document.getElementById(item_total_afer_discount_id).value = Number(item_total_afer_discount);
+
                 };
             };
-            shipping_cost = Number(document.getElementById('id_shipping_cost').value)
             document.getElementById('id_my_total_price_after_discount').value = grand_total - discount_amount + shipping_cost;
 
 

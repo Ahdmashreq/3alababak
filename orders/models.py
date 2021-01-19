@@ -18,8 +18,8 @@ class PurchaseOder(models.Model):
     purchase_code = models.CharField(max_length=100, help_text='code number of a po', null=True, blank=True, )
     subtotal_price = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True, default=0,
                                        help_text='total price before discount')
-    tax = models.DecimalField(max_digits=4, decimal_places=3, null=True, blank=True)
-    shipping_cost=models.DecimalField(max_digits=4, decimal_places=3, null=True, blank=True)
+    tax = models.DecimalField(max_digits=20, decimal_places=3, null=True, blank=True)
+    shipping_cost=models.DecimalField(max_digits=20, decimal_places=2, null=True, blank=True)
     # currency = models.ForeignKey(Currency, on_delete=models.CASCADE, null=True, blank=True, default='EGP')
     status = models.CharField(max_length=20,
                               choices=[('drafted', 'Drafted'), ('Partial_receive', 'Partially Received'),

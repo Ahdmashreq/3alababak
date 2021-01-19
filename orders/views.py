@@ -82,14 +82,15 @@ def create_purchase_order_view(request):
                 messages.error(request,po_transaction_inlineformset.errors)
                 print(po_transaction_inlineformset.errors)
         else:
-            messages.add_message(request, messages.error, po_form.errors)
-            messages.add_message(request, messages.error, po_transaction_inlineformset.errors)
+            # messages.add_message(request, messages.error, po_form.errors)
+            # messages.add_message(request, messages.error, po_transaction_inlineformset.errors)
             print(po_form.errors)
             print(po_transaction_inlineformset.errors)
     context = {
         'po_form': po_form,
         'po_transaction_inlineformset': po_transaction_inlineformset,
         'title': 'New Purchase Order',
+        'tax' : tax_percentage
     }
 
     return render(request, 'create-purchase-order.html', context=context)

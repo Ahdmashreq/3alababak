@@ -92,13 +92,13 @@
                                <br>
                                <b>TAX :</b>  <b id="sum_taxes" style="font-weight: lighter;"></b> 
                                 <br>
-                                <b>Subtotal after taxes:</b>     {{po.subtotal_price_after_tax}} EGP
-                                <br>
                                 {% if po.discount_type == 'percentage' %}
-                                    <b>Discount: </b>   {{po.discount}} %
+                                <b>Discount: </b>   {{po.discount}} %
                                 {% else %}
-                                     <b>Discount: </b>   {{po.discount}} EGP
+                                <b>Discount: </b>   {{po.discount}} EGP
                                 {% endif %}
+                                <br>
+                                <b>Shipping:</b>     {{po.shipping_cost}} EGP
                                 <br>
                                 <b>Total: </b> {{po.grand_total}} EGP
                                 <br>
