@@ -104,7 +104,6 @@ def list_purchase_order_view(request):
 
     """
     purchase_orders = PurchaseOder.objects.filter(company=request.user.company)
-    print("&&&&&&&&&&&&&7")
     context = {
         'purchase_orders_list': purchase_orders,
         'title': "Purchase Orders",
@@ -363,7 +362,7 @@ def list_purchases_for_receiving(request):
     :template:`orders/templates/list-purchase_orders.html`
 
     """
-    purchase_orders = PurchaseOder.objects.filter(~Q(status='drafted'))
+    purchase_orders = PurchaseOder.objects.filter(~Q(status='drafted')).order_by('-status')
     context = {
         'purchase_orders_list': purchase_orders,
         'receiving': True,
