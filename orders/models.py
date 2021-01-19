@@ -82,14 +82,16 @@ class SalesOrder(models.Model):
         return self.sale_code
 
     @property
-    def global_price(self):
-        tax = self.tax * self.subtotal_price
-        return round(self.subtotal_price - tax, 2)
-
-    @property
     def subtotal_price_after_tax(self):
         tax = self.tax * self.subtotal_price
-        return round(self.subtotal_price * tax, 2)
+        return round( tax + self.subtotal_price, 2)
+
+
+    @property
+    def total_tax(self):
+        tax = self.tax * self.subtotal_price
+        return round( tax , 2)
+    
 
     @property
     def subtotal_price_after_discount(self):
@@ -102,7 +104,7 @@ class SalesOrder(models.Model):
 
     @property
     def grand_total(self):
-        return(subtotal_price_after_discount, 2)
+        return round (self.subtotal_price_after_discount, 2)
 
 
 class PurchaseTransaction(models.Model):
@@ -151,8 +153,8 @@ class SalesTransaction(models.Model):
     total_price = models.DecimalField(
         max_digits=10, decimal_places=2, null=True, blank=True, )
       
-    currency = models.ForeignKey(
-        Currency, on_delete=models.CASCADE, null=True, blank=True, default='EGP')
+    #currency = models.ForeignKey(
+     #   Currency, on_delete=models.CASCADE, null=True, blank=True, default='EGP')
     created_at = models.DateField(auto_now_add=True, null=True)
     last_updated_at = models.DateField(
         null=True, auto_now=True, auto_now_add=False)
@@ -164,13 +166,27 @@ class SalesTransaction(models.Model):
     def __str__(self):
         return self.sales_order.code + " Transaction"
 
+    @property
+    def subtotal_price_after_tax(self):
+        tax = self.sales_order.tax *self.total_price
+        return round(self.total_price  + tax,2)
+
 
     @property
-    def total_price_after_discount(self):
-        discount_amount = self.total_price / 100 * self.discount_percentage
-        return round(self.total_price - discount_amount, 2)
-    
+    def item_tax(self):
+        item_tax = self.sales_order.tax * self.total_price
+        return round(item_tax  ,2)    
+            
 
+
+    @property
+    def item_discount(self):
+        discount = self.sales_order.discount  / 100
+        item_discount = self.subtotal_price_after_tax  * discount
+        return round(item_discount , 2)    
+     
+
+    
 
 class MaterialTransaction1(models.Model):
     company = models.ForeignKey(Company, on_delete=models.CASCADE)

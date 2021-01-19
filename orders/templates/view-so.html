@@ -51,7 +51,10 @@
                   <th class="sorting" tabindex="0" aria-controls="DataTables_Table_0" rowspan="1" colspan="1" aria-label="Position: activate to sort column ascending" style="width: 263.4px;">{% trans "Quantity" %}</th>
                   <th class="sorting" tabindex="0" aria-controls="DataTables_Table_0" rowspan="1" colspan="1" aria-label="Position: activate to sort column ascending" style="width: 263.4px;">{% trans "Unit" %}</th>
                   <th class="sorting" tabindex="0" aria-controls="DataTables_Table_0" rowspan="1" colspan="1" aria-label="Position: activate to sort column ascending" style="width: 263.4px;">{% trans "Price Per Unit (EGP)" %}</th>
-                  <th class="sorting" tabindex="0" aria-controls="DataTables_Table_0" rowspan="1" colspan="1" aria-label="Position: activate to sort column ascending" style="width: 263.4px;">{% trans "Total Price (EGP)" %}</th>
+                  <th class="sorting" tabindex="0" aria-controls="DataTables_Table_0" rowspan="1" colspan="1" aria-label="Position: activate to sort column ascending" style="width: 263.4px;">{% trans "Subtotal Price (EGP)" %}</th>
+                  <th class="sorting" tabindex="0" aria-controls="DataTables_Table_0" rowspan="1" colspan="1" aria-label="Position: activate to sort column ascending" style="width: 263.4px;">{% trans "Tax (EGP)" %}</th>
+                  <th class="sorting" tabindex="0" aria-controls="DataTables_Table_0" rowspan="1" colspan="1" aria-label="Position: activate to sort column ascending" style="width: 263.4px;">{% trans "Discount" %}</th>
+                  <th class="sorting" tabindex="0" aria-controls="DataTables_Table_0" rowspan="1" colspan="1" aria-label="Position: activate to sort column ascending" style="width: 263.4px;">{% trans "Total Price" %}</th>
 
                 </tr>
               </thead>
@@ -63,6 +66,9 @@
                   <td>{{ so_line.item.uom }}</td>
                   <td>{{ so_line.price_per_unit }}</td>
                   <td>{{ so_line.total_price }}</td>
+                  <td>{{ so_line.item_tax }}</td>
+                  <td>{{ so_line.item_discount }}</td>
+                  <td>{{ so_line.subtotal_price_after_tax }}</td>
                 </tr>
                 {% endfor %}
               </tbody>
@@ -74,10 +80,13 @@
                         <p style="color:#8f8f8f; font-size: 14px; padding: 0; line-height: 1.6; margin:0; ">
                            <b>Subtotal:</b>     {{so.subtotal_price}} EGP
                             <br>
-
-                             <b>Tax (VAT): </b> {{tax}} %
+                             <b>Tax (VAT): </b> {{so.total_tax}} %
+                             <br>
+                             <b>Subtotal after taxes:</b>     {{so.subtotal_price_after_tax}} EGP
+                             <br>
+                             <b>Discount:</b>     {{so.discount}} EGP
                             <br>
-                            <b>Grand Total: </b> {{so.global_price}} EGP
+                            <b>Grand Total: </b> {{so.grand_total}} EGP
                         </p>
                     </td>
                     </tr>

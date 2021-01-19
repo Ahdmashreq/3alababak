@@ -5,7 +5,7 @@ from django.contrib import messages
 
 from dal import autocomplete
 from datetime import date
-from decimal import Decimal 
+from decimal import Decimal
 
 from orders.forms import (PurchaseOrderCreationForm,
                           purchase_transaction_formset,
@@ -21,20 +21,15 @@ from orders.utils import get_seq, ItemSerializer, JSONResponse
 def create_purchase_order_view(request):
     """
         Create a purchase order :model:`Orders.PurchaseOrder`.
-
         **Context**
-
         ``po_form``
             An instance of :form:`Orders.forms.PurchaseOrderCreationForm`.
         ``po_transaction_inlineformset``
             An instance of :inlineformset_factory:`Orders.forms.purchase_transaction_formset`
         ``title``
             A string representing the title of the rendered HTML page
-
         **Template:**
-
         :template:`orders/templates/create-purchase-order.html`
-
     """
     po_form = PurchaseOrderCreationForm(user=request.user)
     po_transaction_inlineformset = purchase_transaction_formset(form_kwargs={'user': request.user})
@@ -89,19 +84,13 @@ def create_purchase_order_view(request):
 def list_purchase_order_view(request):
     """
     List all purchase orders in the user company :model:`Order.PurchaseOrder`.
-
     **Context**
-
     ``purchase_orders_list``
         A list of purchase orders in user's company :model:`Order.PurchaseOrder`.
      ``title``
         A string representing the title of the rendered HTML page
-
-
     **Template:**
-
     :template:`orders/templates/list-purchase_orders.html`
-
     """
     purchase_orders = PurchaseOder.objects.filter(company=request.user.company)
     context = {
@@ -114,9 +103,7 @@ def list_purchase_order_view(request):
 def update_purchase_order_view(request, id):
     """
     Update a purchase order only if its status is "drafted" :model:`Orders.PurchaseOrder`.
-
     **Context**
-
       ``po_form``
           An instance of :form:`Orders.forms.PurchaseOrderCreationForm`.
       ``po_transaction_inlineformset``
@@ -125,12 +112,8 @@ def update_purchase_order_view(request, id):
           A string representing the title of the rendered HTML page
       ``update``
          A boolean value set to True in case of updating purchase order
-
-
     **Template:**
-
       :template:`orders/templates/create-purchase-order.html`
-
     """
     order = PurchaseOder.objects.get(pk=id)
     purchase_order_form = PurchaseOrderCreationForm(instance=order, user=request.user)
@@ -188,7 +171,6 @@ def update_purchase_order_view(request, id):
 def delete_purchase_order_view(request, id):
     """
         Delete a purchase order :model:`Order.PurchaseOrder`.
-
     """
     po_order = PurchaseOder.objects.get(pk=id)
     deleted = po_order.delete()
@@ -200,11 +182,19 @@ def delete_purchase_order_view(request, id):
 
 
 def create_sales_order_view(request):
+    try:
+        tax = Tax.objects.get(name='VAT')
+        tax_percentage = tax.value / 100
+    except ObjectDoesNotExist:
+        print(ObjectDoesNotExist)
+        tax_percentage = Decimal(0.14)
+
     so_form = SaleOrderCreationForm(user=request.user)
     so_transaction_inlineformset = sale_transaction_formset(form_kwargs={'user': request.user})
     rows_number = SalesOrder.objects.all().count()
     so_code = "SO-" + str(date.today()) + "-" + get_seq(rows_number)
     so_form.fields['sale_code'].initial = so_code
+    so_form.fields['tax'].initial = round(tax_percentage, 2)
     if request.method == 'POST':
         so_form = SaleOrderCreationForm(request.POST, user=request.user)
         so_transaction_inlineformset = sale_transaction_formset(request.POST, form_kwargs={'user': request.user})
@@ -213,6 +203,7 @@ def create_sales_order_view(request):
             so_obj.created_by = request.user
             so_obj.company = request.user.company
             so_obj.sale_code = so_code
+            so_obj.tax = tax_percentage
             try:
                 tax = Tax.objects.get(name='VAT')
                 tax_percentage = tax.value / 100
@@ -221,19 +212,13 @@ def create_sales_order_view(request):
                 tax_percentage = Decimal(0.14)
             so_obj.tax = tax_percentage
             so_obj.save()
-            print(so_obj.subtotal_price_after_discount)
             so_transaction_inlineformset = sale_transaction_formset(request.POST, instance=so_obj,
                                                                     form_kwargs={'user': request.user})
             if so_transaction_inlineformset.is_valid():
                 so_transaction_obj = so_transaction_inlineformset.save(commit=False)
                 for so_transaction in so_transaction_obj:
                     so_transaction.created_by = request.user
-                    if so_obj.discount_type == "percentage":
-                        so_transaction_obj.discount_percentage = so_obj.discount
-                    elif so_obj.discount_type == "amount":   
-                        #TODO :implement this 
-                         so_transaction_obj.discount_percentage =  so_obj.discount
-                    so_transaction.save()
+                    so_transaction.save() 
                 messages.success(request, 'Saved Successfully')
                 if 'Save and exit' in request.POST:
                     return redirect('orders:list-so')
@@ -245,7 +230,7 @@ def create_sales_order_view(request):
     subcontext = {
         'so_form': so_form,
         'so_transaction_inlineformset': so_transaction_inlineformset,
-        'title': 'New Sale Order'
+        'title': 'New Sale Order',
 
     }
     return render(request, 'create-sale-order.html', context=subcontext)
@@ -325,7 +310,7 @@ class ItemAutocomplete(autocomplete.Select2QuerySetView):
     """
     def get_queryset(self):
         if not self.request.user.is_authenticated:
-            return Item.objects.none()  
+            return Item.objects.none()
         qs = Item.objects.filter(company=self.request.user.company)
         if self.q:
             qs = qs.filter(name__istartswith=self.q)
@@ -350,23 +335,15 @@ class SoItemAutocomplete(autocomplete.Select2QuerySetView):
 def list_purchases_for_receiving(request):
     """
     List all purchase orders in the user company that are not drafted :model:`Order.PurchaseOrder`.
-
     **Context**
-
     ``purchase_orders_list``
         A list of purchase orders in user's company :model:`Order.PurchaseOrder`.
-
     ``receiving``
         A boolean that takes 'True' value in case purchase orders are listed in receivings page.
-
      ``title``
         A string representing the title of the rendered HTML page.
-
-
     **Template:**
-
     :template:`orders/templates/list-purchase_orders.html`
-
     """
     purchase_orders = PurchaseOder.objects.filter(~Q(status='drafted'))
     context = {

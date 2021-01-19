@@ -89,9 +89,15 @@ class PurchaseTransactionCreationForm(forms.ModelForm):
 
 
 class SaleOrderCreationForm(forms.ModelForm):
+    my_total_price_after_discount = forms.DecimalField(max_digits=200, decimal_places=2) 
+    tax_price = forms.DecimalField(max_digits=200, decimal_places=2)
+    discount_price = forms.DecimalField(max_digits=200, decimal_places=2)
+    subtotal_after_shipping_cost = forms.DecimalField(max_digits=200, decimal_places=2)
+
+
     class Meta:
         model = SalesOrder
-        exclude = ('tax', 'currency', 'company', 'created_at', 'last_updated_at', 'created_by', 'last_updated_by')
+        exclude = ('currency', 'company', 'created_at', 'last_updated_at', 'created_by', 'last_updated_by')
         widgets = {
             'date': forms.DateInput(attrs={'class': 'form-control tm', 'type': 'date', })
         }
@@ -102,6 +108,18 @@ class SaleOrderCreationForm(forms.ModelForm):
         self.fields['sale_code'].widget.attrs['readonly'] = True
         self.fields['subtotal_price'].widget.attrs['readonly'] = True
         self.fields['subtotal_price'].widget.attrs['disabled'] = True
+        self.fields['my_total_price_after_discount'].widget.attrs['readonly'] = True
+        self.fields['my_total_price_after_discount'].widget.attrs['disabled'] = True 
+        self.fields['tax_price'].widget.attrs['disabled'] = True
+        self.fields['tax_price'].widget.attrs['readonly'] = True
+        self.fields['discount_price'].widget.attrs['disabled'] = True
+        self.fields['discount_price'].widget.attrs['readonly'] = True
+        self.fields['tax'].widget.attrs['disabled'] = True
+        self.fields['tax'].widget.attrs['readonly'] = True
+        self.fields['subtotal_after_shipping_cost'].widget.attrs['disabled'] = True
+        self.fields['subtotal_after_shipping_cost'].widget.attrs['readonly'] = True
+        
+
         self.fields["customer"].queryset = Customer.objects.filter(company=user.company)
 
         for field in self.fields:
@@ -109,6 +127,8 @@ class SaleOrderCreationForm(forms.ModelForm):
 
 
 class SaleTransactionCreationForm(forms.ModelForm):
+    after_discount = forms.DecimalField(max_digits=200, decimal_places=2)
+    tax = forms.DecimalField(max_digits=200, decimal_places=2)
     temp_uom = forms.CharField(max_length=30, required=False)
     temp_unit_cost = forms.CharField(max_length=30, required=False)
 
@@ -133,6 +153,10 @@ class SaleTransactionCreationForm(forms.ModelForm):
         self.fields['total_price'].widget.attrs['disabled'] = True
         self.fields['temp_unit_cost'].widget.attrs['readonly'] = True
         self.fields['temp_unit_cost'].widget.attrs['disabled'] = True
+        self.fields['after_discount'].widget.attrs['readonly'] = True
+        self.fields['after_discount'].widget.attrs['disabled'] = True
+        self.fields['tax'].widget.attrs['readonly'] = True
+        self.fields['tax'].widget.attrs['disabled'] = True
         self.fields["location"].queryset = Location.objects.filter(company=user.company)
 
         for field in self.fields:
