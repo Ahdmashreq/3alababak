@@ -16,8 +16,10 @@ class PurchaseOder(models.Model):
     supplier = models.ForeignKey(Supplier, on_delete=models.CASCADE, )
     supplier_code = models.CharField(max_length=250, help_text='code number of a supplier', null=True, blank=True)
     purchase_code = models.CharField(max_length=100, help_text='code number of a po', null=True, blank=True, )
-    global_price = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True, default=0,
+    subtotal_price = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True, default=0,
                                        help_text='total price before discount')
+    tax = models.DecimalField(max_digits=4, decimal_places=3, null=True, blank=True)
+    shipping_cost=models.DecimalField(max_digits=4, decimal_places=3, null=True, blank=True)
     # currency = models.ForeignKey(Currency, on_delete=models.CASCADE, null=True, blank=True, default='EGP')
     status = models.CharField(max_length=20,
                               choices=[('drafted', 'Drafted'), ('Partial_receive', 'Partially Received'),
@@ -35,16 +37,25 @@ class PurchaseOder(models.Model):
 
     def __str__(self):
         return self.purchase_code
+    
+    @property
+    def subtotal_price_after_tax(self):
+        tax = self.tax * self.subtotal_price
+        return round(self.subtotal_price + tax, 2)
+
 
     @property
-    def global_price_after_discount(self):
+    def subtotal_price_after_discount(self):
         if self.discount_type == 'percentage':
-            discount_amount = self.global_price / 100 * self.discount
-            return round(self.global_price - discount_amount, 2)
+            discount_amount = self.subtotal_price_after_tax / 100 * self.discount
+            return round(self.subtotal_price_after_tax - discount_amount, 2)
         elif self.discount_type == 'amount':
             # TODO:logic needs to be updated
-            return round(self.global_price - self.discount, 2)
+            return round(self.subtotal_price_after_tax - self.discount, 2)
 
+    @property
+    def grand_total(self):
+        return round(self.subtotal_price_after_discount,2)
 
 class SalesOrder(models.Model):
     company = models.ForeignKey(Company, on_delete=models.CASCADE)
@@ -97,10 +108,26 @@ class PurchaseTransaction(models.Model):
         return str(self.item)
 
     @property
-    def total_price_after_discount(self):
-        discount_amount = self.total_price / 100 * self.discount_percentage
-        return round(self.total_price - discount_amount, 2)
+    def subtotal_price_after_tax(self):
+        tax = self.purchase_order.tax * self.total_price
+        return round(self.total_price + tax, 2)
 
+    @property 
+    def item_tax(self):
+        item_tax = self.purchase_order.tax * self.total_price
+        return round(item_tax , 2)
+    
+    @property
+    def item_discount(self):
+        discount = self.purchase_order.discount / 100
+        item_discount = self.subtotal_price_after_tax * discount
+        return round(item_discount , 2)
+
+    @property
+    def total_price_after_discount(self):
+        discount_amount = self.subtotal_price_after_tax / 100 * self.discount_percentage
+        return round(self.subtotal_price_after_tax - discount_amount, 2)
+    
 
 class SalesTransaction(models.Model):
     sales_order = models.ForeignKey(SalesOrder, on_delete=models.CASCADE, )

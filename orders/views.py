@@ -40,6 +40,13 @@ def create_purchase_order_view(request):
     po_transaction_inlineformset = purchase_transaction_formset(form_kwargs={'user': request.user})
     rows_number = PurchaseOder.objects.all().count()
     po_code = "PO-" + str(date.today()) + "-" + get_seq(rows_number)
+    try:
+        tax = Tax.objects.get(name='VAT')
+        tax_percentage = tax.value / 100
+    except ObjectDoesNotExist:
+        print(ObjectDoesNotExist)
+        tax_percentage = Decimal(0.14)
+    po_form.fields['tax'].initial = round(tax_percentage, 2)
     po_form.fields['purchase_code'].initial = po_code
     if request.method == 'POST':
         po_form = PurchaseOrderCreationForm(request.POST, user=request.user)
@@ -51,7 +58,9 @@ def create_purchase_order_view(request):
             po_obj.purchase_code = po_code
             if 'Save as draft' in request.POST:
                 po_obj.status = "drafted"
+            po_obj.tax = tax_percentage
             po_obj.save()
+            print(po_obj.subtotal_price_after_discount)
             po_transaction_inlineformset = purchase_transaction_formset(request.POST, instance=po_obj,
                                                                         form_kwargs={'user': request.user})
             if po_transaction_inlineformset.is_valid():

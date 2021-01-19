@@ -60,12 +60,12 @@
                             {{po_form.date}}
                         </div>
                         <div class="form-group col-md-3">
-                            <label>Grand Total (EGP)</label>
-                            {{po_form.global_price}}
+                            <label>Subtotal Price (EGP)</label>
+                            {{po_form.subtotal_price}}
                         </div>
                         <div class="form-group col-md-3">
-                            <label>Global price after discount (EGP)</label>
-                            {{po_form.my_total_price_after_discount}}
+                            <label>Tax (EGP)</label>
+                            {{po_form.tax}}
                         </div>
                         <div class="form-group col-md-2">
                             <label>Discount</label>
@@ -76,7 +76,17 @@
                             {{po_form.discount_type}}
                         </div>
                         <button class="btn btn-lg col-md-2" type="button" onclick="calculate()">Apply Discount</button>
+                        <div class="form-group col-md-6">
+                            <label>Total (EGP)</label>
+                            {{po_form.my_total_price_after_discount}}
+                        </div> 
+                        <div class="form-group col-md-3">
+                            <label>Shipping (EGP)</label>
+                            {{po_form.shipping_cost}}
+                        </div>
+                        <button class="btn btn-lg col-md-3" type="button" onclick="add_shipping()">Apply Shipping</button>
 
+                        
                     </div>
                     <div class="separator mb-5"></div>
 
@@ -194,7 +204,7 @@
             $('#id_purchasetransaction_set-' + i + '-total_price').prop('disabled', false);
             $('#id_purchasetransaction_set-' + i + '-after_discount').prop('disabled', false);
         }
-        $('#id_global_price').prop('disabled', false);
+        $('#id_subtotal_price').prop('disabled', false);
         $('#id_my_total_price_after_discount').prop('disabled', false);
     });
 
@@ -250,6 +260,7 @@
         item_id = id_prefix + '-' + 'item';
         price_id = id_prefix + '-' + 'price_per_unit';
         total_price_id = id_prefix + '-' + 'total_price';
+        total_tax_id = id_prefix + '-' + 'tax_value';
         console.log("JJJJJJJJJJJJJJJJJJ")
         console.log(total_price_id)
         quantity_id = id_prefix + '-' + 'quantity';
@@ -260,8 +271,10 @@
 
             var total_per_item = price * quantity;
             document.getElementById(total_price_id).value = total_per_item;
+            total_tax();
             grandTotal();
-
+            total_after_tax();
+            calculate();
 
 
         };
@@ -281,11 +294,31 @@
             };
         };
         console.log(grand_total)
-        document.getElementById("id_global_price").value = grand_total;
+        document.getElementById("id_subtotal_price").value = grand_total;
 
     }
-
-
+</script>
+<script>
+    function total_after_tax(){
+        subtotal_price = Number(document.getElementById("id_subtotal_price").value)
+        tax =  Number(document.getElementById("id_tax").value)
+        total_price_after_tax = subtotal_price + tax
+        return (total_price_after_tax.toFixed(2))
+    }
+</script>
+<script>
+    function total_tax(){
+        var x = document.getElementsByClassName("unique-class");
+        var i;
+        var total_tax = 0;
+        for (i = 0; i < x.length; i++) {
+            if (x[i].value) {
+                item_tax = 0.14* x[i].value
+                total_tax = total_tax + item_tax;
+            };
+        };
+        document.getElementById("id_tax").value = total_tax.toFixed(2);
+    }
 </script>
 <script>
     $('#add_item').click(function () {
@@ -303,10 +336,31 @@
 
 </script>
 <script>
-    function calculate() {
-        console.log("This is my lap");
+    function add_shipping(){
+        shipping_cost = Number(document.getElementById('id_shipping_cost').value)
+        subtotal = Number(total_after_tax())
         discount_percentage = document.getElementById('id_discount').value;
-        grand_total = document.getElementById("id_global_price").value;
+        discount_type = document.getElementById("id_discount_type").value;
+        var x = document.getElementsByClassName("unique-class");
+        if (discount_percentage >= 0) {
+            if (discount_type == 'percentage') {
+                discount_amount = discount_percentage * subtotal / 100;
+            }
+            else {
+                discount_amount = discount_percentage
+            };
+        }
+        total_without_shipping = subtotal - discount_amount
+        console.log("add shipping here " + total_without_shipping);
+        document.getElementById('id_my_total_price_after_discount').value = total_without_shipping + shipping_cost
+        
+    }
+</script>
+<script>
+    function calculate() {
+        console.log("This is my lap");  
+        discount_percentage = document.getElementById('id_discount').value;
+        grand_total = total_after_tax()
         discount_type = document.getElementById("id_discount_type").value;
         var x = document.getElementsByClassName("unique-class");
         if (discount_percentage >= 0) {
@@ -333,7 +387,8 @@
                     document.getElementById(item_total_afer_discount_id).value = item_total_afer_discount;
                 };
             };
-            document.getElementById('id_my_total_price_after_discount').value = grand_total - discount_amount;
+            shipping_cost = Number(document.getElementById('id_shipping_cost').value)
+            document.getElementById('id_my_total_price_after_discount').value = grand_total - discount_amount + shipping_cost;
 
 
 
@@ -342,6 +397,23 @@
     };
 
 
+</script>
+<script>
+    function total_discount(){
+        discount_percentage = document.getElementById('id_discount').value;
+        discount_type = document.getElementById("id_discount_type").value;
+        discount_amount =0;
+        grand_total = document.getElementById("id_total_price_after_tax").value;
+        if (discount_percentage >= 0) {
+            if (discount_type == 'percentage') {
+                discount_amount = discount_percentage * grand_total / 100;
+            }
+            else {
+                discount_amount = discount_percentage
+            };
+        }
+        document.getElementById('id_total_discount').value = discount_amount;
+    }
 </script>
 <script>
     function uom_function(object) {

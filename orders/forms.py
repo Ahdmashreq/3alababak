@@ -13,6 +13,9 @@ from orders.models import PurchaseOder, PurchaseTransaction, SalesOrder, SalesTr
 class PurchaseOrderCreationForm(forms.ModelForm):
     # this field is only created for display in the form
     my_total_price_after_discount = forms.DecimalField(max_digits=200, decimal_places=2)
+    # tax_value = forms.DecimalField(max_digits=200, decimal_places=2)
+    total_price_after_tax = forms.DecimalField(max_digits=200, decimal_places=2)
+    total_discount = forms.DecimalField(max_digits=200, decimal_places=2)
 
     class Meta:
         model = PurchaseOder
@@ -26,10 +29,16 @@ class PurchaseOrderCreationForm(forms.ModelForm):
         user = kwargs.pop('user')
         super(PurchaseOrderCreationForm, self).__init__(*args, **kwargs)
         self.fields['purchase_code'].widget.attrs['readonly'] = True
-        self.fields['global_price'].widget.attrs['readonly'] = True
-        self.fields['global_price'].widget.attrs['disabled'] = True
+        self.fields['subtotal_price'].widget.attrs['readonly'] = True
+        self.fields['subtotal_price'].widget.attrs['disabled'] = True
         self.fields['my_total_price_after_discount'].widget.attrs['readonly'] = True
         self.fields['my_total_price_after_discount'].widget.attrs['disabled'] = True
+        self.fields['tax'].widget.attrs['readonly'] = True
+        self.fields['tax'].widget.attrs['disabled'] = True
+        self.fields['total_price_after_tax'].widget.attrs['readonly'] = True
+        self.fields['total_price_after_tax'].widget.attrs['disabled'] = True
+        self.fields['total_discount'].widget.attrs['readonly'] = True
+        self.fields['total_discount'].widget.attrs['disabled'] = True
         self.fields["supplier"].queryset = Supplier.objects.filter(company=user.company)
         for field in self.fields:
             self.fields[field].widget.attrs['class'] = 'form-control'
