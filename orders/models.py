@@ -67,8 +67,11 @@ class SalesOrder(models.Model):
     # status = models.CharField(max_length=8,
     #                           choices=[('received', 'Received'), ('returned', 'Returned'), ('shipping', 'Shipping')],
     #                           default='drafted')
+    #subtotal_price_after_tax
+    #subtotal_price_after_dic
+    #grand_total= models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True, default=0)
     tax = models.DecimalField(max_digits=4, decimal_places=3)
-    date = models.DateField(null=True, blank=True)
+    date = models.DateField(null=True, blank=True) 
     created_at = models.DateField(auto_now_add=True, null=True)
     last_updated_at = models.DateField(null=True, auto_now=True, auto_now_add=False)
     created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, null=True,
