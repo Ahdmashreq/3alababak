@@ -46,7 +46,6 @@
                             <label>Customer</label>
                             {{so_form.customer}}
                         </div>
-
                         <div class="form-group col-md-3">
                             <label>Code</label>
                             {{so_form.sale_code}}
@@ -238,6 +237,19 @@
 {% endblock body %}
 
 {% block js %}
+
+</script>
+
+
+
+
+
+
+
+
+
+
+
 <script>
     $('#myform').on('submit', function () {
         for (i = 0; i < $('#id_salestransaction_set-TOTAL_FORMS').val(); i++) {
@@ -526,5 +538,6 @@
 
     }
 </script>
+
 
 {% endblock js %}

@@ -14,9 +14,14 @@ from location.models import Location
 class PurchaseOder(models.Model):
     company = models.ForeignKey(Company, on_delete=models.CASCADE)
     supplier = models.ForeignKey(Supplier, on_delete=models.CASCADE, )
+<<<<<<< HEAD
     order_name = models.CharField(max_length=250)
     purchase_code = models.CharField(
         max_length=100, help_text='code number of a po', null=True, blank=True, )
+=======
+    supplier_code = models.CharField(max_length=250, help_text='code number of a supplier', null=True, blank=True)
+    purchase_code = models.CharField(max_length=100, help_text='code number of a po', null=True, blank=True, )
+>>>>>>> 1934ebb9ec854ee928cfbc7dc77920a1ba34d652
     global_price = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True, default=0,
                                        help_text='total price before discount')
     # currency = models.ForeignKey(Currency, on_delete=models.CASCADE, null=True, blank=True, default='EGP')
@@ -39,7 +44,7 @@ class PurchaseOder(models.Model):
         settings.AUTH_USER_MODEL, on_delete=models.CASCADE, null=True)
 
     def __str__(self):
-        return self.order_name
+        return self.purchase_code
 
     @property
     def global_price_after_discount(self):
@@ -69,7 +74,7 @@ class SalesOrder(models.Model):
     discount_type = models.CharField(max_length=11,
                                      choices=[('percentage', '%'), ('amount', 'EGP')], default='percentage')
     tax = models.DecimalField(max_digits=4, decimal_places=3)
-    date = models.DateField(null=True, blank=True)
+    date = models.DateField(null=True, blank=True) 
     created_at = models.DateField(auto_now_add=True, null=True)
     last_updated_at = models.DateField(
         null=True, auto_now=True, auto_now_add=False)

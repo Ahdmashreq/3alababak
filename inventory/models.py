@@ -227,7 +227,7 @@ class Item(models.Model):
     name = models.CharField(max_length=30)
     description = models.CharField(max_length=100, blank=True, null=True)
     sku = models.CharField(max_length=30, blank=True, null=True)
-    barcode = models.CharField(max_length=30, blank=True, null=True)
+    barcode = models.CharField(max_length=30, blank=True, null=True, unique=True)
     expirable = models.BooleanField(default=False, verbose_name='Expirable', help_text='Checkbox if item is expirable')
     created_at = models.DateField(auto_now_add=True, null=True)
     last_updated_at = models.DateField(null=True, auto_now=True, auto_now_add=False)
@@ -237,6 +237,11 @@ class Item(models.Model):
 
     def __str__(self):
         return self.name
+    
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(fields= ['company','sku'] , name='unique_sku_with_company'),
+        ]
 
 
 class ItemAttributeValue(models.Model):

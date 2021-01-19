@@ -155,19 +155,18 @@
                             <span class="input-group-text">Upload Image</span>
                         </div>
                         <div>
-                            
+
                             <input  onchange="readURL(this);"
-                            {{image_form.image}} 
-                            
+                            {{image_form.image}}
+
                         </div>
-                        
+
                     </div>
                     {% if update and item_image.image %}
                     <img style="max-height:200px;" id="blah" src="/media/{{item_image.image}}" alt="your image" />
                     {% else %}
                     <img style="max-height:200px;" id="blah" src="{% static 'src/logos/3alababak_dimmed_icon.png' %}" alt="your image" />
                     {% endif %}
-                    
                 </div>
 
 
