@@ -185,7 +185,7 @@ class MaterialTransactionLines(models.Model):
     location = models.ForeignKey(Location, on_delete=models.CASCADE, blank=True, null=True)
     item = models.ForeignKey(Item, on_delete=models.CASCADE, blank=True, null=True)
     transaction_type = models.CharField(max_length=4,
-                                        choices=[('in', 'in'), ('out', 'out')])
+                                        choices=[('inbound', 'inbound'), ('outbound', 'outbound')])
     created_at = models.DateField(auto_now_add=True, null=True)
     last_updated_at = models.DateField(null=True, auto_now=True, auto_now_add=False)
     created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, null=True,
@@ -226,9 +226,9 @@ def create_or_update_inventory_balance(sender, instance, created, *args, **kwarg
 
     elif instance.material_transaction.stoke_take is not None:
         inventory_item_obj = Inventory_Balance.objects.get(item=instance.item, location=instance.location)
-        if instance.transaction_type == 'in':
+        if instance.transaction_type == 'inbound':
             inventory_item_obj.qnt += instance.quantity
-        elif instance.transaction_type == 'out':
+        elif instance.transaction_type == 'outbound':
             inventory_item_obj.qnt -= instance.quantity
         new_value = inventory_item_obj.qnt * inventory_item_obj.unit_cost
         inventory_item_obj.value = new_value

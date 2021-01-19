@@ -698,9 +698,9 @@ def check_balance_difference(stoke_take):
         stoked_quantity = stoke_entry.quantity
         difference_quantity = on_hand_quantity - stoked_quantity
         if difference_quantity > 0:
-            result.append({'item': item, 'type': 'out', 'quantity': abs(difference_quantity), 'location': location})
+            result.append({'item': item, 'type': 'outbound', 'quantity': abs(difference_quantity), 'location': location})
         elif difference_quantity < 0:
-            result.append({'item': item, 'type': 'in', 'quantity': abs(difference_quantity), 'location': location})
+            result.append({'item': item, 'type': 'inbound', 'quantity': abs(difference_quantity), 'location': location})
 
     return result
 

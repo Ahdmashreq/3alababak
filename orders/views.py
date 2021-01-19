@@ -114,7 +114,6 @@ def list_purchase_order_view(request):
 
     """
     purchase_orders = PurchaseOder.objects.filter(company=request.user.company)
-    print("&&&&&&&&&&&&&7")
     context = {
         'purchase_orders_list': purchase_orders,
         'title': "Purchase Orders",
@@ -373,7 +372,7 @@ def list_purchases_for_receiving(request):
     :template:`orders/templates/list-purchase_orders.html`
 
     """
-    purchase_orders = PurchaseOder.objects.filter(~Q(status='drafted'))
+    purchase_orders = PurchaseOder.objects.filter(~Q(status='drafted')).order_by('-status')
     context = {
         'purchase_orders_list': purchase_orders,
         'receiving': True,
@@ -421,7 +420,7 @@ def create_receiving(request, id):
             receiving_objs = material_lines_formset.save(commit=False)
             for obj in receiving_objs:
                 obj.created_by = request.user
-                obj.transaction_type = 'in'
+                obj.transaction_type = 'inbound'
                 obj.save()
                 po_line = PurchaseTransaction.objects.filter(purchase_order__id=id, item=obj.item)
                 new_balance = po_line[0].balance - obj.quantity
