@@ -5,24 +5,22 @@
 {% load i18n %}
 {% block style %}
 <style>
-  .required {
-    color: red;
-  }
+    .required {
+        color: red;
+    }
 
-  .submit-row {
-    display: display;
-    padding: 12px 14px;
-    margin: 0 0 20px;
-    background: #f8f8f8;
-    border: 1px solid #eee;
-    border-radius: 4px;
-    text-align: right;
-    overflow: hidden;
-  }
-
-
+    .submit-row {
+        display: display;
+        padding: 12px 14px;
+        margin: 0 0 20px;
+        background: #f8f8f8;
+        border: 1px solid #eee;
+        border-radius: 4px;
+        text-align: right;
+        overflow: hidden;
+    }
 </style>
-{% endblock style  %}
+{% endblock style %}
 {% block body%}
 <div class="container-fluid">
     <div class="row">
@@ -49,24 +47,25 @@
                             {{po_form.supplier}}
                         </div>
                         <div class="form-group col-md-3">
-                            <label>Name</label>
-                            {{po_form.order_name}}
-                        </div>
-                        <div class="form-group col-md-3">
-                            <label>Code</label>
+                            <label>{{po_form.purchase_code.label}}</label>
                             {{po_form.purchase_code}}
+                        </div>
+
+                        <div c lass="form-group col-md-3">
+                            <label>{{po_form.supplier_code.label}}</label>
+                                {{po_form.supplier_code}}
                         </div>
                         <div class="form-group col-md-3">
                             <label>Date</label>
                             {{po_form.date}}
                         </div>
                         <div class="form-group col-md-3">
-                            <label>Grand Total (EGP)</label>
-                            {{po_form.global_price}}
+                            <label>Subtotal Price (EGP)</label>
+                            {{po_form.subtotal_price}}
                         </div>
                         <div class="form-group col-md-3">
-                            <label>Global price after discount (EGP)</label>
-                            {{po_form.my_total_price_after_discount}}
+                            <label>Tax (EGP)</label>
+                            {{po_form.tax}}
                         </div>
                         <div class="form-group col-md-2">
                             <label>Discount</label>
@@ -77,7 +76,17 @@
                             {{po_form.discount_type}}
                         </div>
                         <button class="btn btn-lg col-md-2" type="button" onclick="calculate()">Apply Discount</button>
+                        <div class="form-group col-md-6">
+                            <label>Total (EGP)</label>
+                            {{po_form.my_total_price_after_discount}}
+                        </div> 
+                        <div class="form-group col-md-3">
+                            <label>Shipping (EGP)</label>
+                            {{po_form.shipping_cost}}
+                        </div>
+                        <button class="btn btn-lg col-md-3" type="button" onclick="add_shipping()">Apply Shipping</button>
 
+                        
                     </div>
                     <div class="separator mb-5"></div>
 
@@ -95,14 +104,20 @@
                                         <div class="form-group col-md-1">
                                             <label>{% trans "Unit" %}</label>
                                         </div>
-                                        <div class="form-group col-md-2">
+                                        <div class="form-group col-md-1">
                                             <label>{% trans "Price per unit (EGP)" %}</label>
                                         </div>
-                                        <div class="form-group col-md-2">
-                                            <label>{% trans "Total Price (EGP)" %}</label>
+                                        <div class="form-group col-md-1">
+                                            <label>{% trans "Subtotal Price (EGP)" %}</label>
                                         </div>
-                                        <div class="form-group col-md-2">
-                                            <label>Total after discount (EGP)</label>
+                                        <div class="form-group col-md-1">
+                                            <label>{% trans "Tax (EGP)" %}</label>
+                                        </div>
+                                        <div class="form-group col-md-1">
+                                            <label>{% trans "Discount (EGP)" %}</label>
+                                        </div>
+                                        <div class="form-group col-md-1">
+                                            <label>Total Price (EGP)</label>
                                         </div>
                                     </div>
                                     {{ po_transaction_inlineformset.management_form }}
@@ -119,14 +134,20 @@
                                         <div class="form-group col-md-1">
                                             {{form.uom}}
                                         </div>
-                                        <div class="form-group col-md-2">
+                                        <div class="form-group col-md-1">
                                             {{form.price_per_unit}}
                                         </div>
-                                        <div class="form-group col-md-2">
+                                        <div class="form-group col-md-1">
 
                                             {{ form.total_price }}
                                         </div>
-                                        <div class="form-group col-md-2">
+                                        <div class="form-group col-md-1">
+                                            {{ form.item_tax }}
+                                        </div>
+                                        <div class="form-group col-md-1">
+                                            {{ form.item_discount }}
+                                        </div>
+                                        <div class="form-group col-md-1">
                                             {{ form.after_discount }}
                                         </div>
                                     </div>
@@ -153,13 +174,19 @@
                                 <div class="form-group col-md-1">
                                     {{ po_transaction_inlineformset.empty_form.uom}}
                                 </div>
-                                <div class="form-group col-md-2">
+                                <div class="form-group col-md-1">
                                     {{ po_transaction_inlineformset.empty_form.price_per_unit }}
                                 </div>
-                                <div class="form-group col-md-2">
+                                <div class="form-group col-md-1">
                                     {{ po_transaction_inlineformset.empty_form.total_price}}
                                 </div>
-                                <div class="form-group col-md-2">
+                                <div class="form-group col-md-1">
+                                    {{ po_transaction_inlineformset.empty_form.item_tax}}
+                                </div>
+                                <div class="form-group col-md-1">
+                                    {{ po_transaction_inlineformset.empty_form.item_discount}}
+                                </div>
+                                <div class="form-group col-md-1">
                                     {{ po_transaction_inlineformset.empty_form.after_discount}}
                                 </div>
 
@@ -175,8 +202,9 @@
                         <button type="submit" class="btn btn-primary btn-lg mt-3" name='Save as draft'>Save as Draft
                         </button>
                         {% else %}
-                          <button type="submit" class="btn btn-primary btn-lg mt-3" name='Save as open'>Save as Open</button>
-{% endif %}
+                        <button type="submit" class="btn btn-primary btn-lg mt-3" name='Save as open'>Save as
+                            Open</button>
+                        {% endif %}
                     </div>
                 </form>
             </div>
@@ -187,185 +215,266 @@
 
 {% block js %}
 <script>
-   $('#myform').on('submit', function() {
-       calculate() ;
-for (i = 0; i < $('#id_purchasetransaction_set-TOTAL_FORMS').val(); i++) {
+    $('#myform').on('submit', function () {
+        calculate();
+        for (i = 0; i < $('#id_purchasetransaction_set-TOTAL_FORMS').val(); i++) {
 
-    $('#id_purchasetransaction_set-'+i+'-total_price').prop('disabled', false);
-     $('#id_purchasetransaction_set-'+i+'-after_discount').prop('disabled', false);
-    }
- $('#id_global_price').prop('disabled', false);
- $('#id_my_total_price_after_discount').prop('disabled', false);
-});
+            $('#id_purchasetransaction_set-' + i + '-total_price').prop('disabled', false);
+            $('#id_purchasetransaction_set-' + i + '-after_discount').prop('disabled', false);
+            $('#id_purchasetransaction_set-' + i + '-item_tax').prop('disabled', false);
+            $('#id_purchasetransaction_set-' + i + '-item_shipping_cost').prop('disabled', false);
+            $('#id_purchasetransaction_set-' + i + '-item_discount').prop('disabled', false);
+
+        }
+        $('#id_subtotal_price').prop('disabled', false);
+        $('#id_my_total_price_after_discount').prop('disabled', false);
+        $('#id_tax').prop('disabled', false);
+        $('#id_total_price_after_tax').prop('disabled', false);
+        $('#id_total_discount').prop('disabled', false);
+
+        
+    });
 
 </script>
 <script>
     function myAction(object) {
-          item = object.value
-          var endpoint = '{% url "orders:get-item" -1 %}'.replace('-1', item);
-          if ( item !==""){
+        item = object.value
+        var endpoint = '{% url "orders:get-item" -1 %}'.replace('-1', item);
+        if (item !== "") {
 
-                var str = object.id
-                var res= str.split("-")
-                var id_prefix = res[0]+'-'+res[1]
-                price_id = id_prefix+'-'+'price_per_unit'
-                quantity_id =  id_prefix+'-'+'quantity'
-                $.ajax({
+            var str = object.id
+            var res = str.split("-")
+            var id_prefix = res[0] + '-' + res[1]
+            price_id = id_prefix + '-' + 'price_per_unit'
+            quantity_id = id_prefix + '-' + 'quantity'
+            $.ajax({
                 type: "get",
                 url: endpoint,
                 contentType: 'application/json',
-                success: function(data){
-                  uom_function(object)
-                      if (document.getElementById(quantity_id).value){
+                success: function (data) {
+                    uom_function(object)
+                    if (document.getElementById(quantity_id).value) {
                         myFunction(document.getElementById(quantity_id));
-                      };
-                      item_qnt=0;
-                         for (i = 0; i < data['balance'].length; i++) {
-                      if (object.value == data['balance'][i]['item']){
+                    };
+                    item_qnt = 0;
+                    for (i = 0; i < data['balance'].length; i++) {
+                        if (object.value == data['balance'][i]['item']) {
                             item_qnt += data['balance'][i]['qnt'];
-                            };
-                            };
-                      document.getElementById(quantity_id).placeholder = item_qnt;
+                        };
+                    };
+                    document.getElementById(quantity_id).placeholder = item_qnt;
 
 
 
                 },
-                error: function(){
+                error: function () {
                     alert("error");
                 }
-                 });
+            });
 
-            };
+        };
+
+    };
+</script>
+<script>
+    function myFunction(object) {
+        console.log("Byyeeee")
+        var str = object.id;
+        var res = str.split("-");
+        var id_prefix = res[0] + '-' + res[1];
+        item_id = id_prefix + '-' + 'item';
+        price_id = id_prefix + '-' + 'price_per_unit';
+        total_price_id = id_prefix + '-' + 'total_price';
+        total_tax_id = id_prefix + '-' + 'tax_value';
+        console.log("JJJJJJJJJJJJJJJJJJ")
+        console.log(total_price_id)
+        quantity_id = id_prefix + '-' + 'quantity';
+        quantity = document.getElementById(quantity_id).value;
+        item = document.getElementById(item_id).value;
+        price = document.getElementById(price_id).value;
+        if (price) {
+
+            var total_per_item = price * quantity;
+            document.getElementById(total_price_id).value = total_per_item;
+            total_tax();
+            grandTotal();
+            total_after_tax();
+            calculate();
+
+
+        };
 
     };
 
 
 </script>
 <script>
-function myFunction(object) {
-    console.log("Byyeeee")
-    var str = object.id;
-    var res= str.split("-");
-    var id_prefix = res[0]+'-'+res[1];
-    item_id = id_prefix+'-'+'item';
-    price_id = id_prefix+'-'+'price_per_unit';
-    total_price_id = id_prefix+'-'+'total_price';
-    console.log("JJJJJJJJJJJJJJJJJJ")
-    console.log(total_price_id)
-    quantity_id = id_prefix+'-'+'quantity';
-    quantity = document.getElementById(quantity_id).value;
-    item =  document.getElementById(item_id).value;
-    price = document.getElementById(price_id).value;
-    if (price){
-
-            var total_per_item = price * quantity;
-            document.getElementById(total_price_id).value = total_per_item;
-            grandTotal();
-
-
-
+    function grandTotal() {
+        var x = document.getElementsByClassName("unique-class");
+        var i;
+        var grand_total = 0;
+        for (i = 0; i < x.length; i++) {
+            if (x[i].value) {
+                grand_total = grand_total + Number(x[i].value);
+            };
         };
+        console.log(grand_total)
+        document.getElementById("id_subtotal_price").value = grand_total;
 
-};
+    }
+</script>
+<script>
+    function total_after_tax(){
+        subtotal_price = Number(document.getElementById("id_subtotal_price").value)
+        tax =  Number(document.getElementById("id_tax").value)
+        total_price_after_tax = subtotal_price + tax
+        return (total_price_after_tax.toFixed(2))
+    }
+</script>
+<script>
+    function total_tax(){
+        var x = document.getElementsByClassName("unique-class");
+        var i;
+        var total_tax = 0;
+        for (i = 0; i < x.length; i++) {
+            if (x[i].value) {
+                item_tax = {{tax}}* x[i].value
+                total_tax = total_tax + item_tax;
+            };
+        };
+        document.getElementById("id_tax").value = total_tax.toFixed(2);
+    }
+</script>
+<script>
+    $('#add_item').click(function () {
+        var form_idx = $('#id_purchasetransaction_set-TOTAL_FORMS').val();
+        $('#purchase_set').append($('#empty_form').html().replace(/__prefix__/g, form_idx));
+        $('#id_purchasetransaction_set-TOTAL_FORMS').val(parseInt(form_idx) + 1);
+        var current_indx = Number(form_idx)
+
+
+
+
+
+    });
 
 
 </script>
 <script>
-function grandTotal(){
-    var x = document.getElementsByClassName("unique-class");
-    var i;
-    var grand_total = 0;
-    for (i = 0; i < x.length; i++) {
-      if (x[i].value){
-        grand_total = grand_total + Number(x[i].value);
-        };
-     };
-     console.log(grand_total)
-    document.getElementById("id_global_price").value = grand_total;
-
-}
-
-
-</script>
-<script>
-  $('#add_item').click(function() {
-    var form_idx = $('#id_purchasetransaction_set-TOTAL_FORMS').val();
-    $('#purchase_set').append($('#empty_form').html().replace(/__prefix__/g, form_idx));
-    $('#id_purchasetransaction_set-TOTAL_FORMS').val(parseInt(form_idx) + 1);
-    var current_indx = Number(form_idx)
-
-
-
-
-
-  });
-
-
+    function add_shipping(){
+        shipping_cost = Number(document.getElementById('id_shipping_cost').value)
+        subtotal = Number(total_after_tax())
+        discount_percentage = document.getElementById('id_discount').value;
+        discount_type = document.getElementById("id_discount_type").value;
+        var x = document.getElementsByClassName("unique-class");
+        if (discount_percentage >= 0) {
+            if (discount_type == 'percentage') {
+                discount_amount = discount_percentage * subtotal / 100;
+            }
+            else {
+                discount_amount = discount_percentage
+            };
+        }
+        total_without_shipping = subtotal - discount_amount
+        document.getElementById('id_my_total_price_after_discount').value = total_without_shipping + shipping_cost
+        return shipping_cost
+    }
 </script>
 <script>
     function calculate() {
-        console.log("This is my lap");
+        console.log("This is my lap");  
         discount_percentage = document.getElementById('id_discount').value;
-        grand_total =  document.getElementById("id_global_price").value;
+        grand_total = total_after_tax()
         discount_type = document.getElementById("id_discount_type").value;
+        shipping_cost = Number(add_shipping())
         var x = document.getElementsByClassName("unique-class");
-        if (discount_percentage>=0){
-            if (discount_type == 'percentage'){
-                discount_amount = discount_percentage*grand_total/100;
+        if (discount_percentage >= 0) {
+            if (discount_type == 'percentage') {
+                discount_amount = discount_percentage * grand_total / 100;
             }
-            else{
+            else {
                 discount_amount = discount_percentage
-             };
+            };
             console.log(discount_amount)
             for (i = 0; i < x.length; i++) {
-                 if (x[i].value){
+                if (x[i].value) {
                     var str = x[i].id;
-                    var res= str.split("-");
-                    var id_prefix = res[0]+'-'+res[1];
-                    price_id = id_prefix+'-'+'price_per_unit'
-                    quantity_id = id_prefix+'-'+'quantity'
-                    item_total_afer_discount_id = id_prefix+'-'+'after_discount';
+                    var res = str.split("-");
+                    var id_prefix = res[0] + '-' + res[1];
+                    price_id = id_prefix + '-' + 'price_per_unit'
+                    quantity_id = id_prefix + '-' + 'quantity'
+                    item_total_afer_discount_id = id_prefix + '-' + 'after_discount';
+                    item_tax_id = id_prefix + '-' + 'item_tax';
+                    item_discount_id = id_prefix + '-' + 'item_discount';
+                    item_shipphing_cost_id = id_prefix + '-' + 'item_shipping_cost'
                     unit_price = document.getElementById(price_id).value
                     quantity = document.getElementById(quantity_id).value
                     total_price = unit_price * quantity
-                    item_total_discount_amount = discount_percentage * total_price/100;
-                    item_total_afer_discount = total_price- item_total_discount_amount;
-                    document.getElementById(item_total_afer_discount_id).value = item_total_afer_discount;
-                    };
+                    tax_amount = total_price * {{tax}}
+                    total_price_after_tax = total_price + tax_amount
+                    item_total_discount_amount = discount_percentage * total_price_after_tax / 100;
+                    item_total_afer_discount = total_price_after_tax - item_total_discount_amount;
+                    // shipping_cost_percentage = shipping_cost/(Number(document.getElementById('id_my_total_price_after_discount').value).toFixed(0))
+                    // item_shipphing_cost = Number((item_total_afer_discount * shipping_cost_percentage)).toFixed(0)
+                    // console.log(item_shipphing_cost +" mmmmmm");
+                    // item_total_afer_shipping = item_total_afer_discount
+                    // document.getElementById(item_shipphing_cost_id).value = item_shipphing_cost
+                    document.getElementById(item_tax_id).value = tax_amount
+                    document.getElementById(item_discount_id).value = Number(item_total_discount_amount);
+                    document.getElementById(item_total_afer_discount_id).value = Number(item_total_afer_discount);
+
+                };
             };
-            document.getElementById('id_my_total_price_after_discount').value = grand_total-discount_amount;
+            document.getElementById('id_my_total_price_after_discount').value = grand_total - discount_amount + shipping_cost;
 
 
 
 
-                    };
-            };
+        };
+    };
 
 
 </script>
 <script>
-function uom_function(object){
-         console.log("i got inside the function ")
-          var url = "{% url 'orders:ajax_load_uoms' %}"  // get the url of the `load_cities` view
-          var itemId = object.value;  // get the selected country ID from the HTML input
-          var str = object.id
-            var res= str.split("-")
-            var id_prefix = res[0]+'-'+res[1]
-            myuom_id = id_prefix+'-'+'uom'
-            console.log(myuom_id)
+    function total_discount(){
+        discount_percentage = document.getElementById('id_discount').value;
+        discount_type = document.getElementById("id_discount_type").value;
+        discount_amount =0;
+        grand_total = document.getElementById("id_total_price_after_tax").value;
+        if (discount_percentage >= 0) {
+            if (discount_type == 'percentage') {
+                discount_amount = discount_percentage * grand_total / 100;
+            }
+            else {
+                discount_amount = discount_percentage
+            };
+        }
+        document.getElementById('id_total_discount').value = discount_amount;
+    }
+</script>
+<script>
+    function uom_function(object) {
+        console.log("i got inside the function ")
+        var url = "{% url 'orders:ajax_load_uoms' %}"  // get the url of the `load_cities` view
+        var itemId = object.value;  // get the selected country ID from the HTML input
+        var str = object.id
+        var res = str.split("-")
+        var id_prefix = res[0] + '-' + res[1]
+        myuom_id = id_prefix + '-' + 'uom'
+        console.log(myuom_id)
 
-          $.ajax({                       // initialize an AJAX request
+        $.ajax({                       // initialize an AJAX request
             url: url,                    // set the url of the request (= localhost:8000/hr/ajax/load-cities/)
             data: {
-              'item': itemId     // add the country id to the GET parameters
+                'item': itemId     // add the country id to the GET parameters
             },
             success: function (data) {   // `data` is the return of the `load_cities` view function
-            console.log(data)
-              document.getElementById(myuom_id).innerHTML=data;  // replace the contents of the city input with the data that came from the server
+                console.log(data)
+                document.getElementById(myuom_id).innerHTML = data;  // replace the contents of the city input with the data that came from the server
 
             }
-          });
+        });
 
-};
+    };
 </script>
 {% endblock js %}

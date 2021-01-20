@@ -1,6 +1,8 @@
 import json
 from datetime import date
 
+from django.http import JsonResponse
+
 from django.core.exceptions import ValidationError
 from django.db import IntegrityError
 from django.db.models import Q, ProtectedError
@@ -17,6 +19,7 @@ from orders.models import Inventory_Balance, MaterialTransaction1, MaterialTrans
 import random
 from orders.utils import get_seq, ItemSerializer, JSONResponse
 from django.http import HttpResponse
+from django.db import IntegrityError
 
 
 def create_category_view(request):
@@ -162,10 +165,15 @@ def list_products_view(request):
 
 def create_product_item_view(request):
     product_form = ProductForm(user=request.user)
+    uom_category_form = UomCategoryForm()
     item_form = ItemForm(user=request.user)
     item_attribute_form = item_attribute_model_formset()
     attribute_form = AttributeForm()
     image_form = ItemImageForm()
+    if request.is_ajax():
+        uom = Uom.objects.filter(company=request.user.comapny)
+        return JsonResponse(list(uom.values()), safe=False)
+
     if request.method == 'POST':
 
         product_form = ProductForm(request.POST, user=request.user)
@@ -182,7 +190,20 @@ def create_product_item_view(request):
             item_obj.company = request.user.company
             item_obj.product = product_obj
             item_obj.created_by = request.user
-            item_obj.save()
+            try:
+                item_obj.save()
+            except IntegrityError as e:
+                messages.error(request , 'SKU must be unique')
+                attributeContext = {
+                    'title': "New Item",
+                        'product_form': product_form,
+                        'item_form': item_form,
+                        'item_attribute_formset': item_attribute_form,
+                        'attribute_form': attribute_form,
+                        'image_form': image_form,
+
+                }
+                return render(request, 'create-product-item.html', context=attributeContext)
             image_obj = image_form.save(commit=False)
             image_obj.created_by = request.user
             image_obj.item = item_obj
@@ -195,13 +216,15 @@ def create_product_item_view(request):
                     att_obj.value = temp_value
                     att_obj.created_by = request.user
                     att_obj.save()
-
                 if 'Save and exit' in request.POST:
                     return redirect('inventory:list-products')
                 elif 'Save and add' in request.POST:
                     return redirect('inventory:create-product')
                 else:
                     return redirect('inventory:view-item', id=item_obj.id)
+        elif item_form.is_valid() == False:
+            messages.error(request , item_form.errors)
+
     attributeContext = {
         'title': "New Item",
         'product_form': product_form,
@@ -209,8 +232,9 @@ def create_product_item_view(request):
         'item_attribute_formset': item_attribute_form,
         'attribute_form': attribute_form,
         'image_form': image_form,
+        'uom_category_form': uom_category_form,
 
-    }
+        }
     return render(request, 'create-product-item.html', context=attributeContext)
 
 
@@ -674,9 +698,9 @@ def check_balance_difference(stoke_take):
         stoked_quantity = stoke_entry.quantity
         difference_quantity = on_hand_quantity - stoked_quantity
         if difference_quantity > 0:
-            result.append({'item': item, 'type': 'out', 'quantity': abs(difference_quantity), 'location': location})
+            result.append({'item': item, 'type': 'outbound', 'quantity': abs(difference_quantity), 'location': location})
         elif difference_quantity < 0:
-            result.append({'item': item, 'type': 'in', 'quantity': abs(difference_quantity), 'location': location})
+            result.append({'item': item, 'type': 'inbound', 'quantity': abs(difference_quantity), 'location': location})
 
     return result
 
@@ -717,6 +741,8 @@ def get_attribute_type(request, id):
 def view_item(request, id):
     item = Item.objects.get(id=id)
     item_image = ItemImage.objects.filter(item=item)
+    if len(item_image) != 0:
+        item_image = item_image[0]
     attributes = ItemAttributeValue.objects.filter(item__id=id)
     subcontext = {
         'item': item,
@@ -744,17 +770,36 @@ def update_item(request, id):
         value = form.instance.value
         form.fields["temp_value"].initial = value
     if request.method == 'POST':
-        product_form = ProductForm(request.POST, instance=product, user=request.user)
+        product_form = ProductForm(
+            request.POST, instance=product, user=request.user)
         item_form = ItemForm(request.POST, instance=item, user=request.user)
         item_attribute_form = item_attribute_model_formset(request.POST, instance=item)
-
+        image_form = ItemImageForm(request.POST, request.FILES)
         if product_form.is_valid() and item_form.is_valid() and item_attribute_form.is_valid():
             product_obj = product_form.save(commit=False)
             product_obj.last_updated_by = request.user
             product_obj.save()
             item_obj = item_form.save(commit=False)
             item_obj.last_updated_by = request.user
-            item_obj.save()
+            try:
+                item_obj.save()
+            except IntegrityError as e:
+                messages.error(request , 'SKU must be unique')
+                attributeContext = {
+                    'title': "New Item",
+                        'product_form': product_form,
+                        'item_form': item_form,
+                        'item_attribute_formset': item_attribute_form,
+                        'attribute_form': attribute_form,
+                        'image_form': image_form,
+                        'item_image':item_image,
+
+                }
+                return render(request, 'create-product-item.html', context=attributeContext)
+            image_obj = image_form.save(commit=False)
+            image_obj.created_by = request.user
+            image_obj.item = item_obj
+            image_obj.save()
             item_attribute_form = item_attribute_model_formset(request.POST, instance=item_obj)
             if item_attribute_form.is_valid():
                 for form in item_attribute_form:
@@ -768,6 +813,8 @@ def update_item(request, id):
                     return redirect('inventory:list-products')
                 else:
                     return redirect('inventory:view-item', id=id)
+        elif item_form.is_valid() == False:
+            messages.error(request , item_form.errors)
     attributeContext = {
         'title': "Update Item",
         'product_form': product_form,
@@ -776,6 +823,7 @@ def update_item(request, id):
         'attribute_form': attribute_form,
         'update': True,
         'image_form': image_form,
+        'item_image':item_image,
 
     }
     return render(request, 'create-product-item.html', context=attributeContext)
@@ -818,12 +866,11 @@ def delete_attribute(request, id):
 def create_attribute_ajax(request):
     if request.method == 'POST':
         name = request.POST.get('name')
-        display_name = request.POST.get('display_name')
         att_type = request.POST.get('att_type')
 
         response_data = {}
         try:
-            attribute = Attribute(name=name, display_name=display_name, att_type=att_type, created_by=request.user,
+            attribute = Attribute(name=name, att_type=att_type, created_by=request.user,
                                   company=request.user.company)
             attribute.save()
             response_data['result'] = 'Create attribute successful!'
@@ -840,3 +887,5 @@ def create_attribute_ajax(request):
         # response_data['text'] = post.text
         # response_data['created'] = post.created.strftime('%B %d, %Y %I:%M %p')
         # response_data['author'] = post.author.username
+
+

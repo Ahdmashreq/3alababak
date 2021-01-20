@@ -4,25 +4,20 @@
 {% load i18n %}
 {% block style %}
 <style>
+    .required {
+        color: red;
+    }
 
-  .required
-  {
-      color: red;
-  }
-.submit-row {
-    display: display;
-    padding: 12px 14px;
-    margin: 0 0 20px;
-    background: #f8f8f8;
-    border: 1px solid #eee;
-    border-radius: 4px;
-    text-align: right;
-    overflow: hidden;
-}
-
-
-
-
+    .submit-row {
+        display: display;
+        padding: 12px 14px;
+        margin: 0 0 20px;
+        background: #f8f8f8;
+        border: 1px solid #eee;
+        border-radius: 4px;
+        text-align: right;
+        overflow: hidden;
+    }
 </style>
 {% endblock style  %}
 {% block body%}
@@ -141,31 +136,38 @@
                     </div>
                 </div>
                 <div class="form-row">
-                     <div class="input-group mb-3 col-md-3">
-                                <div class="input-group-prepend">
-                                    <span class="input-group-text">Is Expirable</span>
-                                </div>
-                                <div class="col-md-3">
-                                {{item_form.expirable}}
+                    <div class="input-group mb-3 col-md-3">
+                        <div class="input-group-prepend">
+                            <span class="input-group-text">Is Expirable</span>
+                        </div>
+                        <div class="col-md-3">
+                            {{item_form.expirable}}
 
-
-                                </div>
 
                         </div>
+
+                    </div>
                 </div>
 
                 <div class="form-row field-image">
-                     <div class="input-group mb-3 col-md-12">
-                                <div class="input-group-prepend">
-                                    <span class="input-group-text">Upload Image</span>
-                                </div>
-                                <div>
-                                {{image_form.image}}
+                    <div class="input-group mb-3 col-md-12">
+                        <div class="input-group-prepend">
+                            <span class="input-group-text">Upload Image</span>
+                        </div>
+                        <div>
 
-
-                                </div>
+                            <input  onchange="readURL(this);"
+                            {{image_form.image}}
 
                         </div>
+
+                    </div>
+                    {% if update and item_image.image %}
+                    <img style="max-height:200px;" id="blah" src="/media/{{item_image.image}}" alt="your image" />
+                    {% else %}
+                    <img style="max-height:200px;" id="blah" src="{% static 'src/logos/3alababak_dimmed_icon.png' %}" alt="your image" />
+                    {% endif %}
+
                 </div>
 
 
@@ -197,23 +199,23 @@
                                         {{form.attribute}}
                                     </div>
                                     <div class="form-group col-md-4">
-                                                                                {{ form.temp_value}}
+                                        {{ form.temp_value}}
 
-                                    <script>
-                                    console.log("{{form.instance.attribute.att_type}}")
-                                    document.getElementById("{{ form.temp_value.auto_id }}").setAttribute("type", "{{form.instance.attribute.att_type}}");
+                                        <script>
+                                            console.log("{{form.instance.attribute.att_type}}")
+                                            document.getElementById("{{ form.temp_value.auto_id }}").setAttribute("type", "{{form.instance.attribute.att_type}}");
 
-                                    {% if form.instance.attribute.att_type == 'checkbox' %}
-                                    value = document.getElementById("{{ form.temp_value.auto_id }}").
-                                    console.log(value)
-                                    {% if value == 'on' %}
-                                    console.log("HELLLLLLLLLO")
-                                    var value_id = {{ form.temp_value.auto_id}}
-                                    console.log(value_id)
-                                             document.getElementById("{{ form.temp_value.auto_id }}").checked = true;
-                                  {% endif %}
-                                             {% endif %}
-                                    </script>
+                                            {% if form.instance.attribute.att_type == 'checkbox' %}
+                                            value = document.getElementById("{{ form.temp_value.auto_id }}").
+                                                console.log(value)
+                                            {% if value == 'on' %}
+                                            console.log("HELLLLLLLLLO")
+                                            var value_id = {{ form.temp_value.auto_id }}
+                                            console.log(value_id)
+                                            document.getElementById("{{ form.temp_value.auto_id }}").checked = true;
+                                            {% endif %}
+                                            {% endif %}
+                                        </script>
                                     </div>
                                 </div>
                                 {% endfor %}
@@ -239,7 +241,7 @@
                 <button type="button" id="add_item" class="btn cur-p btn-success">{% trans "Add Attribute "%}
                 </button>
                 <button type="button" id="add_attribute" data-toggle="modal" data-target="#create"
-                        class="btn cur-p btn-success">{% trans "Create New Attribute "%}
+                    class="btn cur-p btn-success">{% trans "Create New Attribute "%}
                 </button>
 
                 <div class="submit-row">
@@ -261,65 +263,65 @@
 {% block js %}
 
 <script>
-  $('#add_item').click(function() {
-  console.log("heloool")
-    var form_idx = $('#id_itemattributevalue_set-TOTAL_FORMS').val();
-    $('#attribute_set').append($('#empty_form').html().replace(/__prefix__/g, form_idx));
-    $('#id_itemattributevalue_set-TOTAL_FORMS').val(parseInt(form_idx) + 1);
-    var current_indx = Number(form_idx)
+    $('#add_item').click(function () {
+        console.log("heloool")
+        var form_idx = $('#id_itemattributevalue_set-TOTAL_FORMS').val();
+        $('#attribute_set').append($('#empty_form').html().replace(/__prefix__/g, form_idx));
+        $('#id_itemattributevalue_set-TOTAL_FORMS').val(parseInt(form_idx) + 1);
+        var current_indx = Number(form_idx)
 
 
 
 
 
-  });
+    });
 
 
 
 
 </script>
 <script>
-function myFunction(object) {
-    console.log("Byyeeee")
-    var str = object.id
-    var res= str.split("-")
-    text_id =  res[0]+'-'+res[1]+'-'+'temp_value'
-    attribute = object.value
-    var endpoint = '{% url "inventory:get-attribute-type" -1 %}'.replace('-1', attribute);
-    $.ajax({
-        type: "get",
-        url: endpoint,
-        contentType: 'application/json',
-        success: function(data){
-                  if (data['att_type'] =='text'){
-                  document.getElementById(text_id).setAttribute("type", "text");
+    function myFunction(object) {
+        console.log("Byyeeee")
+        var str = object.id
+        var res = str.split("-")
+        text_id = res[0] + '-' + res[1] + '-' + 'temp_value'
+        attribute = object.value
+        var endpoint = '{% url "inventory:get-attribute-type" -1 %}'.replace('-1', attribute);
+        $.ajax({
+            type: "get",
+            url: endpoint,
+            contentType: 'application/json',
+            success: function (data) {
+                if (data['att_type'] == 'text') {
+                    document.getElementById(text_id).setAttribute("type", "text");
 
 
-                  }
-                  else if(data['att_type'] =='number'){
+                }
+                else if (data['att_type'] == 'number') {
                     document.getElementById(text_id).setAttribute("type", "number");
 
-                 }
-                  else if(data['att_type'] =='checkbox'){
-                      document.getElementById(text_id).setAttribute("type", "checkbox");
-                 }
-                  else if(data['att_type'] =='date'){
-                      document.getElementById(text_id).setAttribute("type", "date");
-                 }
+                }
+                else if (data['att_type'] == 'checkbox') {
+                    document.getElementById(text_id).setAttribute("type", "checkbox");
+                }
+                else if (data['att_type'] == 'date') {
+                    document.getElementById(text_id).setAttribute("type", "date");
+                }
 
 
 
 
 
-        },
-        error: function(){
-            alert("error");
-        }
-         });
+            },
+            error: function () {
+                alert("error");
+            }
+        });
 
 
 
-};
+    };
 
 
 
@@ -328,98 +330,119 @@ function myFunction(object) {
 
 </script>
 <script>
-$(function() {
+    $(function () {
 
 
-    // This function gets cookie with a given name
-    function getCookie(name) {
-        var cookieValue = null;
-        if (document.cookie && document.cookie != '') {
-            var cookies = document.cookie.split(';');
-            for (var i = 0; i < cookies.length; i++) {
-                var cookie = jQuery.trim(cookies[i]);
-                // Does this cookie string begin with the name we want?
-                if (cookie.substring(0, name.length + 1) == (name + '=')) {
-                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
-                    break;
+        // This function gets cookie with a given name
+        function getCookie(name) {
+            var cookieValue = null;
+            if (document.cookie && document.cookie != '') {
+                var cookies = document.cookie.split(';');
+                for (var i = 0; i < cookies.length; i++) {
+                    var cookie = jQuery.trim(cookies[i]);
+                    // Does this cookie string begin with the name we want?
+                    if (cookie.substring(0, name.length + 1) == (name + '=')) {
+                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                        break;
+                    }
                 }
             }
+            return cookieValue;
         }
-        return cookieValue;
-    }
-    var csrftoken = getCookie('csrftoken');
+        var csrftoken = getCookie('csrftoken');
 
-    /*
-    The functions below will create a header with csrftoken
-    */
+        /*
+        The functions below will create a header with csrftoken
+        */
 
-    function csrfSafeMethod(method) {
-        // these HTTP methods do not require CSRF protection
-        return (/^(GET|HEAD|OPTIONS|TRACE)$/.test(method));
-    }
-    function sameOrigin(url) {
-        // test that a given url is a same-origin URL
-        // url could be relative or scheme relative or absolute
-        var host = document.location.host; // host + port
-        var protocol = document.location.protocol;
-        var sr_origin = '//' + host;
-        var origin = protocol + sr_origin;
-        // Allow absolute or scheme relative URLs to same origin
-        return (url == origin || url.slice(0, origin.length + 1) == origin + '/') ||
-            (url == sr_origin || url.slice(0, sr_origin.length + 1) == sr_origin + '/') ||
-            // or any other URL that isn't scheme relative or absolute i.e relative.
-            !(/^(\/\/|http:|https:).*/.test(url));
-    }
+        function csrfSafeMethod(method) {
+            // these HTTP methods do not require CSRF protection
+            return (/^(GET|HEAD|OPTIONS|TRACE)$/.test(method));
+        }
+        function sameOrigin(url) {
+            // test that a given url is a same-origin URL
+            // url could be relative or scheme relative or absolute
+            var host = document.location.host; // host + port
+            var protocol = document.location.protocol;
+            var sr_origin = '//' + host;
+            var origin = protocol + sr_origin;
+            // Allow absolute or scheme relative URLs to same origin
+            return (url == origin || url.slice(0, origin.length + 1) == origin + '/') ||
+                (url == sr_origin || url.slice(0, sr_origin.length + 1) == sr_origin + '/') ||
+                // or any other URL that isn't scheme relative or absolute i.e relative.
+                !(/^(\/\/|http:|https:).*/.test(url));
+        }
 
-    $.ajaxSetup({
-        beforeSend: function(xhr, settings) {
-            if (!csrfSafeMethod(settings.type) && sameOrigin(settings.url)) {
-                // Send the token to same-origin, relative URLs only.
-                // Send the token only if the method warrants CSRF protection
-                // Using the CSRFToken value acquired earlier
-                xhr.setRequestHeader("X-CSRFToken", csrftoken);
+        $.ajaxSetup({
+            beforeSend: function (xhr, settings) {
+                if (!csrfSafeMethod(settings.type) && sameOrigin(settings.url)) {
+                    // Send the token to same-origin, relative URLs only.
+                    // Send the token only if the method warrants CSRF protection
+                    // Using the CSRFToken value acquired earlier
+                    xhr.setRequestHeader("X-CSRFToken", csrftoken);
+                }
             }
-        }
+        });
+
     });
 
-});
 
-
-$('#attribute_form').on('submit', function(event){
-    event.preventDefault();
-    console.log("form submitted!")  // sanity check
-    create_attribute();
-});
-
-function create_attribute(){
-    console.log("create post is working!") // sanity check
-    console.log($('#id_name').val())
-    console.log("create post is working!") // sanity check
-    $.ajax({
-
-        url : '{% url "inventory:create-attribute-ajax" %}',
-        type : "POST", // http method
-        data : { name : $('#id_name').val(),display_name: $('#id_display_name').val(),att_type: $('#id_att_type').val() }, // data sent with the post request
-
-        // handle a successful response
-        success : function(json) {
-            console.log(json); // log the returned json to the console
-            console.log("success"); // another sanity check
-             $('#create').modal('hide');
-
-        },
-
-        // handle a non-successful response
-        error : function(xhr,errmsg,err) {
-            $('#results').html("<div class='alert-box alert radius' data-alert>Oops! We have encountered an error: "+errmsg+
-                " <a href='#' class='close'>&times;</a></div>"); // add the error to the dom
-            console.log(xhr.status + ": " + xhr.responseText); // provide a bit more info about the error to the console
-        }
+    $('#attribute_form').on('submit', function (event) {
+        event.preventDefault();
+        console.log("form submitted!")  // sanity check
+        create_attribute();
     });
-}
+
+    function create_attribute() {
+        console.log("create post is working!") // sanity check
+        console.log($('#id_name').val())
+        console.log("create post is working!") // sanity check
+        $.ajax({
+
+            url: '{% url "inventory:create-attribute-ajax" %}',
+            type: "POST", // http method
+            data: { name: $('#id_name').val(), display_name: $('#id_display_name').val(), att_type: $('#id_att_type').val() }, // data sent with the post request
+
+            // handle a successful response
+            success: function (json) {
+                console.log(json); // log the returned json to the console
+                console.log("success"); // another sanity check
+                $('#create').modal('hide');
+
+            },
+
+            // handle a non-successful response
+            error: function (xhr, errmsg, err) {
+                $('#results').html("<div class='alert-box alert radius' data-alert>Oops! We have encountered an error: " + errmsg +
+                    " <a href='#' class='close'>&times;</a></div>"); // add the error to the dom
+                console.log(xhr.status + ": " + xhr.responseText); // provide a bit more info about the error to the console
+            }
+        });
+    }
 
 
 
 </script>
+<script>
+    function readURL(input) {
+        if (input.files && input.files[0]) {
+            var reader = new FileReader();
+
+            reader.onload = function (e) {
+                $('#blah')
+                    .attr('src', e.target.result);
+            };
+
+            reader.readAsDataURL(input.files[0]);
+        }
+    }
+</script>
+
+<script>
+    $(document).ready(function () {
+        $('#id_uom').select2()
+});
+</script>
+
 
 {% endblock js %}

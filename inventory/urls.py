@@ -1,5 +1,7 @@
 from django.urls import path
 from inventory import views
+from dal import autocomplete
+
 
 app_name = 'inventory'
 urlpatterns = [
@@ -41,4 +43,3 @@ urlpatterns = [
 
 
 ]
-

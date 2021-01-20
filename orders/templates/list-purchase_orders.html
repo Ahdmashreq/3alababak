@@ -29,12 +29,13 @@
             {% if receiving %}
             <table class="data-table data-table-feature dataTable no-footer" id="DataTables_Table_1" role="grid" aria-describedby="DataTables_Table_0_info">
             {% else %}
-            <table class="data-table data-table-feature5 dataTable no-footer" id="DataTables_Table_0" role="grid" aria-describedby="DataTables_Table_0_info">
+            <table class="data-table data-table-feature6 dataTable no-footer" id="DataTables_Table_0" role="grid" aria-describedby="DataTables_Table_0_info">
             {% endif %}
               <thead>
                 <tr role="row">
                   <th class="sorting_asc" tabindex="0" aria-controls="DataTables_Table_0" rowspan="1" colspan="1" aria-sort="ascending" aria-label="Name: activate to sort column descending" style="width: 155.4px;">#</th>
-                  <th class="sorting" tabindex="0" aria-controls="DataTables_Table_0" rowspan="1" colspan="1" aria-label="Position: activate to sort column ascending" style="width: 263.4px;">{% trans "Name" %}</th>
+                  <th class="sorting" tabindex="0" aria-controls="DataTables_Table_0" rowspan="1" colspan="1" aria-label="Office: activate to sort column ascending" style="width: 105.8px;">{% trans "Code" %}</th>
+                  <th class="sorting" tabindex="0" aria-controls="DataTables_Table_0" rowspan="1" colspan="1" aria-label="Office: activate to sort column ascending" style="width: 105.8px;">{% trans "Supplier Code" %}</th>
                   <th class="sorting" tabindex="0" aria-controls="DataTables_Table_0" rowspan="1" colspan="1" aria-label="Office: activate to sort column ascending" style="width: 105.8px;">{% trans "Date" %}</th>
                   <th class="sorting" tabindex="0" aria-controls="DataTables_Table_0" rowspan="1" colspan="1" aria-label="Start date: activate to sort column ascending" style="width: 122.6px;">{% trans "Status" %}</th>
                   {% if not receiving %}
@@ -46,11 +47,8 @@
                 {% for order in purchase_orders_list %}
                 <tr role="row" class="odd">
                   <td class="sorting_1">{{ forloop.counter }}</td>
-                  {% if receiving %}
-                  <td><a href = "{% url 'orders:view-po' id=order.id flag=True return_to='po' %}">{{ order.order_name }}</a></td>
-                  {% else %}
-                  <td>{{order.order_name}}</td>
-                  {% endif %}
+                  <td>{{ order.purchase_code }}</td>
+                  <td>{{ order.supplier_code }}</td>
                   <td>{{ order.date }}</td>
                   <td>{{ order.status }}</td>
                   {% if not receiving and order.status == 'drafted' %}
