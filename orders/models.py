@@ -19,7 +19,7 @@ class PurchaseOder(models.Model):
     subtotal_price = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True, default=0,
                                        help_text='total price before discount')
     tax = models.DecimalField(max_digits=20, decimal_places=3, null=True, blank=True)
-    shipping_cost=models.DecimalField(max_digits=20, decimal_places=2, null=True, blank=True)
+    shipping_cost=models.DecimalField(max_digits=20, decimal_places=2, default=0)
     # currency = models.ForeignKey(Currency, on_delete=models.CASCADE, null=True, blank=True, default='EGP')
     status = models.CharField(max_length=20,
                               choices=[('drafted', 'Drafted'), ('Partial_receive', 'Partially Received'),
@@ -55,7 +55,7 @@ class PurchaseOder(models.Model):
 
     @property
     def grand_total(self):
-        return round(self.subtotal_price_after_discount,2)
+        return round(self.subtotal_price_after_discount+ self.shipping_cost,2)
 
 class SalesOrder(models.Model):
     company = models.ForeignKey(Company, on_delete=models.CASCADE)

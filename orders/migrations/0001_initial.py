@@ -14,7 +14,7 @@ class Migration(migrations.Migration):
         ('inventory', '0002_auto_20210118_1009'),
         ('location', '0001_initial'),
         ('account', '0002_auto_20210118_1009'),
-        ('currencies', '0005_auto_20200915_1135'),
+        # ('currencies', '0005_auto_20200915_1135'),
     ]
 
     operations = [
