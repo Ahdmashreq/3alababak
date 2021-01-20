@@ -38,8 +38,8 @@ def create_purchase_order_view(request):
     """
     po_form = PurchaseOrderCreationForm(user=request.user)
     po_transaction_inlineformset = purchase_transaction_formset(form_kwargs={'user': request.user})
-    rows_number = PurchaseOder.objects.all().count()
-    po_code = "PO-" + str(date.today()) + "-" + get_seq(rows_number)
+    rows_number = PurchaseOder.objects.filter(company=request.user.company).count()
+    po_code = "PO-" + get_seq(rows_number)
     try:
         tax = Tax.objects.get(name='VAT')
         tax_percentage = tax.value / 100
