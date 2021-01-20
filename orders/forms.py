@@ -45,6 +45,7 @@ class PurchaseTransactionCreationForm(forms.ModelForm):
     # this field is only created for display in the form
     after_discount = forms.DecimalField(max_digits=200, decimal_places=2)
     item_tax = forms.DecimalField(max_digits=200, decimal_places=20)
+    item_discount = forms.DecimalField(max_digits=200, decimal_places=20)
     # item_shipping_cost = forms.DecimalField(max_digits=200, decimal_places=2)
 
     class Meta:
@@ -89,6 +90,8 @@ class PurchaseTransactionCreationForm(forms.ModelForm):
         self.fields['after_discount'].widget.attrs['disabled'] = True
         self.fields['item_tax'].widget.attrs['readonly'] = True
         self.fields['item_tax'].widget.attrs['disabled'] = True
+        self.fields['item_discount'].widget.attrs['readonly'] = True
+        self.fields['item_discount'].widget.attrs['disabled'] = True
         
         for field in self.fields:
             # setting a 'unique-class' to mark all 'total_price' fields to be used afterwards in calculating global total

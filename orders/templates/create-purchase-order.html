@@ -114,6 +114,9 @@
                                             <label>{% trans "Tax (EGP)" %}</label>
                                         </div>
                                         <div class="form-group col-md-1">
+                                            <label>{% trans "Discount (EGP)" %}</label>
+                                        </div>
+                                        <div class="form-group col-md-1">
                                             <label>Total Price (EGP)</label>
                                         </div>
                                     </div>
@@ -140,6 +143,9 @@
                                         </div>
                                         <div class="form-group col-md-1">
                                             {{ form.item_tax }}
+                                        </div>
+                                        <div class="form-group col-md-1">
+                                            {{ form.item_discount }}
                                         </div>
                                         <div class="form-group col-md-1">
                                             {{ form.after_discount }}
@@ -176,6 +182,9 @@
                                 </div>
                                 <div class="form-group col-md-1">
                                     {{ po_transaction_inlineformset.empty_form.item_tax}}
+                                </div>
+                                <div class="form-group col-md-1">
+                                    {{ po_transaction_inlineformset.empty_form.item_discount}}
                                 </div>
                                 <div class="form-group col-md-1">
                                     {{ po_transaction_inlineformset.empty_form.after_discount}}
@@ -394,6 +403,7 @@
                     quantity_id = id_prefix + '-' + 'quantity'
                     item_total_afer_discount_id = id_prefix + '-' + 'after_discount';
                     item_tax_id = id_prefix + '-' + 'item_tax';
+                    item_discount_id = id_prefix + '-' + 'item_discount';
                     item_shipphing_cost_id = id_prefix + '-' + 'item_shipping_cost'
                     unit_price = document.getElementById(price_id).value
                     quantity = document.getElementById(quantity_id).value
@@ -408,6 +418,7 @@
                     // item_total_afer_shipping = item_total_afer_discount
                     // document.getElementById(item_shipphing_cost_id).value = item_shipphing_cost
                     document.getElementById(item_tax_id).value = tax_amount
+                    document.getElementById(item_discount_id).value = Number(item_total_discount_amount);
                     document.getElementById(item_total_afer_discount_id).value = Number(item_total_afer_discount);
 
                 };
