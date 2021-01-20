@@ -113,7 +113,7 @@ def list_purchase_order_view(request):
     :template:`orders/templates/list-purchase_orders.html`
 
     """
-    purchase_orders = PurchaseOder.objects.filter(company=request.user.company)
+    purchase_orders = PurchaseOder.objects.filter(company=request.user.company).order_by('-status')
     context = {
         'purchase_orders_list': purchase_orders,
         'title': "Purchase Orders",
