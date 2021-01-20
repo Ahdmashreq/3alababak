@@ -38,11 +38,11 @@
               </div>
               
                <div class="form-group col-md-3">
-                <b>PO Number: </b>
+                <b>Code: </b>
                 {{po.purchase_code}}
               </div>
               <div class="form-group col-md-3">
-                <b>Supplier PO Number: </b>
+                <b>Supplier Code: </b>
                 {{po.supplier_code}}
               </div>
               <div class="form-group col-md-3">
@@ -60,10 +60,8 @@
                   <th class="sorting" tabindex="0" aria-controls="DataTables_Table_0" rowspan="1" colspan="1" aria-label="Position: activate to sort column ascending" style="width: 263.4px;">{% trans "Quantity" %}</th>
                   <th class="sorting" tabindex="0" aria-controls="DataTables_Table_0" rowspan="1" colspan="1" aria-label="Position: activate to sort column ascending" style="width: 263.4px;">{% trans "Unit" %}</th>
                   <th class="sorting" tabindex="0" aria-controls="DataTables_Table_0" rowspan="1" colspan="1" aria-label="Position: activate to sort column ascending" style="width: 263.4px;">{% trans "Price Per Unit (EGP)" %}</th>
-                  <th class="sorting" tabindex="0" aria-controls="DataTables_Table_0" rowspan="1" colspan="1" aria-label="Position: activate to sort column ascending" style="width: 263.4px;">{% trans "Subtotal Price (EGP)" %}</th>
-                  <th class="sorting" tabindex="0" aria-controls="DataTables_Table_0" rowspan="1" colspan="1" aria-label="Position: activate to sort column ascending" style="width: 263.4px;">{% trans "Tax (EGP)" %}</th>
-                  <th class="sorting" tabindex="0" aria-controls="DataTables_Table_0" rowspan="1" colspan="1" aria-label="Position: activate to sort column ascending" style="width: 263.4px;">{% trans "Discount (EGP)" %}</th>
                   <th class="sorting" tabindex="0" aria-controls="DataTables_Table_0" rowspan="1" colspan="1" aria-label="Position: activate to sort column ascending" style="width: 263.4px;">{% trans "Total Price (EGP)" %}</th>
+                  <th class="sorting" tabindex="0" aria-controls="DataTables_Table_0" rowspan="1" colspan="1" aria-label="Position: activate to sort column ascending" style="width: 263.4px;">{% trans "Total After Discount (EGP)" %}</th>
 
                 </tr>
               </thead>
@@ -75,52 +73,33 @@
                   <td>{{ po_line.uom }}</td>
                   <td>{{ po_line.price_per_unit }}</td>
                   <td>{{ po_line.total_price }}</td>
-                  <td>{{ po_line.item_tax }}</td>
-                  <td>{{ po_line.item_discount }}</td>
                   <td>{{ po_line.total_price_after_discount }}</td>
                 </tr>
                 {% endfor %}
               </tbody>
             </table>
-            <div style="width: 100%;display: flex;justify-content: flex-end;">
-                <table style="width: 30%;" class="text-right">
+            <table style="width: 100%;">
                 <tbody>
                     <tr>
-                        <td style="text-align: left; padding-top:0px; padding-bottom:0; vertical-align:middle; padding:30px; background-color: #f9f9f9; border-radius: 3px; border-left: 5px solid white;">
+                        <td style="text-align: right; padding-top:0px; padding-bottom:0; vertical-align:middle; padding:30px; background-color: #f9f9f9; border-radius: 3px; border-left: 5px solid white;">
                             <p style="color:#8f8f8f; font-size: 14px; padding: 0; line-height: 1.6; margin:0; ">
-                               <b>Subtotal:</b>     {{po.subtotal_price}} EGP
-                               <br>
-                               <b>TAX :</b>  <b id="sum_taxes" style="font-weight: lighter;"></b> 
+                               <b>Total:</b>     {{po.global_price}} EGP
                                 <br>
                                 {% if po.discount_type == 'percentage' %}
-                                <b>Discount: </b>   {{po.discount}} %
+                                    <b>Discount: </b>   {{po.discount}} %
                                 {% else %}
-                                <b>Discount: </b>   {{po.discount}} EGP
+                                     <b>Discount: </b>   {{po.discount}} EGP
                                 {% endif %}
                                 <br>
-                                <b>Shipping:</b>     {{po.shipping_cost}} EGP
-                                <br>
-                                <b>Total: </b> {{po.grand_total}} EGP
-                                <br>
+                                <b>Grand Total: </b> {{po.global_price_after_discount}} EGP
                             </p>
                         </td>
                     </tr>
                 </tbody>
             </table>
-            </div>
-          
 
 
      </div>
   </div>
 </div>
 {% endblock body %}
-{% block js %}
-<script>
-    tax_value = {{po.subtotal_price_after_tax}} - {{po.subtotal_price}}
-    document.getElementById('sum_taxes').innerHTML = tax_value + " EGP"  
-</script>
-
-
-
-{% endblock js %}

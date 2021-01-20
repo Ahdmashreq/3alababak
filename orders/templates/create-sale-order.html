@@ -5,23 +5,22 @@
 {% load i18n %}
 {% block style %}
 <style>
-  .required {
-    color: red;
-  }
+    .required {
+        color: red;
+    }
 
-  .submit-row {
-    display: display;
-    padding: 12px 14px;
-    margin: 0 0 20px;
-    background: #f8f8f8;
-    border: 1px solid #eee;
-    border-radius: 4px;
-    text-align: right;
-    overflow: hidden;
-  }
-
+    .submit-row {
+        display: display;
+        padding: 12px 14px;
+        margin: 0 0 20px;
+        background: #f8f8f8;
+        border: 1px solid #eee;
+        border-radius: 4px;
+        text-align: right;
+        overflow: hidden;
+    }
 </style>
-{% endblock style  %}
+{% endblock style %}
 {% block body%}
 <div class="container-fluid">
     <div class="row">
@@ -47,22 +46,70 @@
                             <label>Customer</label>
                             {{so_form.customer}}
                         </div>
-                         <div class="form-group col-md-3">
-                            <label>Name</label>
-                            {{so_form.order_name}}
+                        <div class="form-group col-md-3">
+                            <label>sale_code.label</label>
+                            {{so_form.sale_code}}
                         </div>
                         <div class="form-group col-md-3">
-                            <label>Code</label>
-                            {{so_form.sale_code}}
+                            <label>Customer SO Number</label>
+                            {{so_form.customer_so_number}}
                         </div>
                         <div class="form-group col-md-3">
                             <label>Date</label>
                             {{so_form.date}}
                         </div>
                         <div class="form-group col-md-3">
-                             <label>Grand Total (EGP)</label>
+                            <label> Suptotal (EGP)</label>
                             {{so_form.subtotal_price}}
                         </div>
+
+                        
+
+                        <div class="form-group col-md-3">
+                            <label> Tax (EGP)</label>
+                            {{so_form.tax_price}}
+                        </div>
+
+                        <div class="form-group col-md-3">
+                            <label>Discount (EGP)</label>
+                            {{so_form.discount_price }}
+                        </div>
+
+                        <div class="form-group col-md-3">
+                            <label>Total (EGP)</label>
+                            {{so_form.subtotal_after_shipping_cost}}
+                        </div>
+
+                        <div class="form-group col-md-3" style="display: none;">
+                            <label>Global price after discount (EGP)</label>
+                            {{so_form.my_total_price_after_discount}}
+                        </div>
+
+
+
+                        <div class="form-group col-md-3">
+                            <label>Discount</label>
+                            {{so_form.discount}}
+                        </div>
+
+                        <button class="btn btn-lg col-md-2" type="button" onclick="calculate()">Apply Discount</button>
+
+            
+
+                        <div class="form-group col-md-3">
+                            <label>Shipping Cost</label>
+                            {{so_form.shipping_cost}}
+                        </div>
+
+                        <button class="btn btn-lg col-md-2" type="button" onclick="apply()">Apply Shipping Cost</button>
+
+                        <div class="form-group col-md-3">
+                            <label>Discount Type</label>
+                            {{so_form.discount_type}}
+                        </div>
+                        
+                       
+
 
 
                     </div>
@@ -72,10 +119,10 @@
                             <div class="bgc-white bd bdrs-3 p-20 mB-20">
                                 <div id="purchase_set">
                                     <div class="form-row">
-                                        <div class="form-group col-md-4">
+                                        <div class="form-group col-md-3">
                                             <label>{% trans "Item" %}</label>
                                         </div>
-                                        <div class="form-group col-md-2">
+                                        <div class="form-group col-md-1">
                                             <label>{% trans "Location" %}</label>
                                         </div>
                                         <div class="form-group col-md-1">
@@ -84,14 +131,23 @@
                                         <div class="form-group col-md-1">
                                             <label>{% trans "Unit" %}</label>
                                         </div>
-                                        <div class="form-group col-md-1">
-                                            <label>{% trans "Cost per unit (EGP)" %}</label>
-                                        </div>
+                                        
                                         <div class="form-group col-md-1">
                                             <label>{% trans "Selling price per unit (EGP)" %}</label>
                                         </div>
                                         <div class="form-group col-md-2">
-                                            <label>{% trans "Total Price (EGP)" %}</label>
+                                            <label>{% trans "Suptotal Price (EGP)" %}</label>
+                                        </div>
+
+                                        <div class="form-group col-md-1">
+                                            <label>{% trans " Tax (EGP)" %}</label>
+                                        </div>
+
+                                        <div class="form-group col-md-1">
+                                            <label>{% trans " Discount (EGP)" %}</label>
+                                        </div>
+                                        <div class="form-group col-md-1">
+                                            <label>{% trans " Total (EGP)" %}</label>
                                         </div>
 
                                     </div>
@@ -100,10 +156,10 @@
                                     {{ form.id }}
                                     {{ form.media }}
                                     <div class="form-row">
-                                        <div class="form-group col-md-4">
+                                        <div class="form-group col-md-3">
                                             {{form.item}}
                                         </div>
-                                        <div class="form-group col-md-2">
+                                        <div class="form-group col-md-1">
                                             {{ form.location}}
                                         </div>
                                         <div class="form-group col-md-1">
@@ -112,15 +168,26 @@
                                         <div class="form-group col-md-1">
                                             {{form.temp_uom}}
                                         </div>
-                                        <div class="form-group col-md-1">
-                                            {{form.temp_unit_cost}}
-                                        </div>
+                                        
                                         <div class="form-group col-md-1">
                                             {{form.price_per_unit}}
                                         </div>
                                         <div class="form-group col-md-2">
                                             {{form.total_price}}
                                         </div>
+                                        <div class="form-group col-md-1">
+                                            {{form.item_tax}}
+                                        </div> 
+
+                                        <div class="form-group col-md-1">
+                                            {{form.item_descount}}
+                                        </div>
+
+                                        <div class="form-group col-md-1">
+                                            {{form.total}}
+                                        </div>
+
+                                        
 
                                     </div>
                                     {% endfor %}
@@ -138,10 +205,10 @@
                         <table class='no_error'>
                             <div class="form-row">
                                 {{ so_transaction_inlineformset.empty_form.media }}
-                                <div class="form-group col-md-4">
+                                <div class="form-group col-md-3">
                                     {{ so_transaction_inlineformset.empty_form.item}}
                                 </div>
-                                <div class="form-group col-md-2">
+                                <div class="form-group col-md-1">
                                     {{ so_transaction_inlineformset.empty_form.location}}
                                 </div>
                                 <div class="form-group col-md-1">
@@ -150,16 +217,24 @@
                                 <div class="form-group col-md-1">
                                     {{ so_transaction_inlineformset.empty_form.temp_uom}}
                                 </div>
-                                <div class="form-group col-md-1">
-                                    {{ so_transaction_inlineformset.empty_form.temp_unit_cost }}
-
-                                </div>
+                               
                                 <div class="form-group col-md-1">
                                     {{ so_transaction_inlineformset.empty_form.price_per_unit }}
                                 </div>
                                 <div class="form-group col-md-2">
                                     {{ so_transaction_inlineformset.empty_form.total_price}}
                                 </div>
+                                <div class="form-group col-md-1">
+                                    {{ so_transaction_inlineformset.empty_form.item_tax}}
+                                </div> 
+                                <div class="form-group col-md-1">
+                                    {{ so_transaction_inlineformset.empty_form.item_descount}}
+                                </div>
+                                <div class="form-group col-md-1">
+                                    {{ so_transaction_inlineformset.empty_form.total}}
+                                </div>
+
+                                
 
                             </div>
                         </table>
@@ -192,190 +267,319 @@
 
 
 <script>
-   $('#myform').on('submit', function() {
-for (i = 0; i < $('#id_salestransaction_set-TOTAL_FORMS').val(); i++) {
-    $('#id_salestransaction_set-'+i+'-total_price').prop('disabled', false);
+    $('#myform').on('submit', function () {
+        for (i = 0; i < $('#id_salestransaction_set-TOTAL_FORMS').val(); i++) {
+            $('#id_salestransaction_set-' + i + '-total_price').prop('disabled', false);
+            $('#id_salestransaction_set-' + i + '-item_descount').prop('disabled', false);
+            $('#id_salestransaction_set-' + i + '-total').prop('disabled', false);
+            $('#id_salestransaction_set-' + i + '-item_tax').prop('disabled', false);
 
-    }
-         $('#id_subtotal_price').prop('disabled', false);
-});
+
+
+
+        }
+        $('#id_subtotal_price').prop('disabled', false);
+        $('#id_tax_price').prop('disabled', false);  
+        $('#id_my_total_price_after_discount').prop('disabled', false);
+        $('#id_discount_price').prop('disabled', false);
+        $('#id_subtotal_after_shipping_cost').prop('disabled', false); 
+
+    });
 
 </script>
 <script>
     function myAction(object) {
-          item = object.value
-          var endpoint = '{% url "orders:get-item" -1 %}'.replace('-1', item);
-          if ( item !==""){
-                var str = object.id
-                var res= str.split("-")
-                var id_prefix = res[0]+'-'+res[1]
-                uom_id = id_prefix+'-'+'temp_uom'
-                price_id = id_prefix+'-'+'price_per_unit'
-                quantity_id =  id_prefix+'-'+'quantity'
-                cost_id = id_prefix+'-'+'temp_unit_cost'
-                location_id = id_prefix+'-'+'location'
-                mylocation = document.getElementById(location_id).value
-                console.log(mylocation)
-                $.ajax({
+        item = object.value
+        var endpoint = '{% url "orders:get-item" -1 %}'.replace('-1', item);
+        if (item !== "") {
+            var str = object.id
+            var res = str.split("-")
+            var id_prefix = res[0] + '-' + res[1]
+            uom_id = id_prefix + '-' + 'temp_uom'
+            price_id = id_prefix + '-' + 'price_per_unit'
+            quantity_id = id_prefix + '-' + 'quantity'
+            location_id = id_prefix + '-' + 'location'
+            mylocation = document.getElementById(location_id).value
+            console.log(mylocation)
+            $.ajax({
                 type: "get",
                 url: endpoint,
                 contentType: 'application/json',
-                success: function(data){
-                  document.getElementById(uom_id).value=data['uom']
-                  if (mylocation !== ""){
-                     var flag = false;
-                     for (i = 0; i < data['balance'].length; i++) {
-                          if (mylocation == data['balance'][i]['location'] ){
-                                                        flag = true;
+                success: function (data) {
+                    document.getElementById(uom_id).value = data['uom']
+                    if (mylocation !== "") {
+                        var flag = false;
+                        for (i = 0; i < data['balance'].length; i++) {
+                            if (mylocation == data['balance'][i]['location']) {
+                                flag = true;
 
-                              document.getElementById(quantity_id).placeholder = data['balance'][i]['qnt'];
-                              document.getElementById(cost_id).value = data['balance'][i]['unit_cost'];
-                          };
-                     };
-                     if (flag == false){
+                                document.getElementById(quantity_id).placeholder = data['balance'][i]['qnt'];
+                            };
+                        };
+                        if (flag == false) {
                             document.getElementById(quantity_id).placeholder = "";
-                            document.getElementById(cost_id).value = "";
-                     }
-                  }
-                 else {
-                    document.getElementById(quantity_id).placeholder = "";
-                    document.getElementById(cost_id).value = "";
-                }
-                      if (document.getElementById(quantity_id).value){
+
+                        }
+                    }
+                    else {
+                        document.getElementById(quantity_id).placeholder = "";
+
+                    }
+                    if (document.getElementById(quantity_id).value) {
                         myFunction(document.getElementById(quantity_id));
-                      };
+                    };
 
 
                 },
-                error: function(){
+                error: function () {
                     alert("error");
                 }
-                 });
+            });
 
-            };
+        };
 
     };
 
 </script>
 
 <script>
-function myFunction(object) {
+    function myFunction(object) {
 
-    var str = object.id;
-    var res= str.split("-");
-    var id_prefix = res[0]+'-'+res[1];
-    item_id = id_prefix+'-'+'item';
-    price_id = id_prefix+'-'+'price_per_unit';
-    total_price_id = id_prefix+'-'+'total_price';
-    quantity_id = id_prefix+'-'+'quantity';
-    quantity = document.getElementById(quantity_id).value;
-    item =  document.getElementById(item_id).value;
-    price = document.getElementById(price_id).value;
-    if (price){
+        var str = object.id;
+        var res = str.split("-");
+        var id_prefix = res[0] + '-' + res[1];
+        item_id = id_prefix + '-' + 'item';
+        price_id = id_prefix + '-' + 'price_per_unit';
+        total_price_id = id_prefix + '-' + 'total_price';
+        quantity_id = id_prefix + '-' + 'quantity';
+        item_tax_id = id_prefix + '-' + 'item_tax'
+        item_total_id = id_prefix + '-' + 'total'
+        quantity = document.getElementById(quantity_id).value;
+        item = document.getElementById(item_id).value;
+        price = document.getElementById(price_id).value;
+
+        if (price) {
 
             var total_per_item = price * quantity;
             document.getElementById(total_price_id).value = total_per_item;
+            console.log(total_per_item)
+            tex_amount = total_per_item * {{tax}}
+            console.log((tex_amount).toFixed(1))
+            document.getElementById(item_tax_id).value = (tex_amount.toFixed(1))
+            document.getElementById(item_total_id).value =(total_per_item).toFixed(1);
+
+    
             grandTotal();
-
-
+            total_after_tax();
 
         };
 
-};
+        };
+
+</script>
+
+
+<script>
+
+    function total_after_tax() {
+        subtotal_price = Number(document.getElementById("id_subtotal_price").value)
+        tax = Number({{ tax }});
+        tax_price = tax * subtotal_price
+        document.getElementById("id_tax_price").value = (tax_price).toFixed(1);
+        return (Number(subtotal_price) + Number(tax_price)).toFixed(1);
+    }
+</script>
+<script>
+    function total_after_discount() {
+        subtotal_price = Number(document.getElementById("id_subtotal_price").value)
+        tax = Number(document.getElementById("id_tax_price").value)
+        console.log("ttttt")
+        console.log(tax)
+        tax_price = tax * subtotal_price
+        total = Number(subtotal_price) + Number(tax)
+        console.log(total)
+        discount = document.getElementById("id_discount").value;
+        discount_percentage = Number(discount ) / 100
+        discount_price = Number(total)  *  Number(discount_percentage)
+        console.log("iiiiii")
+        console.log(discount_price)
+        document.getElementById("id_discount_price").value = discount_price;
+        discount_value = Number(total) - discount_price
+        console.log("vvvv")
+        return (discount_value)
+    }
+</script>
+
+
+<script>
+    function apply() {
+        total = Number(document.getElementById("id_subtotal_after_shipping_cost").value);
+        console.log(total)
+        shipping_cost = Number(document.getElementById("id_shipping_cost").value);
+        console.log(shipping_cost)
+        total_after_shipping = total + shipping_cost 
+        document.getElementById("id_subtotal_after_shipping_cost").value = total_after_shipping
+        console.log("5555")
+
+    }
+
+
 
 </script>
 
 <script>
-function grandTotal(){
-    var x = document.getElementsByClassName("unique-class");
-    var i;
-    var grand_total = 0;
-    for (i = 0; i < x.length; i++) {
-      if (x[i].value){
-        grand_total = grand_total + Number(x[i].value);
+    function grandTotal() {
+        var x = document.getElementsByClassName("unique-class");
+        var i;
+        var grand_total = 0;
+        for (i = 0; i < x.length; i++) {
+            if (x[i].value) {
+                grand_total = grand_total + Number(x[i].value);
+            };
         };
-     };
-     console.log(grand_total)
-    document.getElementById("id_subtotal_price").value = grand_total;
+        document.getElementById("id_subtotal_price").value = grand_total;
 
 }
+</script>
+
+<script>
+    $('#add_item').click(function () {
+        var form_idx = $('#id_salestransaction_set-TOTAL_FORMS').val();
+        $('#purchase_set').append($('#empty_form').html().replace(/__prefix__/g, form_idx));
+        $('#id_salestransaction_set-TOTAL_FORMS').val(parseInt(form_idx) + 1);
+        var current_indx = Number(form_idx)
+
+
+
+
+
+    });
 
 </script>
 <script>
-  $('#add_item').click(function() {
-    var form_idx = $('#id_salestransaction_set-TOTAL_FORMS').val();
-    $('#purchase_set').append($('#empty_form').html().replace(/__prefix__/g, form_idx));
-    $('#id_salestransaction_set-TOTAL_FORMS').val(parseInt(form_idx) + 1);
-    var current_indx = Number(form_idx)
+    function inventory(object) {
+        var str = object.id;
+        var res = str.split("-");
+        var id_prefix = res[0] + '-' + res[1]; 
+        item_id = id_prefix + '-' + 'item';
+        quantity_id = id_prefix + '-' + 'quantity'
+        price_id = id_prefix + '-' + 'temp_unit_cost'
+        item = document.getElementById(item_id).value;
 
-
-
-
-
-  });
-
-</script>
-<script>
-function inventory(object) {
-   var str = object.id;
-    var res= str.split("-");
-    var id_prefix = res[0]+'-'+res[1];
-    item_id = id_prefix+'-'+'item';
-    quantity_id =  id_prefix+'-'+'quantity'
-    price_id = id_prefix+'-'+'temp_unit_cost'
-    item = document.getElementById(item_id).value;
-
-     if (item !==""){
-        var endpoint = '{% url "orders:get-item" -1 %}'.replace('-1', item);
-       $.ajax({
+        if (item !== "") {
+            var endpoint = '{% url "orders:get-item" -1 %}'.replace('-1', item);
+            $.ajax({
                 type: "get",
                 url: endpoint,
                 contentType: 'application/json',
-                success: function(data){
-                      var flag = false;
-                      for (i = 0; i < data['balance'].length; i++) {
-                      if (object.value == data['balance'][i]['location']){
-                            flag=true;
-                          document.getElementById(quantity_id).placeholder = data['balance'][i]['qnt'];
-                        document.getElementById(price_id).value = data['balance'][i]['unit_cost'];
+                success: function (data) {
+                    var flag = false;
+                    for (i = 0; i < data['balance'].length; i++) {
+                        if (object.value == data['balance'][i]['location']) {
+                            flag = true;
+                            document.getElementById(quantity_id).placeholder = data['balance'][i]['qnt'];
 
-                      };
+                        };
                     };
-                    if (flag == false){
-                     document.getElementById(quantity_id).placeholder = '';
-                     document.getElementById(price_id).value='';
+                    if (flag == false) {
+                        document.getElementById(quantity_id).placeholder = '';
+                        document.getElementById(price_id).value = '';
                     };
 
 
 
                 },
-                error: function(){
+                error: function () {
                     alert("error");
                 }
-                 });
+            });
 
-            };
+        };
 
     };
 
 </script>
 <script>
-var formSubmitting = false;
-var setFormSubmitting = function() { formSubmitting = true; console.log("ENTEREERERD"); };
+    var formSubmitting = false;
+    var setFormSubmitting = function () { formSubmitting = true; console.log("ENTEREERERD"); };
 
-window.onload = function() {
-    window.addEventListener("beforeunload", function (e) {
-        if (formSubmitting) {
-            return undefined;
-        }
+    window.onload = function () {
+        window.addEventListener("beforeunload", function (e) {
+            if (formSubmitting) {
+                return undefined;
+            }
 
-        var confirmationMessage = 'It looks like you have been editing something. '
-                                + 'If you leave before saving, your changes will be lost.';
+            var confirmationMessage = 'It looks like you have been editing something. '
+                + 'If you leave before saving, your changes will be lost.';
 
-        (e || window.event).returnValue = confirmationMessage; //Gecko + IE
-        return confirmationMessage; //Gecko + Webkit, Safari, Chrome etc.
-    });
-};
+            (e || window.event).returnValue = confirmationMessage; //Gecko + IE
+            return confirmationMessage; //Gecko + Webkit, Safari, Chrome etc.
+        });
+    };
+</script>
+
+
+<script>
+    function calculate() {
+        console.log("This is my lap");
+        discount_percentage = document.getElementById('id_discount').value;
+        grand_total = document.getElementById("id_subtotal_price").value;
+        discount_type = document.getElementById("id_discount_type").value;
+        var x = document.getElementsByClassName("unique-class");
+        if (discount_percentage >= 0) {
+            if (discount_type == 'percentage') {
+                discount_amount = discount_percentage * grand_total / 100;
+            }
+            else {
+                discount_amount = discount_percentage
+            };
+            console.log(discount_amount)
+            for (i = 0; i < x.length; i++) {
+                if (x[i].value) {
+                    var str = x[i].id;
+                    var res = str.split("-");
+                    var id_prefix = res[0] + '-' + res[1];
+                    price_id = id_prefix + '-' + 'price_per_unit'
+                    quantity_id = id_prefix + '-' + 'quantity'
+                    item_total_afer_discount_id = id_prefix + '-' + 'after_discount';
+                    item_tax_id = id_prefix + '-' + 'item_tax'
+                    item_descount_id = id_prefix + '-' + 'item_descount'
+                    item_total_id = id_prefix + '-' + 'total'
+                    unit_price = document.getElementById(price_id).value
+                    quantity = document.getElementById(quantity_id).value
+                    total_price = unit_price * quantity
+                    console.log(total_price)
+                    tex_amount = total_price * {{tax}}
+                    console.log((tex_amount).toFixed(1))
+                    total_price_after_tax = Number(total_price) + Number(tex_amount)
+                    item_total_discount_amount = discount_percentage * total_price_after_tax / 100;
+
+                    item_total_afer_discount = total_price_after_tax - item_total_discount_amount;
+                    document.getElementById(item_descount_id).value =(item_total_discount_amount).toFixed(1);
+                    document.getElementById(item_total_id).value =(item_total_afer_discount).toFixed(1);
+
+
+                };
+                
+
+            }; 
+            console.log("fghj")
+            document.getElementById('id_my_total_price_after_discount').value = item_total_afer_discount;
+            console.log(item_total_afer_discount) 
+            shipping = document.getElementById('id_shipping_cost').value
+            console.log(shipping)
+            t = total_after_discount() + shipping
+            console.log(total_after_discount()) 
+            console.log(shipping)
+            console.log(t) 
+
+
+            document.getElementById('id_subtotal_after_shipping_cost').value = t
+
+
+        };
+
+    }
 </script>
 
 

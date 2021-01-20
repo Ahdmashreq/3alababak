@@ -12,10 +12,7 @@ from orders.models import PurchaseOder, PurchaseTransaction, SalesOrder, SalesTr
 
 class PurchaseOrderCreationForm(forms.ModelForm):
     # this field is only created for display in the form
-    my_total_price_after_discount = forms.DecimalField(max_digits=200, decimal_places=20)
-    # tax_value = forms.DecimalField(max_digits=200, decimal_places=2)
-    # total_price_after_tax = forms.DecimalField(max_digits=200, decimal_places=2)
-    # total_discount = forms.DecimalField(max_digits=200, decimal_places=2)
+    my_total_price_after_discount = forms.DecimalField(max_digits=200, decimal_places=2)
 
     class Meta:
         model = PurchaseOder
@@ -29,13 +26,10 @@ class PurchaseOrderCreationForm(forms.ModelForm):
         user = kwargs.pop('user')
         super(PurchaseOrderCreationForm, self).__init__(*args, **kwargs)
         self.fields['purchase_code'].widget.attrs['readonly'] = True
-        self.fields['subtotal_price'].widget.attrs['readonly'] = True
-        self.fields['subtotal_price'].widget.attrs['disabled'] = True
+        self.fields['global_price'].widget.attrs['readonly'] = True
+        self.fields['global_price'].widget.attrs['disabled'] = True
         self.fields['my_total_price_after_discount'].widget.attrs['readonly'] = True
         self.fields['my_total_price_after_discount'].widget.attrs['disabled'] = True
-        self.fields['tax'].widget.attrs['readonly'] = True
-        self.fields['tax'].widget.attrs['disabled'] = True
-       
         self.fields["supplier"].queryset = Supplier.objects.filter(company=user.company)
         for field in self.fields:
             self.fields[field].widget.attrs['class'] = 'form-control'
@@ -43,10 +37,7 @@ class PurchaseOrderCreationForm(forms.ModelForm):
 
 class PurchaseTransactionCreationForm(forms.ModelForm):
     # this field is only created for display in the form
-    after_discount = forms.DecimalField(max_digits=200, decimal_places=20)
-    item_tax = forms.DecimalField(max_digits=200, decimal_places=20)
-    item_discount = forms.DecimalField(max_digits=200, decimal_places=20)
-    # item_shipping_cost = forms.DecimalField(max_digits=200, decimal_places=2)
+    after_discount = forms.DecimalField(max_digits=200, decimal_places=2)
 
     class Meta:
         model = PurchaseTransaction
@@ -88,11 +79,7 @@ class PurchaseTransactionCreationForm(forms.ModelForm):
         self.fields['total_price'].widget.attrs['disabled'] = True
         self.fields['after_discount'].widget.attrs['readonly'] = True
         self.fields['after_discount'].widget.attrs['disabled'] = True
-        self.fields['item_tax'].widget.attrs['readonly'] = True
-        self.fields['item_tax'].widget.attrs['disabled'] = True
-        self.fields['item_discount'].widget.attrs['readonly'] = True
-        self.fields['item_discount'].widget.attrs['disabled'] = True
-        
+
         for field in self.fields:
             # setting a 'unique-class' to mark all 'total_price' fields to be used afterwards in calculating global total
             if field == 'total_price':
@@ -102,9 +89,15 @@ class PurchaseTransactionCreationForm(forms.ModelForm):
 
 
 class SaleOrderCreationForm(forms.ModelForm):
+    my_total_price_after_discount = forms.DecimalField(max_digits=200, decimal_places=2, initial=0) 
+    tax_price = forms.DecimalField(max_digits=200, decimal_places=2, initial=0)
+    discount_price = forms.DecimalField(max_digits=200, decimal_places=2, initial=0)
+    subtotal_after_shipping_cost = forms.DecimalField(max_digits=200, decimal_places=2, initial=0)
+
+
     class Meta:
         model = SalesOrder
-        exclude = ('tax', 'currency', 'company', 'created_at', 'last_updated_at', 'created_by', 'last_updated_by')
+        exclude = ('tax','currency', 'company', 'created_at', 'last_updated_at', 'created_by', 'last_updated_by')
         widgets = {
             'date': forms.DateInput(attrs={'class': 'form-control tm', 'type': 'date', })
         }
@@ -115,7 +108,15 @@ class SaleOrderCreationForm(forms.ModelForm):
         self.fields['sale_code'].widget.attrs['readonly'] = True
         self.fields['subtotal_price'].widget.attrs['readonly'] = True
         self.fields['subtotal_price'].widget.attrs['disabled'] = True
-
+        self.fields['my_total_price_after_discount'].widget.attrs['readonly'] = True
+        self.fields['my_total_price_after_discount'].widget.attrs['disabled'] = True 
+        self.fields['tax_price'].widget.attrs['disabled'] = True
+        self.fields['tax_price'].widget.attrs['readonly'] = True
+        self.fields['discount_price'].widget.attrs['disabled'] = True
+        self.fields['discount_price'].widget.attrs['readonly'] = True
+        self.fields['subtotal_after_shipping_cost'].widget.attrs['disabled'] = True
+        self.fields['subtotal_after_shipping_cost'].widget.attrs['readonly'] = True
+        
 
         self.fields["customer"].queryset = Customer.objects.filter(company=user.company)
 
@@ -125,11 +126,14 @@ class SaleOrderCreationForm(forms.ModelForm):
 
 class SaleTransactionCreationForm(forms.ModelForm):
     temp_uom = forms.CharField(max_length=30, required=False)
-    temp_unit_cost = forms.CharField(max_length=30, required=False)
+    item_tax = forms.DecimalField(max_digits=200, decimal_places=2)
+    item_descount = forms.DecimalField(max_digits=200, decimal_places=2, initial=0)
+    total = forms.DecimalField(max_digits=200, decimal_places=2, initial=0)
+
 
     class Meta:
         model = SalesTransaction
-        exclude = ('currency', 'created_at', 'last_updated_at', 'created_by', 'last_updated_by')
+        exclude = ('tax','currency', 'created_at', 'last_updated_at', 'created_by', 'last_updated_by')
         widgets = {
             # 'item': forms.Select(attrs={'onchange': 'myAction(this)'}),
             'quantity': forms.TextInput(attrs={'onchange': 'myFunction(this)'}),
@@ -146,8 +150,12 @@ class SaleTransactionCreationForm(forms.ModelForm):
         self.fields['location'].widget.attrs['onchange'] = 'inventory(this)'
         self.fields['total_price'].widget.attrs['readonly'] = True
         self.fields['total_price'].widget.attrs['disabled'] = True
-        self.fields['temp_unit_cost'].widget.attrs['readonly'] = True
-        self.fields['temp_unit_cost'].widget.attrs['disabled'] = True
+        self.fields['item_tax'].widget.attrs['readonly'] = True
+        self.fields['item_tax'].widget.attrs['disabled'] = True
+        self.fields['item_descount'].widget.attrs['readonly'] = True
+        self.fields['item_descount'].widget.attrs['disabled'] = True
+        self.fields['total'].widget.attrs['readonly'] = True
+        self.fields['total'].widget.attrs['disabled'] = True
         self.fields["location"].queryset = Location.objects.filter(company=user.company)
 
         for field in self.fields:
