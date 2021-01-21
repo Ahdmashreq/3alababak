@@ -1,0 +1,54 @@
+{% extends 'master.html' %}
+{% load static %}
+{% load l10n %}
+{% load i18n %}
+{% block style %}
+<style>
+
+  .required
+  {
+      color: red;
+  }
+.submit-row {
+    display: display;
+    padding: 12px 14px;
+    margin: 0 0 20px;
+    background: #f8f8f8;
+    border: 1px solid #eee;
+    border-radius: 4px;
+    text-align: right;
+    overflow: hidden;
+}
+</style>
+{% endblock style  %}
+{% block body%}
+<div class="container-fluid">
+  <div class="row">
+    <div class="col-12">
+     
+      <div class="separator mb-5"></div>
+    </div>
+  </div>
+
+  <div class="card mb-4">
+    <div class="card-body">
+
+      <form method="POST">
+        {% csrf_token %}
+        <div class="form-row">
+          <div class="form-group col-md-3">
+            <label>Category Name <span class="required">*</span></label>
+            {{category_form.name}}
+          </div>
+          
+        </div>
+        <div class="submit-row">
+          <button type="submit" class="btn btn-primary btn-lg mt-3" name ='Save'>Save</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+</div>
+
+{% endblock body%}

@@ -4,12 +4,11 @@
 {% load i18n %}
 {% block style %}
 <style>
-
-  .required
-  {
-      color: red;
+  .required {
+    color: red;
   }
-.submit-row {
+
+  .submit-row {
     display: display;
     padding: 12px 14px;
     margin: 0 0 20px;
@@ -18,9 +17,23 @@
     border-radius: 4px;
     text-align: right;
     overflow: hidden;
-}
+  }
+
+  .info {
+    display: display;
+    padding: 12px 14px;
+    margin: 0 0 20px;
+    background: #c7c3c3;
+    border: 1px solid rgb(196, 19, 19);
+    color: rgb(0, 0, 0);
+    border-radius: 4px;
+    overflow: hidden;
+
+   
+  }
+
 </style>
-{% endblock style  %}
+{% endblock style %}
 {% block body%}
 <div class="container-fluid">
   <div class="row">
@@ -28,17 +41,18 @@
       <h1>{{title}}</h1>
 
       <div class="text-zero top-right-button-container">
-        <a href="{% url 'inventory:list-uom' category_id=category_id %}"><button type="button" class="btn btn-primary btn-lg top-right-button mr-1">BACK TO LIST</button></a>
+        <a href="{% url 'inventory:list-uom' category_id=category_id %}"><button type="button"
+            class="btn btn-primary btn-lg top-right-button mr-1">BACK TO LIST</button></a>
       </div>
       <div class="separator mb-5"></div>
     </div>
   </div>
 
-   <div class="card mb-4">
+  <div class="card mb-4">
     <div class="card-body">
 
       <form method="POST">
-        {% csrf_token %}
+        {% csrf_token %} 
         <div class="form-row">
           <div class="form-group col-md-6">
             <label>Unit Of Measurement <span class="required">*</span></label>
@@ -48,21 +62,28 @@
             <label>Type <span class="required">*</span></label>
             {{uom_form.type.errors}}
             {{uom_from.type}}
-
           </div>
+
           <div class="form-group col-md-6" id="ratio">
             <label>Ratio</label>
             {{uom_from.ratio}}
           </div>
 
+          <div class="info col-md-6" id="info" >
+              <p>When you choose <span style="color:red;">Smaller Than The Reference  </span> 
+               UOM= Reference Unit * ratio</p>
+              <p>When you choose <span style="color:blue;">Bigger Than The Reference   </span> 
+               UOM= Reference Unit  / ratio</p>
+          </div>
+
         </div>
 
-         <div class="submit-row">
-          <button type="submit" class="btn btn-primary btn-lg mt-3" name ='Save'>Save</button>
-          <button type="submit" class="btn btn-primary btn-lg mt-3" name ='Save and exit'>Save and Exit</button>
-           {% if not update %}
-          <button type="submit" class="btn btn-primary btn-lg mt-3" name ='Save and add'>Save and Add</button>
-           {% endif %}
+        <div class="submit-row">
+          <button type="submit" class="btn btn-primary btn-lg mt-3" name='Save'>Save</button>
+          <button type="submit" class="btn btn-primary btn-lg mt-3" name='Save and exit'>Save and Exit</button>
+          {% if not update %}
+          <button type="submit" class="btn btn-primary btn-lg mt-3" name='Save and add'>Save and Add</button>
+          {% endif %}
         </div>
       </form>
     </div>
@@ -75,19 +96,38 @@
 
 
 
-    if(document.getElementById('id_type').value == 'reference' || document.getElementById('id_type').value == ''){
+  if (document.getElementById('id_type').value == 'reference' || document.getElementById('id_type').value == '') {
 
     document.getElementById('ratio').style.display = 'none';
-    }
+    document.getElementById('info').style.display = 'none';
+  }
 
-    function myFunction() {
+  function myFunction() {
 
-      if(document.getElementById('id_type').value != 'reference') {
+    if (document.getElementById('id_type').value != 'reference') {
         document.getElementById('ratio').style.display = 'block';
-       }else {
-       document.getElementById('ratio').style.display = 'none';
+        document.getElementById('info').style.display = 'block';
+    } else {
+      document.getElementById('ratio').style.display = 'none';
+      document.getElementById('info').style.display = 'none';
+      
 
-}
-}
+    }
+  }
+
+  //let changeTest = () => {
+
+    //var ratioVal = document.querySelector("#id_ratio").value
+    //var typeVal = document.querySelector("#id_type").value
+    
+
+    //document.querySelector("#h").innerHTML = inputVal;
+    //console.log(document.querySelector("#h"));
+ // }
+ 
+
+
+
+
 </script>
 {% endblock %}

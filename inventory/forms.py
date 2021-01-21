@@ -5,6 +5,9 @@ from inventory.models import (Category, Brand, Attribute, Uom, Item, Product, St
 from location.models import Location
 from orders.models import Inventory_Balance
 from mptt.forms import TreeNodeChoiceField
+from dal import autocomplete
+
+
 
 
 class CategoryForm(forms.ModelForm):
@@ -117,7 +120,7 @@ class UOMForm(forms.ModelForm):
 uom_formset = modelformset_factory(Uom, form=UOMForm, extra=3, can_delete=False)
 
 
-class ProductForm(forms.ModelForm):
+class ProductForm(forms.ModelForm):       
     class Meta:
         model = Product
         fields = '__all__'
@@ -136,13 +139,15 @@ class ProductForm(forms.ModelForm):
             else:
                 self.fields[field].widget.attrs['class'] = 'form-control'
 
+        
+
 
 class ItemImageForm(forms.ModelForm):
     class Meta:
         model = ItemImage
         exclude = ('item','created_at', 'last_updated_at', 'created_by', 'last_updated_by')
 
-        def __init__(self, *args, **kwargs):
+    def __init__(self, *args, **kwargs):
             super(ItemImageForm, self).__init__(*args, **kwargs)
             self.fields["image"].widget.attrs['class'] = 'form-control'
 
@@ -163,6 +168,8 @@ class ItemForm(forms.ModelForm):
                 self.fields[field].widget.attrs['class'] = 'form-control  custom-select'
             else:
                 self.fields[field].widget.attrs['class'] = 'form-control'
+
+               
 
 
 # product_item_inlineformset = inlineformset_factory(Product, Item, form=ItemForm, extra=3, can_delete=False)
