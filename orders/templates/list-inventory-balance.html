@@ -1,0 +1,56 @@
+{% extends 'master.html' %}
+{% load static %}
+{% load l10n %}
+{% load i18n %}
+
+{% block body %}
+<div class="container-fluid">
+    <div class="row mb-4">
+        <div class="col-12 mb-4">
+          <div class="card">
+            <div class="card-body">
+              <div id="DataTables_Table_0_wrapper" class="dataTables_wrapper container-fluid dt-bootstrap4 no-footer">
+                <div class="row view-filter">
+                  <div class="col-sm-12">
+                  </div>
+                </div>
+                <table class="data-table data-table-feature9 dataTable no-footer" style="width: 80% !important; margin: auto;" id="DataTables_Table_0" role="grid" aria-describedby="DataTables_Table_0_info">
+                  <thead>
+                    <tr role="row">
+                      <th class="sorting_asc" tabindex="0" aria-controls="DataTables_Table_0" rowspan="1" colspan="1" aria-sort="ascending">#</th>
+                      <th class="sorting" tabindex="0" aria-controls="DataTables_Table_0" rowspan="1" colspan="2">{% trans "Name" %}</th>
+                      <th class="sorting" tabindex="0" aria-controls="DataTables_Table_0" rowspan="1" colspan="1">{% trans "Category" %}</th>
+                      <th class="sorting" tabindex="0" aria-controls="DataTables_Table_0" rowspan="1" colspan="1">{% trans "Brand" %}</th>
+                      <th class="sorting" tabindex="0" aria-controls="DataTables_Table_0" rowspan="1" colspan="1">{% trans "SKU" %}</th>
+                      <th class="sorting" tabindex="0" aria-controls="DataTables_Table_0" rowspan="1" colspan="1">{% trans "QTY in Stock" %}</th>
+                      <th class="sorting" tabindex="0" aria-controls="DataTables_Table_0" rowspan="1" colspan="1">{% trans "Unit Cost" %}</th>
+                      <th class="sorting" tabindex="0" aria-controls="DataTables_Table_0" rowspan="1" colspan="1">{% trans "Added At" %}</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {% for item in items %}
+                    <tr role="row">
+                      <td class="sorting_1">{{ forloop.counter }}</td>
+                      <td >
+                          
+                          <img src="/media/{{item.images.image}}" style="max-width:100px; margin: 5px;" />
+                          
+                      </td>
+                      <td>{{ item.item.name }}</td>
+                      <td>{{item.item.product.category}}</td>
+                      <td>{{item.item.product.brand}}</td>
+                      <td>{{item.item.sku}}</td>
+                      <td>{{item.qnt}}</td>
+                      <td>{{item.unit_cost}}</td>
+                      <td>{{item.created_at}}</td> 
+                    </tr>
+                    {% endfor %}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+</div>
+{% endblock body %}
