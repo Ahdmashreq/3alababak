@@ -14,8 +14,10 @@ from location.models import Location
 class PurchaseOder(models.Model):
     company = models.ForeignKey(Company, on_delete=models.CASCADE)
     supplier = models.ForeignKey(Supplier, on_delete=models.CASCADE, )
-    supplier_code = models.CharField(max_length=250, help_text='code number of a supplier',verbose_name="Supplier PO Number", null=True, blank=True)
-    purchase_code = models.CharField(max_length=100, help_text='code number of a po',verbose_name="PO Number", null=True, blank=True, )
+    supplier_code = models.CharField(max_length=250, help_text='code number of a supplier',
+                                     verbose_name="Supplier PO Number", null=True, blank=True)
+    purchase_code = models.CharField(max_length=100, help_text='code number of a po', verbose_name="PO Number",
+                                     null=True, blank=True, )
     subtotal_price = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True, default=0,
                                          help_text='total price before discount')
     tax = models.DecimalField(max_digits=20, decimal_places=3, null=True, blank=True)
@@ -60,18 +62,19 @@ class PurchaseOder(models.Model):
 class SalesOrder(models.Model):
     company = models.ForeignKey(Company, on_delete=models.CASCADE)
     customer = models.ForeignKey(Customer, on_delete=models.CASCADE, )
-    sale_code = models.CharField(max_length=100, help_text='SO number', null=True, blank=True,verbose_name="SO Number" )
-    customer_so_number = models.CharField(max_length=100, help_text='Customer SO number', null=True, blank=True )
+    sale_code = models.CharField(max_length=100, help_text='SO number', null=True, blank=True, verbose_name="SO Number")
+    customer_so_number = models.CharField(max_length=100, help_text='Customer SO number', null=True, blank=True)
 
     subtotal_price = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True, default=0)
     # currency = models.ForeignKey(Currency, on_delete=models.CASCADE, null=True, blank=True, default='EGP')
     # status = models.CharField(max_length=8,
     #                           choices=[('received', 'Received'), ('returned', 'Returned'), ('shipping', 'Shipping')],
     #                           default='drafted')
-    shipping_cost = models.DecimalField( max_digits=10, decimal_places=2, null=True, blank=True, default=0)
+    shipping_cost = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True, default=0)
     discount = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True, default=0)
-    discount_type = models.CharField(max_length=11,choices=[('percentage', '%'), ('amount', 'EGP')], default='percentage')
-    tax = models.DecimalField(max_digits=4, decimal_places=3,help_text='tax is saved as percentage',)
+    discount_type = models.CharField(max_length=11, choices=[('percentage', '%'), ('amount', 'EGP')],
+                                     default='percentage')
+    tax = models.DecimalField(max_digits=4, decimal_places=3, help_text='tax is saved as percentage', )
     date = models.DateField(null=True, blank=True)
     created_at = models.DateField(auto_now_add=True, null=True)
     last_updated_at = models.DateField(null=True, auto_now=True, auto_now_add=False)
@@ -85,12 +88,7 @@ class SalesOrder(models.Model):
     @property
     def subtotal_price_after_tax(self):
         tax = self.tax * self.subtotal_price
-        return round( tax + self.subtotal_price, 2)
-
-    @property
-    def total_tax(self):
-        tax = self.tax * self.subtotal_price
-        return round(tax, 2)
+        return round(tax + self.subtotal_price, 2)
 
     @property
     def subtotal_price_after_discount(self):
@@ -164,7 +162,7 @@ class SalesTransaction(models.Model):
     location = models.ForeignKey(Location, on_delete=models.CASCADE, blank=True, null=True)
     price_per_unit = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True, )
     total_price = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True, )
-    #currency = models.ForeignKey(Currency, on_delete=models.CASCADE, null=True, blank=True, default='EGP')
+    # currency = models.ForeignKey(Currency, on_delete=models.CASCADE, null=True, blank=True, default='EGP')
     created_at = models.DateField(auto_now_add=True, null=True)
     last_updated_at = models.DateField(null=True, auto_now=True, auto_now_add=False)
     created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, null=True,

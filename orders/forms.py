@@ -102,10 +102,10 @@ class PurchaseTransactionCreationForm(forms.ModelForm):
 
 
 class SaleOrderCreationForm(forms.ModelForm):
-    my_total_price_after_discount = forms.DecimalField(max_digits=200, decimal_places=2, initial=0)
-    tax_price = forms.DecimalField(max_digits=200, decimal_places=2, initial=0)
-    discount_price = forms.DecimalField(max_digits=200, decimal_places=2, initial=0)
-    subtotal_after_shipping_cost = forms.DecimalField(max_digits=200, decimal_places=2, initial=0)
+    my_total_price_after_discount = forms.DecimalField(max_digits=200, decimal_places=20, initial=0)
+    tax_price = forms.DecimalField(max_digits=200, decimal_places=20, initial=0)
+    discount_price = forms.DecimalField(max_digits=200, decimal_places=20, initial=0)
+    subtotal_after_shipping_cost = forms.DecimalField(max_digits=200, decimal_places=20, initial=0)
     class Meta:
         model = SalesOrder
         exclude = ('tax', 'currency', 'company', 'created_at', 'last_updated_at', 'created_by', 'last_updated_by')
@@ -139,9 +139,9 @@ class SaleOrderCreationForm(forms.ModelForm):
 
 class SaleTransactionCreationForm(forms.ModelForm):
     temp_uom = forms.CharField(max_length=30, required=False)
-    item_tax = forms.DecimalField(max_digits=200, decimal_places=2)
-    item_descount = forms.DecimalField(max_digits=200, decimal_places=2, initial=0)
-    total = forms.DecimalField(max_digits=200, decimal_places=2, initial=0)
+    item_tax = forms.DecimalField(max_digits=200, decimal_places=20)
+    item_descount = forms.DecimalField(max_digits=200, decimal_places=20, initial=0)
+    total = forms.DecimalField(max_digits=200, decimal_places=20, initial=0)
 
     class Meta:
         model = SalesTransaction
