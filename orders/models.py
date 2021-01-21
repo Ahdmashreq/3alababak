@@ -163,7 +163,7 @@ class SalesTransaction(models.Model):
     location = models.ForeignKey(Location, on_delete=models.CASCADE, blank=True, null=True)
     price_per_unit = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True, )
     total_price = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True, )
-    currency = models.ForeignKey(Currency, on_delete=models.CASCADE, null=True, blank=True, default='EGP')
+    #currency = models.ForeignKey(Currency, on_delete=models.CASCADE, null=True, blank=True, default='EGP')
     created_at = models.DateField(auto_now_add=True, null=True)
     last_updated_at = models.DateField(null=True, auto_now=True, auto_now_add=False)
     created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, null=True,
