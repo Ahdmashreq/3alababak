@@ -60,7 +60,7 @@
                             {{so_form.date}}
                         </div>
                         <div class="form-group col-md-3">
-                            <label> Suptotal (EGP)</label>
+                            <label> Subtotal (EGP)</label>
                             {{so_form.subtotal_price}}
                         </div>
 
@@ -134,7 +134,7 @@
                                             <label>{% trans "Selling price per unit (EGP)" %}</label>
                                         </div>
                                         <div class="form-group col-md-2">
-                                            <label>{% trans "Suptotal Price (EGP)" %}</label>
+                                            <label>{% trans "Subtotal Price (EGP)" %}</label>
                                         </div>
 
                                         <div class="form-group col-md-1">
@@ -392,19 +392,13 @@
     function total_after_discount() {
         subtotal_price = Number(document.getElementById("id_subtotal_price").value)
         tax = Number(document.getElementById("id_tax_price").value)
-        console.log("ttttt")
-        console.log(tax)
         tax_price = tax * subtotal_price
         total = Number(subtotal_price) + Number(tax)
-        console.log(total)
         discount = document.getElementById("id_discount").value;
         discount_percentage = Number(discount ) / 100
         discount_price = Number(total)  *  Number(discount_percentage)
-        console.log("iiiiii")
-        console.log(discount_price)
-        document.getElementById("id_discount_price").value = discount_price;
+        document.getElementById("id_discount_price").value = discount_price.toFixed(2);
         discount_value = discount_price
-        console.log("vvvv")
         return (discount_value)
     }
 
@@ -430,20 +424,27 @@
 
 <script>
     function grandTotal() {
-
+        var x = document.getElementsByClassName("unique-class");
+        var i;
+        var subtotal = 0;
+        for (i = 0; i < x.length; i++) {
+          if (x[i].value){
+            subtotal = subtotal + Number(x[i].value);
+            }
+         }
         let discount_amount = 0;
         let shipping_cost=0
         total_after_tax = total_after_tax_func()
         if (document.getElementById("id_discount").value){
             discount_amount = total_after_discount()
-            document.getElementById("id_discount_price").value = discount_amount;
+            document.getElementById("id_discount_price").value = discount_amount.toFixed(2);
 
         }
         if (document.getElementById("id_shipping_cost").value){
              shipping_cost = Number(document.getElementById("id_shipping_cost").value);
         }
         grand_total = total_after_tax - discount_amount + shipping_cost
-        document.getElementById("id_subtotal_price").value = total_after_tax
+        document.getElementById("id_subtotal_price").value =subtotal
         document.getElementById("id_subtotal_after_shipping_cost").value = grand_total;
 
 }
@@ -559,6 +560,7 @@
                     console.log("******")
                     console.log(item_after_tax)
                          document.getElementById(item_total_id).value =(item_after_tax).toFixed(1);
+                        document.getElementById(item_discount_id).value =0;
                         }
 
                 }
