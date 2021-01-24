@@ -20,6 +20,7 @@ import random
 from orders.utils import get_seq, ItemSerializer, JSONResponse
 from django.http import HttpResponse
 from django.db import IntegrityError
+import os
 
 
 def create_category_view(request):
@@ -762,6 +763,7 @@ def update_item(request, id):
     product = Product.objects.get(id=item.product.id)
     attribute_form = AttributeForm()
     image_form = ItemImageForm(instance=item_image)
+    old_image = item_image.image
     # attribute_value = ItemAttributeValue.objects.filter(item=item)
     product_form = ProductForm(instance=product, user=request.user)
     item_form = ItemForm(instance=item, user=request.user)
@@ -774,8 +776,8 @@ def update_item(request, id):
             request.POST, instance=product, user=request.user)
         item_form = ItemForm(request.POST, instance=item, user=request.user)
         item_attribute_form = item_attribute_model_formset(request.POST, instance=item)
-        image_form = ItemImageForm(request.POST, request.FILES)
-        if product_form.is_valid() and item_form.is_valid() and item_attribute_form.is_valid():
+        image_form = ItemImageForm(request.POST, request.FILES , instance = item_image)
+        if product_form.is_valid() and item_form.is_valid() and item_attribute_form.is_valid() and image_form.is_valid():
             product_obj = product_form.save(commit=False)
             product_obj.last_updated_by = request.user
             product_obj.save()
@@ -797,9 +799,11 @@ def update_item(request, id):
                 }
                 return render(request, 'create-product-item.html', context=attributeContext)
             image_obj = image_form.save(commit=False)
-            image_obj.created_by = request.user
+            image_obj.last_updated_by = request.user
             image_obj.item = item_obj
-            image_obj.save()
+            if image_obj.image:
+                os.remove(old_image.path)
+                image_obj.save()
             item_attribute_form = item_attribute_model_formset(request.POST, instance=item_obj)
             if item_attribute_form.is_valid():
                 for form in item_attribute_form:
