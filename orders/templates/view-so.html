@@ -85,7 +85,8 @@
                         <p style="color:#8f8f8f; font-size: 14px; padding: 0; line-height: 1.6; margin:0; ">
                            <b>Subtotal:</b>     {{so.subtotal_price}} EGP
                             <br>
-                             <b>Tax (VAT): </b> {{so.total_tax}}
+
+                             <b>Tax (VAT): </b> <b id="sum_taxes" style="font-weight: lighter;"></b>
                              <br>
                              <b>Discount:</b>     {{so.discount}} %
                              <br>
@@ -104,3 +105,12 @@
   </div>
 </div>
 {% endblock body %}
+{% block js %}
+<script>
+    tax_value = {{so.subtotal_price_after_tax}} - {{so.subtotal_price}}
+    document.getElementById('sum_taxes').innerHTML = Number(tax_value.toFixed(2)) + " EGP"
+</script>
+
+
+
+{% endblock js %}
