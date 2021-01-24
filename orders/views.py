@@ -210,6 +210,12 @@ def delete_purchase_order_view(request, id):
 
 
 def create_sales_order_view(request):
+    try:
+        tax = Tax.objects.get(name='VAT')
+        tax_percentage = tax.value / 100
+    except ObjectDoesNotExist:
+        print(ObjectDoesNotExist)
+        tax_percentage = Decimal(0.14)
     so_form = SaleOrderCreationForm(user=request.user)
     so_transaction_inlineformset = sale_transaction_formset(form_kwargs={'user': request.user})
     rows_number = SalesOrder.objects.all().count()
@@ -245,11 +251,13 @@ def create_sales_order_view(request):
             else:
                 print(so_transaction_inlineformset.errors)
         else:
+            print(so_transaction_inlineformset.errors)
             print(so_form.errors)
     subcontext = {
         'so_form': so_form,
         'so_transaction_inlineformset': so_transaction_inlineformset,
         'title': 'New Sale Order',
+        'tax': tax_percentage,
 
     }
     return render(request, 'create-sale-order.html', context=subcontext)
