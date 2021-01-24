@@ -106,11 +106,14 @@ class SaleOrderCreationForm(forms.ModelForm):
     tax_price = forms.DecimalField(max_digits=200, decimal_places=20, initial=0)
     discount_price = forms.DecimalField(max_digits=200, decimal_places=20, initial=0)
     subtotal_after_shipping_cost = forms.DecimalField(max_digits=200, decimal_places=20, initial=0)
+    apply_discount = forms.BooleanField(required=False)
     class Meta:
         model = SalesOrder
         exclude = ('tax', 'currency', 'company', 'created_at', 'last_updated_at', 'created_by', 'last_updated_by')
         widgets = {
-            'date': forms.DateInput(attrs={'class': 'form-control tm', 'type': 'date', })
+            'date': forms.DateInput(attrs={'class': 'form-control tm', 'type': 'date', }),
+            'discount': forms.TextInput(attrs={'onchange': 'grandTotal()'}),
+            'shipping_cost': forms.TextInput(attrs={'onchange': 'grandTotal()'}),
         }
 
     def __init__(self, *args, **kwargs):
