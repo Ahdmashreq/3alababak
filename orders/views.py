@@ -14,7 +14,7 @@ from orders.forms import (PurchaseOrderCreationForm,
                           MaterialTransactionCreation_formset, TaxForm)
 from orders.models import PurchaseOder, SalesOrder, PurchaseTransaction, MaterialTransactionLines, \
     MaterialTransaction1, Inventory_Balance, SalesTransaction, Tax
-from inventory.models import Item, Uom
+from inventory.models import Item, Uom ,ItemImage
 from orders.utils import get_seq, ItemSerializer, JSONResponse
 
 
@@ -591,3 +591,14 @@ def load_uoms(request):
     item = Item.objects.get(id=item_id)
     uoms = Uom.objects.filter(category=item.uom.category)
     return render(request, 'load-uoms.html', {'uoms': uoms, 'default': item.uom})
+
+def list_inventory_balance(request):
+    invetory_items = Inventory_Balance.objects.filter(company=request.user.company)
+    for inventory_item in invetory_items:
+        item_images = inventory_item.item.images.all().first()
+        inventory_item.images = item_images
+        print(inventory_item.images)
+    context = {
+        'items':invetory_items
+    }
+    return render(request , 'list-inventory-balance.html' , context=context)

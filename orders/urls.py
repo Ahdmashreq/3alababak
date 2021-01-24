@@ -28,4 +28,5 @@ urlpatterns = [
     path('tax/update/<int:id>', views.update_tax, name='update-tax'),
     path('tax/delete/<int:id>', views.delete_tax_view, name='delete-tax'),
     path('ajax/load-uoms/', views.load_uoms, name='ajax_load_uoms'),
+    path('list/inventory-balance' , views.list_inventory_balance , name='list-inventory-balance')
 ]
