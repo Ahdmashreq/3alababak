@@ -155,9 +155,7 @@
                             <span class="input-group-text">Upload Image</span>
                         </div>
                         <div>
-
-                            <input  onchange="readURL(this);"
-                            {{image_form.image}}
+                           <input type="file" name="image" accept="image/*" onchange="readURL(this)" class="form-control" id="id_image">
 
                         </div>
 
