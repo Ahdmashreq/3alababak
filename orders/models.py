@@ -163,6 +163,7 @@ class SalesTransaction(models.Model):
     sales_order = models.ForeignKey(SalesOrder, on_delete=models.CASCADE, )
     item = models.ForeignKey(Item, on_delete=models.CASCADE, )
     quantity = models.IntegerField()
+    uom = models.ForeignKey(Uom, on_delete=models.CASCADE, blank=True, null=True)
     location = models.ForeignKey(Location, on_delete=models.CASCADE, blank=True, null=True)
     price_per_unit = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True, )
     total_price = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True, )
