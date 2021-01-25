@@ -71,8 +71,10 @@ def create_purchase_order_view(request):
                     if po_obj.discount_type == "percentage":
                         po_transaction_obj.discount_percentage = po_obj.discount
                     elif po_obj.discount_type == "amount":
-                        # TODO: implement this
-                        po_transaction_obj.discount_percentage = po_obj.discount
+                        total_after_tax = po_obj.subtotal_price + po_obj.tax * po_obj.subtotal_price
+                        percentage = po_obj.discount / total_after_tax
+                        print(percentage)
+                        po_transaction_obj.discount_percentage = percentage
                     po_transaction_obj.save()
                 messages.success(request, 'Saved Successfully')
                 if 'Save and exit' in request.POST:
