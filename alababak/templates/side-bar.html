@@ -87,6 +87,11 @@
         <div id="collapseForms" class="collapse show">
           <ul class="list-unstyled inner-level-menu">
             <li class="color">
+              <a href="{% url 'orders:list-inventory-balance'%}">
+                <i class="simple-icon-event"></i> <span class="d-inline-block">Inventory Stock</span>
+              </a>
+            </li>
+            <li class="color">
               <a href="{% url 'inventory:list-products'%}">
                 <i class="simple-icon-event"></i> <span class="d-inline-block">Products</span>
               </a>

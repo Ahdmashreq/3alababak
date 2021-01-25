@@ -14,7 +14,7 @@ from orders.forms import (PurchaseOrderCreationForm,
                           MaterialTransactionCreation_formset, TaxForm)
 from orders.models import PurchaseOder, SalesOrder, PurchaseTransaction, MaterialTransactionLines, \
     MaterialTransaction1, Inventory_Balance, SalesTransaction, Tax
-from inventory.models import Item, Uom
+from inventory.models import Item, Uom ,ItemImage
 from orders.utils import get_seq, ItemSerializer, JSONResponse
 
 
@@ -71,8 +71,10 @@ def create_purchase_order_view(request):
                     if po_obj.discount_type == "percentage":
                         po_transaction_obj.discount_percentage = po_obj.discount
                     elif po_obj.discount_type == "amount":
-                        # TODO: implement this
-                        po_transaction_obj.discount_percentage = po_obj.discount
+                        total_after_tax = po_obj.subtotal_price + po_obj.tax * po_obj.subtotal_price
+                        percentage = po_obj.discount / total_after_tax
+                        print(percentage)
+                        po_transaction_obj.discount_percentage = percentage
                     po_transaction_obj.save()
                 messages.success(request, 'Saved Successfully')
                 if 'Save and exit' in request.POST:
@@ -210,6 +212,12 @@ def delete_purchase_order_view(request, id):
 
 
 def create_sales_order_view(request):
+    try:
+        tax = Tax.objects.get(name='VAT')
+        tax_percentage = tax.value / 100
+    except ObjectDoesNotExist:
+        print(ObjectDoesNotExist)
+        tax_percentage = Decimal(0.14)
     so_form = SaleOrderCreationForm(user=request.user)
     so_transaction_inlineformset = sale_transaction_formset(form_kwargs={'user': request.user})
     rows_number = SalesOrder.objects.all().count()
@@ -245,11 +253,13 @@ def create_sales_order_view(request):
             else:
                 print(so_transaction_inlineformset.errors)
         else:
+            print(so_transaction_inlineformset.errors)
             print(so_form.errors)
     subcontext = {
         'so_form': so_form,
         'so_transaction_inlineformset': so_transaction_inlineformset,
         'title': 'New Sale Order',
+        'tax': tax_percentage,
 
     }
     return render(request, 'create-sale-order.html', context=subcontext)
@@ -583,3 +593,14 @@ def load_uoms(request):
     item = Item.objects.get(id=item_id)
     uoms = Uom.objects.filter(category=item.uom.category)
     return render(request, 'load-uoms.html', {'uoms': uoms, 'default': item.uom})
+
+def list_inventory_balance(request):
+    invetory_items = Inventory_Balance.objects.filter(company=request.user.company)
+    for inventory_item in invetory_items:
+        item_images = inventory_item.item.images.all().first()
+        inventory_item.images = item_images
+        print(inventory_item.images)
+    context = {
+        'items':invetory_items
+    }
+    return render(request , 'list-inventory-balance.html' , context=context)

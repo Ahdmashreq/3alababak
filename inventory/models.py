@@ -317,7 +317,7 @@ class StokeEntry(models.Model):
 
 
 class ItemImage(models.Model):
-    item = models.ForeignKey(Item, on_delete=models.CASCADE, )
+    item = models.ForeignKey(Item, on_delete=models.CASCADE,related_name='images' )
     image = models.ImageField(upload_to='uploads/', blank=True, null=True)
     created_at = models.DateField(auto_now_add=True, null=True)
     last_updated_at = models.DateField(null=True, auto_now=True, auto_now_add=False)
