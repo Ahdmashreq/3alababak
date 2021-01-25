@@ -250,9 +250,6 @@
 
 {% block js %}
 
-</script>
-
-
 <script>
     $('#myform').on('submit', function () {
         for (i = 0; i < $('#id_salestransaction_set-TOTAL_FORMS').val(); i++) {
@@ -288,7 +285,6 @@
             quantity_id = id_prefix + '-' + 'quantity'
             location_id = id_prefix + '-' + 'location'
             mylocation = document.getElementById(location_id).value
-            console.log(mylocation)
             $.ajax({
                 type: "get",
                 url: endpoint,
@@ -339,7 +335,7 @@
         var id_prefix = res[0] + '-' + res[1];
         item_id = id_prefix + '-' + 'item';
         price_id = id_prefix + '-' + 'price_per_unit';
-        total_price_id = id_prefix + '-' + 'total_price';
+        subtotal_price_id = id_prefix + '-' + 'total_price';
         quantity_id = id_prefix + '-' + 'quantity';
         item_tax_id = id_prefix + '-' + 'item_tax'
         item_total_id = id_prefix + '-' + 'total'
@@ -351,7 +347,7 @@
         if (price) {
 
             var total_per_item = price * quantity;
-            document.getElementById(total_price_id).value = total_per_item;
+            document.getElementById(subtotal_price_id).value = total_per_item;
             tex_amount = total_per_item * {{tax}}
             document.getElementById(item_tax_id).value = (tex_amount.toFixed(1))
             document.getElementById(item_total_id).value =(total_per_item).toFixed(1);
