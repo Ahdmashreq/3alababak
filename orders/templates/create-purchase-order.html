@@ -412,7 +412,13 @@
                     total_price = unit_price * quantity
                     tax_amount = total_price * {{tax}}
                     total_price_after_tax = total_price + tax_amount
-                    item_total_discount_amount = discount_percentage * total_price_after_tax / 100;
+                    if (discount_type == 'percentage'){
+                        item_total_discount_amount = discount_percentage * total_price_after_tax / 100;
+                    }
+                    else {
+                        discount_percentage_per_item = discount_percentage / grand_total
+                        item_total_discount_amount = discount_percentage_per_item * total_price_after_tax
+                    }
                     item_total_afer_discount = total_price_after_tax - item_total_discount_amount;
                     // shipping_cost_percentage = shipping_cost/(Number(document.getElementById('id_my_total_price_after_discount').value).toFixed(0))
                     // item_shipphing_cost = Number((item_total_afer_discount * shipping_cost_percentage)).toFixed(0)
@@ -420,8 +426,8 @@
                     // item_total_afer_shipping = item_total_afer_discount
                     // document.getElementById(item_shipphing_cost_id).value = item_shipphing_cost
                     document.getElementById(item_tax_id).value = tax_amount
-                    document.getElementById(item_discount_id).value = Number(item_total_discount_amount);
-                    document.getElementById(item_total_afer_discount_id).value = Number(item_total_afer_discount);
+                    document.getElementById(item_discount_id).value = Number(item_total_discount_amount).toFixed(2);
+                    document.getElementById(item_total_afer_discount_id).value = Number(item_total_afer_discount).toFixed(2);
 
                 };
             };
