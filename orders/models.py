@@ -119,7 +119,7 @@ class PurchaseTransaction(models.Model):
     total_price = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True,
                                       help_text='total price of a transaction before discount')
     # currency = models.ForeignKey(Currency, on_delete=models.CASCADE, null=True, blank=True, default='EGP')
-    discount_percentage = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True, default=0)
+    discount_percentage = models.DecimalField(max_digits=10, decimal_places=5, null=True, blank=True, default=0)
     status = models.CharField(max_length=8,
                               choices=[('closed', 'Closed'), ('open', 'Open')], default='open')
     created_at = models.DateField(auto_now_add=True, null=True)
@@ -145,9 +145,13 @@ class PurchaseTransaction(models.Model):
 
     @property
     def item_discount(self):
-        discount = self.purchase_order.discount / 100
-        item_discount = self.subtotal_price_after_tax * discount
-        return round(item_discount, 2)
+        if self.purchase_order.discount_type == "percentage":
+            discount = self.purchase_order.discount / 100
+            item_discount = self.subtotal_price_after_tax * discount
+            return round(item_discount, 2)
+        elif self.purchase_order.discount_type == "amount":
+            item_discount = self.subtotal_price_after_tax  * self.discount_percentage
+            return round (item_discount , 2)
 
     @property
     def total_price_after_discount(self):
