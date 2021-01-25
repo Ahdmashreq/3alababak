@@ -205,10 +205,12 @@ def create_product_item_view(request):
 
                 }
                 return render(request, 'create-product-item.html', context=attributeContext)
-            image_obj = image_form.save(commit=False)
-            image_obj.created_by = request.user
-            image_obj.item = item_obj
-            image_obj.save()
+            if image_form['image'].value():
+                image_obj = image_form.save(commit=False)
+                image_obj.created_by = request.user
+                image_obj.item = item_obj
+                image_obj.save()
+                
             item_attribute_form = item_attribute_model_formset(request.POST, instance=item_obj)
             if item_attribute_form.is_valid():
                 for form in item_attribute_form:
@@ -800,10 +802,12 @@ def update_item(request, id):
 
                 }
                 return render(request, 'create-product-item.html', context=attributeContext)
-
+            print(str(image_form['image'].value()))
+            print(old_image)
             if image_form['image'].value():
-                if old_image is not None:
-                    os.remove(old_image.path)
+                if old_image != "uploads/"+str(image_form['image'].value()) and old_image is not None:
+                    # os.remove(old_image.path)  TODO delete old image from media if updated
+                    pass
                 image_obj = image_form.save(commit=False)
                 image_obj.last_updated_by = request.user
                 image_obj.item = item_obj
