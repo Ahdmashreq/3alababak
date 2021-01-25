@@ -112,7 +112,7 @@ class SaleOrderCreationForm(forms.ModelForm):
         exclude = ('tax', 'currency', 'company', 'created_at', 'last_updated_at', 'created_by', 'last_updated_by')
         widgets = {
             'date': forms.DateInput(attrs={'class': 'form-control tm', 'type': 'date', }),
-            'discount': forms.TextInput(attrs={'onchange': 'grandTotal()'}),
+            'discount': forms.TextInput(attrs={'onchange': 'Calculate_item_lines()'}),
             'shipping_cost': forms.TextInput(attrs={'onchange': 'grandTotal()'}),
         }
 
