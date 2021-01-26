@@ -67,7 +67,7 @@
                             <label>Tax (EGP)</label>
                             {{po_form.tax}}
                         </div>
-                        <div class="form-group col-md-2">
+                        <div class="form-group col-md-2" onchange="total_after_discount() , calculate()">
                             <label>Discount</label>
                             {{po_form.discount}}
                         </div>
@@ -75,7 +75,10 @@
                             <label>Discount Type</label>
                             {{po_form.discount_type}}
                         </div>
-                        <button class="btn btn-lg col-md-2" type="button" onclick="calculate()">Apply Discount</button>
+                        <div class="form-group col-md-2" onchange="calculate()">
+                            <label>Apply Discount</label>
+                            {{po_form.apply_discount}}
+                        </div>
                         <div class="form-group col-md-6">
                             <label>Total (EGP)</label>
                             {{po_form.my_total_price_after_discount}}
@@ -332,6 +335,25 @@
     }
 </script>
 <script>
+    function total_after_discount(){
+        total_price_after_tax = total_after_tax()
+        
+            discount = document.getElementById('id_discount').value;
+            if (discount >= 0) {
+                discount_type = document.getElementById("id_discount_type").value;
+                if (discount_type == 'percentage') {
+                    discount_amount = discount * subtotal / 100;
+                 }
+                else {
+                discount_amount = discount
+                };
+        }
+        shipping_cost = Number(add_shipping())
+        document.getElementById('id_my_total_price_after_discount').value = total_price_after_tax - discount_amount + shipping_cost;
+        
+    }
+</script>
+<script>
     function total_tax(){
         var x = document.getElementsByClassName("unique-class");
         var i;
@@ -426,12 +448,18 @@
                     // item_total_afer_shipping = item_total_afer_discount
                     // document.getElementById(item_shipphing_cost_id).value = item_shipphing_cost
                     document.getElementById(item_tax_id).value = tax_amount
-                    document.getElementById(item_discount_id).value = Number(item_total_discount_amount).toFixed(2);
-                    document.getElementById(item_total_afer_discount_id).value = Number(item_total_afer_discount).toFixed(2);
+                    if (document.getElementById("id_apply_discount").checked){
+                        document.getElementById(item_discount_id).value = Number(item_total_discount_amount).toFixed(2);
+                        document.getElementById(item_total_afer_discount_id).value = Number(item_total_afer_discount).toFixed(2);
+                    } else {
+                        document.getElementById(item_discount_id).value = 0
+                        document.getElementById(item_total_afer_discount_id).value = Number(total_price_after_tax).toFixed(2);
+
+                    }
 
                 };
             };
-            document.getElementById('id_my_total_price_after_discount').value = grand_total - discount_amount + shipping_cost;
+            total_after_discount();
 
 
 

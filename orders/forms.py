@@ -13,6 +13,7 @@ from orders.models import PurchaseOder, PurchaseTransaction, SalesOrder, SalesTr
 class PurchaseOrderCreationForm(forms.ModelForm):
     # this field is only created for display in the form
     my_total_price_after_discount = forms.DecimalField(max_digits=200, decimal_places=20)
+    apply_discount = forms.BooleanField(required=False)
     # tax_value = forms.DecimalField(max_digits=200, decimal_places=2)
     # total_price_after_tax = forms.DecimalField(max_digits=200, decimal_places=2)
     # total_discount = forms.DecimalField(max_digits=200, decimal_places=2)
