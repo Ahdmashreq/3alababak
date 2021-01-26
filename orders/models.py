@@ -146,13 +146,13 @@ class PurchaseTransaction(models.Model):
     @property
     def item_discount(self):
         if self.discount_percentage == 0:
+            item_discount = 0
+        else:
             if self.purchase_order.discount_type == "percentage":
                 discount = self.purchase_order.discount / 100
                 item_discount = self.subtotal_price_after_tax * discount
             elif self.purchase_order.discount_type == "amount":
                 item_discount = self.subtotal_price_after_tax  * self.discount_percentage
-        else:
-            item_discount = 0
         return round (item_discount , 2)
 
     @property
