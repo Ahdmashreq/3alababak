@@ -164,7 +164,7 @@
                                             {{ form.quantity}}
                                         </div>
                                         <div class="form-group col-md-1">
-                                            {{form.temp_uom}}
+                                            {{form.uom}}
                                         </div>
 
                                         <div class="form-group col-md-1">
@@ -212,7 +212,7 @@
                                     {{ so_transaction_inlineformset.empty_form.quantity}}
                                 </div>
                                 <div class="form-group col-md-1">
-                                    {{ so_transaction_inlineformset.empty_form.temp_uom}}
+                                    {{ so_transaction_inlineformset.empty_form.uom}}
                                 </div>
 
                                 <div class="form-group col-md-1">
@@ -280,7 +280,6 @@
             var str = object.id
             var res = str.split("-")
             var id_prefix = res[0] + '-' + res[1]
-            uom_id = id_prefix + '-' + 'temp_uom'
             price_id = id_prefix + '-' + 'price_per_unit'
             quantity_id = id_prefix + '-' + 'quantity'
             location_id = id_prefix + '-' + 'location'
@@ -290,7 +289,7 @@
                 url: endpoint,
                 contentType: 'application/json',
                 success: function (data) {
-                    document.getElementById(uom_id).value = data['uom']
+                   uom_function(object)
                     if (mylocation !== "") {
                         var flag = false;
                         for (i = 0; i < data['balance'].length; i++) {
@@ -571,6 +570,29 @@
 
     }
 
+</script>
+<script>
+    function uom_function(object) {
+        console.log("i got inside the function ")
+        var url = "{% url 'orders:ajax_load_uoms' %}"  // get the url of the `load_cities` view
+        var itemId = object.value;  // get the selected country ID from the HTML input
+        var str = object.id
+        var res = str.split("-")
+        var id_prefix = res[0] + '-' + res[1]
+        myuom_id = id_prefix + '-' + 'uom'
+
+        $.ajax({                       // initialize an AJAX request
+            url: url,                    // set the url of the request (= localhost:8000/hr/ajax/load-cities/)
+            data: {
+                'item': itemId     // add the country id to the GET parameters
+            },
+            success: function (data) {   // `data` is the return of the `load_cities` view function
+                document.getElementById(myuom_id).innerHTML = data;  // replace the contents of the city input with the data that came from the server
+
+            }
+        });
+
+    };
 </script>
 
 

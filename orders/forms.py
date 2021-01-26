@@ -141,7 +141,6 @@ class SaleOrderCreationForm(forms.ModelForm):
 
 
 class SaleTransactionCreationForm(forms.ModelForm):
-    temp_uom = forms.CharField(max_length=30, required=False)
     item_tax = forms.DecimalField(max_digits=200, decimal_places=20)
     item_descount = forms.DecimalField(max_digits=200, decimal_places=20, initial=0)
     total = forms.DecimalField(max_digits=200, decimal_places=20, initial=0)
@@ -160,7 +159,25 @@ class SaleTransactionCreationForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         user = kwargs.pop('user')
         super(SaleTransactionCreationForm, self).__init__(*args, **kwargs)
-        self.fields['temp_uom'].widget.attrs['readonly'] = True
+        self.fields['uom'].queryset = Uom.objects.none()
+        # get the name of item field in the instantiated form
+        item_id = self['item'].auto_id
+        splits = item_id.split("_")
+        item_field_name = splits[1] + '_' + splits[2]
+        # if item field is binded (in case of Post request),it will appear in self.data
+        if item_field_name in self.data:
+            try:
+                item_value = int(self.data.get(item_field_name))
+                item = Item.objects.get(id=item_value)
+                if item is not None:
+                    query = Uom.objects.filter(category=item.uom.category, company=user.company)
+                else:
+                    query = Uom.objects.filter(company=user.company)
+                self.fields['uom'].queryset = query
+            except (ValueError, TypeError):
+                pass  # invalid input from the client; ignore and fallback to empty item queryset
+        elif self.instance.pk:  # in case of update request using "get" method
+            self.fields['uom'].queryset = self.instance.item.uom.category.uoms
         self.fields['price_per_unit'].widget.attrs['onchange'] = 'myFunction(this)'
         self.fields['location'].widget.attrs['onchange'] = 'inventory(this)'
         self.fields['total_price'].widget.attrs['readonly'] = True
