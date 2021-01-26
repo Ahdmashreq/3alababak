@@ -68,13 +68,16 @@ def create_purchase_order_view(request):
                     po_transaction_obj = form.save(commit=False)
                     po_transaction_obj.created_by = request.user
                     po_transaction_obj.balance = po_transaction_obj.quantity
-                    if po_obj.discount_type == "percentage":
-                        po_transaction_obj.discount_percentage = po_obj.discount
-                    elif po_obj.discount_type == "amount":
-                        total_after_tax = po_obj.subtotal_price + po_obj.tax * po_obj.subtotal_price
-                        percentage = po_obj.discount / total_after_tax
-                        print(percentage)
-                        po_transaction_obj.discount_percentage = percentage
+                    if po_form.cleaned_data['apply_discount']:
+                        if po_obj.discount_type == "percentage":
+                            po_transaction_obj.discount_percentage = po_obj.discount
+                        elif po_obj.discount_type == "amount":
+                            total_after_tax = po_obj.subtotal_price + po_obj.tax * po_obj.subtotal_price
+                            percentage = po_obj.discount / total_after_tax
+                            print(percentage)
+                            po_transaction_obj.discount_percentage = percentage
+                    else:
+                        po_transaction_obj.discount_percentage = 0
                     po_transaction_obj.save()
                 messages.success(request, 'Saved Successfully')
                 if 'Save and exit' in request.POST:
