@@ -167,6 +167,7 @@ class SalesTransaction(models.Model):
     location = models.ForeignKey(Location, on_delete=models.CASCADE, blank=True, null=True)
     price_per_unit = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True, )
     total_price = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True, )
+    discount_percentage = models.DecimalField(max_digits=10, decimal_places=5, null=True, blank=True, default=0)
     # currency = models.ForeignKey(Currency, on_delete=models.CASCADE, null=True, blank=True, default='EGP')
     created_at = models.DateField(auto_now_add=True, null=True)
     last_updated_at = models.DateField(null=True, auto_now=True, auto_now_add=False)
@@ -184,14 +185,8 @@ class SalesTransaction(models.Model):
 
     @property
     def subtotal_price_after_discount(self):
-        total = self.subtotal_price_after_tax
-
-        if self.sales_order.discount_type == 'percentage':
-            discount_amount = total / 100 * self.sales_order.discount
-            return round(total - discount_amount, 2)
-        elif self.discount_type == 'amount':
-            # TODO:logic needs to be updated
-            return round(total - self.sales_order.discount, 2)
+        discount_amount = self.subtotal_price_after_tax / 100 * self.discount_percentage
+        return round(self.subtotal_price_after_tax - discount_amount , 2)
 
     @property
     def item_tax(self):
@@ -200,8 +195,14 @@ class SalesTransaction(models.Model):
 
     @property
     def item_discount(self):
-        discount = self.sales_order.discount / 100
-        item_discount = self.subtotal_price_after_tax * discount
+        if self.discount_percentage == 0:
+            item_discount = 0
+        else:
+            if self.sales_order.discount_type == "percentage":
+                discount = self.sales_order.discount / 100
+                item_discount = self.subtotal_price_after_tax * discount
+            elif self.sales_order.discount_type == "amount":
+                item_discount = self.subtotal_price_after_tax  * self.discount_percentage
         return round(item_discount, 2)
 
 

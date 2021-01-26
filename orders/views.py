@@ -245,6 +245,15 @@ def create_sales_order_view(request):
                 so_transaction_obj = so_transaction_inlineformset.save(commit=False)
                 for so_transaction in so_transaction_obj:
                     so_transaction.created_by = request.user
+                    if so_form.cleaned_data['apply_discount']:
+                        if so_obj.discount_type == "percentage":
+                            so_transaction.discount_percentage = so_obj.discount
+                        elif so_obj.discount_type == "amount":
+                            total_after_tax = so_obj.subtotal_price + so_obj.tax * so_obj.subtotal_price
+                            percentage = so_obj.discount / total_after_tax
+                            so_transaction.discount_percentage = percentage
+                    else:
+                        so_transaction.discount_percentage = 0
                     so_transaction.save()
                 messages.success(request, 'Saved Successfully')
                 if 'Save and exit' in request.POST:
